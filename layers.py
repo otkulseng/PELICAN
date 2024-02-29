@@ -1,16 +1,21 @@
 import tensorflow as tf
 from keras import activations
 from keras import layers
+from keras import models
+
+import numpy as np
 
 class LinEq2v2(layers.Layer):
-    def __init__(self, activation=None):
-        self.lambdas = self.add_weight(
-            shape=(15, 1), # 15 as there are 15 different PermEq tensors between two 2d tensors
+    def __init__(self, outputs=10, activation=None):
+        super().__init__()
+
+        self.activation = activations.get(activation)
+
+        self.w = self.add_weight(
+            shape=(15, outputs),
             initializer="random_normal",
             trainable=True,
         )
-
-        self.activation = activations.get(activation)
 
     def call(self, inputs):
         totsum = tf.sum(inputs)
@@ -19,42 +24,40 @@ class LinEq2v2(layers.Layer):
         rowsum = tf.einsum("ij->i", inputs) # i'th element is sum of i'th row
         colsum = tf.einsum("ij->j", inputs) # i'th element is sum of i'th column
 
-        # To diagonal (1, 4, 5, 6, 12)
-        b = tf.diag(
-            self.lambdas[0] * diag +
-            self.lambdas[1] * rowsum +
-            self.lambdas[2] * colsum +
-            self.lambdas[3] * trace +
-            self.lambdas[4] * totsum
-        )
+        output = [None] * 15
+        output[0] = tf.linalg.diag(diag)
+        output[1] = tf.linalg.diag(rowsum)
+        output[2] = tf.linalg.diag(colsum)
+        output[3] = tf.identity(diag.size) * trace
+        output[4] = tf.identity(diag.sie) * totsum
+        output[5] = tf.einsum("i, j->ij", tf.ones_like(diag), diag)
+        output[6] = tf.einsum("i, j->ij", tf.ones_like(rowsum), rowsum)
+        output[7] = tf.einsum("i, j->ij", tf.ones_like(colsum), colsum)
+        output[8] = tf.einsum("i, j->ji", tf.ones_like(diag), diag)
+        output[9] = tf.einsum("i, j->ji", tf.ones_like(rowsum), rowsum)
+        output[10] = tf.einsum("i, j->ji", tf.ones_like(colsum), colsum)
+        output[11] = tf.transpose(inputs)
+        output[12] = inputs
+        output[13] = tf.ones_like(inputs)*trace
+        output[14] = tf.ones_like(inputs)*totsum
 
-        # To cols (2, 13, 14).
-        # Note: Cols, as transpose later.
-        # Transpose does not affect diag.
-        b += (
-            self.lambdas[5] * diag +
-            self.lambdas[6] * rowsum +
-            self.lambdas[7] * colsum
-        )
-
-        # To cols (3, 10, 11)
-        b = tf.transpose(b)
-        b += (
-            self.lambdas[8] * diag +
-            self.lambdas[9] * rowsum +
-            self.lambdas[10] * colsum
-        )
-        # b = tf.transpose(b)
-
-        # To whole (7, 8, 9, 15)
-        b += (
-            self.lambdas[11] * tf.transpose(inputs) +
-            self.lambdas[12] * inputs +
-            self.lambdas[13] * trace +
-            self.lambdas[14] * totsum
-        )
-        return self.activation(b)
+        output = tf.stack(output, axis=-1)
+        return self.activation(tf.matmul(output, self.w))
 
 
 
+class EquivariantBlock(layers.Layer):
+    def __init__(self):
+        super().__init__()
+
+        self.msg_relu = layers.LeakyReLU()
+        self.msg_batch = layers.BatchNormalization()
+        self.msg_dropout = layers.Dropout(0.2)
+
+        self.agg_lineq = LinEq2v2(activation='relu')
+
+
+
+    def call(self, inputs):
+        pass
 
