@@ -3,7 +3,6 @@ from keras import activations
 from keras import layers
 from keras import models
 
-import numpy as np
 # Message forming layer
 class Msg(layers.Layer):
     def __init__(self, outputs, activation='leaky_relu'):
@@ -55,7 +54,7 @@ class LinEq2v2(layers.Layer):
     def call(self, inputs):
         # Shape of inputs is
         # batch x N x N x L
-        N = inputs[-2]
+        # N = inputs[-2]
 
         totsum = tf.einsum("...ijl -> ...l", inputs)
         trace = tf.einsum("...iil->...l", inputs)
@@ -66,27 +65,27 @@ class LinEq2v2(layers.Layer):
         output = [None] * 15
 
         # The diagonal, rowsum and colsum broadcasted over the diagonal
-        output[0] = tf.linalg.diag(diag)
-        output[1] = tf.linalg.diag(rowsum)
-        output[2] = tf.linalg.diag(colsum)
+        output[0] = tf.einsum("lij->ijl", tf.linalg.diag(diag))
+        output[1] = tf.einsum("lij->ijl", tf.linalg.diag(rowsum))
+        output[2] = tf.einsum("lij->ijl", tf.linalg.diag(colsum))
 
         # The trace and total sum of the matrices broadcasted over diabonal
-        A = tf.eye(num_rows=N, batch_shape=trace.shape) # batch x L x (eye(N))
-        output[3] = np.einsum("...i, ...ijk->...ijk", trace, A)
-        output[4] = np.einsum("...i, ...ijk->...ijk", totsum, A)
+        A = tf.eye(num_rows=diag.shape[-1], batch_shape=trace.shape) # batch x L x (eye(N))
+        output[3] = tf.einsum("...l, ...lij->...ijl", trace, A)
+        output[4] = tf.einsum("...l, ...lij->...ijl", totsum, A)
 
         # The diagonal, rowsum and colsum broadcasted over the rows
-        output[5] = tf.einsum("...i, ...j ->...ij", tf.ones_like(diag), diag)
-        output[6] = tf.einsum("...i, ...j->...ij", tf.ones_like(rowsum), rowsum)
-        output[7] = tf.einsum("...i, ...j->...ij", tf.ones_like(colsum), colsum)
+        output[5] = tf.einsum("...li, ...lj ->...ijl", tf.ones_like(diag), diag)
+        output[6] = tf.einsum("...li, ...lj->...ijl", tf.ones_like(rowsum), rowsum)
+        output[7] = tf.einsum("...li, ...lj->...ijl", tf.ones_like(colsum), colsum)
 
         # The diagonal, rowsum and colsum broadcasted over the columns
-        output[8] = tf.einsum("...i, ...j->...ji", tf.ones_like(diag), diag)
-        output[9] = tf.einsum("...i, ...j->...ji", tf.ones_like(rowsum), rowsum)
-        output[10] = tf.einsum("...i, ...j->...ji", tf.ones_like(colsum), colsum)
+        output[8] = tf.einsum("...li, ...lj->...jil", tf.ones_like(diag), diag)
+        output[9] = tf.einsum("...li, ...lj->...jil", tf.ones_like(rowsum), rowsum)
+        output[10] = tf.einsum("...li, ...lj->...jil", tf.ones_like(colsum), colsum)
 
         # Identity, transpose, trace and totsum broadcasted over entire output
-        output[11] = tf.einsum("..ij->ji", inputs)
+        output[11] = tf.einsum("...ijl->...jil", inputs)
         output[12] = inputs
         output[13] = tf.ones_like(inputs)*trace
         output[14] = tf.ones_like(inputs)*totsum
@@ -97,6 +96,8 @@ class LinEq2v2(layers.Layer):
         # also permutation invariant. The weights of this layer has shape L x 15 x self.num_outputs.
         # The calculation below thus yield a B x N x N x self.num_outputs tensor.
 
+
+        # See https://proceedings.mlr.press/v151/pan22a/pan22a.pdf#page=13
         return self.activation(tf.einsum("...de,def->...f", output, self.w))
 
         # totsum = tf.sum(inputs)
@@ -131,7 +132,7 @@ class LinEq2v2(layers.Layer):
         # output = tf.stack(output, axis=-1)
 
 
-class EquivariantBlock(layers.Layer):
+class PELICAN(models.Model):
     def __init__(self, depth=1, dropout=0, msg_outputs=10, agg_outputs=10, activation=None):
         super().__init__()
 
