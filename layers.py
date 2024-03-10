@@ -4,6 +4,13 @@ from keras import layers
 from keras import models
 
 # Message forming layer
+class InputLayer(layers.Layer):
+    def call(self, inputs, training=False):
+        N = inputs.shape[-2]
+        L = inputs.shape[-1]
+        return tf.reshape(inputs, shape=(-1, N, N, L))
+
+# Message forming layer
 class Msg(layers.Layer):
     def __init__(self, outputs, activation='leaky_relu'):
         super().__init__()
@@ -45,6 +52,8 @@ class LinEq2v2(layers.Layer):
         # Note: See comment under MSG layer build
         l = input_shape[-1]
 
+        self.n = input_shape[-2]
+
         self.w = self.add_weight(
             shape=(l, 15, self.num_outputs),
             initializer="random_normal",
@@ -53,6 +62,7 @@ class LinEq2v2(layers.Layer):
 
     def call(self, inputs):
         # Tests for all these in equivariant.py
+
         totsum = tf.einsum("...ijl -> ...l", inputs)
         trace = tf.einsum("...iil->...l", inputs)
         diag = tf.einsum("...iil ->...li", inputs)
