@@ -27,7 +27,7 @@ def __diag_to_diag_1(input):
     analytic_nonzero = b * n * l # Diagonal in each batch and l
     assert(numnonzero == analytic_nonzero)
 
-    return res, numnonzero
+    return res
 
 def diag_to_rows_2(input):
     diag = tf.einsum("...iil ->...li", input)
@@ -48,7 +48,7 @@ def __diag_to_rows_2(input):
 
     analytical_nonzero = b * n * n * L
     assert(numnonzero == analytical_nonzero)
-    return res, numnonzero
+    return res
 
 def diag_to_cols_3(input):
     diag = tf.einsum("...iil ->...li", input)
@@ -69,7 +69,7 @@ def __diag_to_cols_3(input):
 
     analytical_nonzero = b * n * n * L
     assert(numnonzero == analytical_nonzero)
-    return res, numnonzero
+    return res
 
 def rowsum_to_diag_4(input):
     rowsum = tf.einsum("...ijl -> ...li", input)
@@ -100,7 +100,7 @@ def __rowsum_to_diag_4(input):
     analytical_nonzero = b * n * l
     assert(numnonzero == analytical_nonzero)
 
-    return res, numnonzero
+    return res
 
 
 def colsum_to_diag_5(input):
@@ -119,9 +119,8 @@ def __colsum_to_diag_5(input):
 
     for batch in range(b):
         for i in range(n):
-            for j in range(n):
-                for k in range(l):
-                    colsums[batch][i][k] += input[batch][j][i][k]
+            for k in range(l):
+                colsums[batch][i][k] = np.sum(input[batch, :, i, k])
 
     for i in range(b):
         for j in range(n):
@@ -132,7 +131,7 @@ def __colsum_to_diag_5(input):
     analytical_nonzero = b * n * l
     assert(numnonzero == analytical_nonzero)
 
-    return res, numnonzero
+    return res
 
 def trace_to_all_6(input):
     trace = tf.einsum("...iil->...l", input)
@@ -162,7 +161,7 @@ def __trace_to_all_6(input):
     analytical_nonzero = b * n * n * L
     assert(numnonzero == analytical_nonzero)
 
-    return res, numnonzero
+    return res
 
 def transpose_to_all_7(input):
     return tf.einsum("...ijl->...jil", input)
@@ -182,7 +181,7 @@ def __transpose_to_all_7(input):
     analytical_nonzero = b * n * n * L
     assert(numnonzero == analytical_nonzero)
 
-    return res, numnonzero
+    return res
 
 
 def trace_to_diag_9(input):
@@ -215,7 +214,7 @@ def __trace_to_diag_9(input):
     analytical_nonzero = b * n * l
     assert(numnonzero==analytical_nonzero)
 
-    return res, numnonzero
+    return res
 
 def rowsum_to_cols_10(input):
     rowsum = tf.einsum("...ijl -> ...li", input)
@@ -239,7 +238,7 @@ def __rowsum_to_cols_10(input):
     analytical_nonzero = b * n * n * L
     assert(numnonzero == analytical_nonzero)
 
-    return res, numnonzero
+    return res
 
 def colsum_to_cols_11(input):
     colsum = tf.einsum("...ijl -> ...lj", input)
@@ -263,7 +262,7 @@ def __colsum_to_cols_11(input):
     analytical_nonzero = b * n * n * L
     assert(numnonzero == analytical_nonzero)
 
-    return res, numnonzero
+    return res
 
 def totsum_to_diag_12(input):
     totsum = tf.einsum("...ijl -> ...l", input)
@@ -298,7 +297,7 @@ def __totsum_to_diag_12(input):
     analytical_nonzero = b * n * l
     assert(numnonzero==analytical_nonzero)
 
-    return res, numnonzero
+    return res
 
 def colsum_to_rows_13(input):
     colsum = tf.einsum("...ijl -> ...lj", input)
@@ -323,7 +322,7 @@ def __colsum_to_rows_13(input):
     analytical_nonzero = b * n * n * L
     assert(numnonzero == analytical_nonzero)
 
-    return res, numnonzero
+    return res
 
 
 def rowsum_to_rows_14(input):
@@ -348,11 +347,11 @@ def __rowsum_to_rows_14(input):
     analytical_nonzero = b * n * n * L
     assert(numnonzero == analytical_nonzero)
 
-    return res, numnonzero
+    return res
 
 def totsum_to_all_15(input):
     totsum = tf.einsum("...ijl -> ...l", input)
-    return tf.einsum("...ijl, ...l->...ijl", tf.ones_like(input), totsum)
+    return tf.einsum("bijl, bl->bijl", tf.ones_like(input), totsum)
 
 def __totsum_to_all_15(input):
     res = np.zeros_like(input)
@@ -377,12 +376,12 @@ def __totsum_to_all_15(input):
     analytical_nonzero = b * n * n * L
     assert(numnonzero == analytical_nonzero)
 
-    return res, numnonzero
+    return res
 
 
 
 
-def test_all(eps=1e-6):
+def test_all(eps=1e-4):
 
     B = np.random.randint(10, 20)
     N =  np.random.randint(5, 10)
@@ -405,8 +404,6 @@ def test_all(eps=1e-6):
         (totsum_to_all_15, __totsum_to_all_15)
     ]
 
-
-
     tensor = tf.random.uniform(
         shape=(B, N, N, L)
     )
@@ -415,13 +412,11 @@ def test_all(eps=1e-6):
         for func, test in funcs:
             pbar.set_description(f"Func: {func.__name__}")
             func_val = func(tensor)
-            test_val, num_nonzero = test(tensor)
+            test_val = test(tensor)
 
             diff = tf.linalg.norm(
                 func_val - test_val
-            ) / num_nonzero
-            # Want the average norm to be less than eps
-            # where the average is over all nonzero elements
+            , ord=np.inf)
 
             if diff > eps:
                 raise RuntimeError(f"Function {func.__name__} does not match its test to precision {eps} < {diff}")

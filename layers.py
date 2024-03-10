@@ -28,7 +28,7 @@ class Msg(layers.Layer):
 
 
     def call(self, inputs, training=False):
-        x = tf.matmul(inputs, self.w)
+        x = tf.einsum("...ijl, lf->...ijf", inputs, self.w)
         x = self.activation(x)
         return self.bnorm(x, training=training)
 
@@ -59,6 +59,7 @@ class LinEq2v2(layers.Layer):
         rowsum = tf.einsum("...ijl -> ...li", inputs)
         colsum = tf.einsum("...ijl -> ...lj", inputs)
 
+
         output = [None] * 15
 
         # The diagonal, rowsum and colsum broadcasted over the diagonal
@@ -66,8 +67,11 @@ class LinEq2v2(layers.Layer):
         output[1] = tf.einsum("...lij->...ijl", tf.linalg.diag(rowsum)) #rowsum_to_diag_4
         output[2] = tf.einsum("...lij->...ijl", tf.linalg.diag(colsum)) #colsum_to_diag_5
 
-        # The trace and total sum of the matrices broadcasted over diabonal
-        A = tf.eye(num_rows=diag.shape[-1], batch_shape=trace.shape) # batch x L x (eye(N))
+        # The trace and total sum of the matrices broadcasted over diagonal
+        shape = trace.shape.as_list()
+        if shape[0] == None:
+            shape[0] = 1
+        A = tf.eye(num_rows=diag.shape[-1], batch_shape=shape) # batch x L x (eye(N))
         output[3] = tf.einsum("...l, ...lij->...ijl", trace, A) #trace_to_diag_9
         output[4] = tf.einsum("...l, ...lij->...ijl", totsum, A) #totsum_to_diag_12
 
