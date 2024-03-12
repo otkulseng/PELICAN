@@ -5,10 +5,26 @@ from keras import models
 
 # Message forming layer
 class InputLayer(layers.Layer):
+
+    def build(self, input_shape):
+        N = input_shape[-2]
+        L = input_shape[-1]
+
+        self.w = self.add_weight(
+            shape=(L),
+            initializer="random_normal",
+            trainable=True,
+        )
+        
+
+        return super().build(input_shape)
+
     def call(self, inputs, training=False):
         N = inputs.shape[-2]
         L = inputs.shape[-1]
-        return tf.reshape(inputs, shape=(-1, N, N, L))
+        inputs = tf.reshape(inputs, shape=(-1, N, N, L))
+
+
 
 # Message forming layer
 class Msg(layers.Layer):
@@ -35,7 +51,7 @@ class Msg(layers.Layer):
 
 
     def call(self, inputs, training=False):
-        x = tf.einsum("...ijl, lf->...ijf", inputs, self.w)
+        x = tf.einsum("bijl, lf->bijf", inputs, self.w)
         x = self.activation(x)
         return self.bnorm(x, training=training)
 
@@ -55,13 +71,78 @@ class LinEq2v2(layers.Layer):
         self.n = input_shape[-2]
 
         self.w = self.add_weight(
-            shape=(l, 15, self.num_outputs),
+            shape=(15, l, self.num_outputs),
             initializer="random_normal",
             trainable=True,
         )
 
     def call(self, inputs):
+
+        batch, N, _, L = inputs.shape
+        batch = 1 if batch is None else batch
+
+        totsum  = tf.einsum("bijl -> bl ", inputs)
+        trace   = tf.einsum("biil -> bl ", inputs)
+        diag    = tf.einsum("biil -> bli", inputs)
+        rowsum  = tf.einsum("bijl -> bli", inputs)
+        colsum  = tf.einsum("bijl -> blj", inputs)
+
+
+        # diagonal (bli), eye(N) (ij), self.weight[0] (lf)
+        res0 = tf.einsum("bli, ij, lf->bijf", diag, tf.eye(N), self.w[0])
+        res1 = tf.einsum("bli, ij, lf->bijf", rowsum, tf.eye(N), self.w[1])
+        res2 = tf.einsum("bli, ij, lf->bijf", colsum, tf.eye(N), self.w[2])
+
+        # trace (bl) self.w[] (lf) og eye(N) (ij)
+        res3 = tf.einsum("bl, ij, lf->bijf", trace, tf.eye(N), self.w[3])
+        res4 = tf.einsum("bl, ij, lf->bijf", totsum, tf.eye(N), self.w[4])
+
+        # diag (bli) self.w (lf) ones(N) (ij)
+        res5 = tf.einsum("blj, ij, lf->bijf", diag, tf.ones((N, N)), self.w[5])
+        res6 = tf.einsum("blj, ij, lf->bijf", rowsum, tf.ones((N, N)), self.w[6])
+        res7 = tf.einsum("blj, ij, lf->bijf", colsum, tf.ones((N, N)), self.w[7])
+
+        # diag (bli) self.w (lf) ones(N) (ij)
+        res8 = tf.einsum("bli, ij, lf->bijf", diag, tf.ones((N, N)), self.w[8])
+        res9 = tf.einsum("bli, ij, lf->bijf", rowsum, tf.ones((N, N)), self.w[9])
+        res10 = tf.einsum("bli, ij, lf->bijf", colsum, tf.ones((N, N)), self.w[10])
+
+
+        res11 = tf.einsum("bijl, lf->bjif", inputs, self.w[11]) #transpose
+        res12 = tf.einsum("bijl, lf->bijf", inputs, self.w[12])
+
+        # trace (bl) self.w[] (lf) og eye(N) (ij)
+        res13 = tf.einsum("bl, ij, lf->bijf", trace, tf.ones((N, N)), self.w[13])
+
+        # totsum (bl) self.w[] (lf) og eye(N) (ij)
+        res14 = tf.einsum("bl, ij, lf->bijf", totsum, tf.ones((N, N)), self.w[14])
+
+
+        return tf.add_n(
+            [res0,
+             res1,
+             res2,
+             res3,
+             res4,
+             res5,
+             res6,
+             res7,
+             res8,
+             res9,
+             res10,
+             res11,
+             res12,
+             res13,
+             res14
+             ]
+        )
+
+
+    def call_old(self, inputs):
         # Tests for all these in equivariant.py
+
+        batch, N, _, L = inputs.shape
+        batch = 1 if batch is None else batch
 
         totsum = tf.einsum("...ijl -> ...l", inputs)
         trace = tf.einsum("...iil->...l", inputs)
@@ -78,17 +159,14 @@ class LinEq2v2(layers.Layer):
         output[2] = tf.einsum("...lij->...ijl", tf.linalg.diag(colsum)) #colsum_to_diag_5
 
         # The trace and total sum of the matrices broadcasted over diagonal
-        shape = trace.shape.as_list()
-        if shape[0] == None:
-            shape[0] = 1
-        A = tf.eye(num_rows=diag.shape[-1], batch_shape=shape) # batch x L x (eye(N))
+        A = tf.eye(num_rows=N, batch_shape=(batch, L)) # batch x L x (eye(N))
         output[3] = tf.einsum("...l, ...lij->...ijl", trace, A) #trace_to_diag_9
         output[4] = tf.einsum("...l, ...lij->...ijl", totsum, A) #totsum_to_diag_12
 
         # The diagonal, rowsum and colsum broadcasted over the rows
         output[5] = tf.einsum("...li, ...lj ->...ijl", tf.ones_like(diag), diag) #diag_to_rows_2
-        output[7] = tf.einsum("...li, ...lj->...ijl", tf.ones_like(colsum), colsum) #colsum_to_rows_13
         output[6] = tf.einsum("...li, ...lj->...ijl", tf.ones_like(rowsum), rowsum) #rowsum_to_rows_14
+        output[7] = tf.einsum("...li, ...lj->...ijl", tf.ones_like(colsum), colsum) #colsum_to_rows_13
 
         # The diagonal, rowsum and colsum broadcasted over the columns
         output[8] = tf.einsum("...li, ...lj->...jil", tf.ones_like(diag), diag) #diag_to_cols_3
