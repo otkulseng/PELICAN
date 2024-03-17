@@ -1,3 +1,6 @@
 [submodule "tutorials"]
 	path = tutorials
 	url = https://github.com/pierinim/tutorials.git
+[submodule "deepsets_synth"]
+	path = deepsets_synth
+	url = https://github.com/bb511/deepsets_synth.git

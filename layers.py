@@ -15,7 +15,7 @@ class InputLayer(layers.Layer):
             initializer="random_normal",
             trainable=True,
         )
-        
+
 
         return super().build(input_shape)
 
@@ -116,6 +116,8 @@ class LinEq2v2(layers.Layer):
 
         # totsum (bl) self.w[] (lf) og eye(N) (ij)
         res14 = tf.einsum("bl, ij, lf->bijf", totsum, tf.ones((N, N)), self.w[14])
+
+        # 128 x 100 x 100 x 15 floats 60x35
 
 
         return tf.add_n(

@@ -1,5 +1,7 @@
-*
 !.gitignore
 !*.py
 !*.ipynb
 NMF*
+.env
+__*
+data/*
