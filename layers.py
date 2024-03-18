@@ -3,66 +3,51 @@ from keras import activations
 from keras import layers
 from keras import models
 
-# Message forming layer
+from keras.layers import Dense
+
+
 class InputLayer(layers.Layer):
+    def call(self, inputs):
+        N = inputs.shape[-2]
+        L = inputs.shape[-1]
+        return tf.reshape(inputs, shape=(-1, N, N, L))
 
+class Msg(Dense):
     def build(self, input_shape):
-        N = input_shape[-2]
-        L = input_shape[-1]
-
-        self.w = self.add_weight(
-            shape=(L),
-            initializer="random_normal",
-            trainable=True,
-        )
-
-
+        self.bnorm = layers.BatchNormalization()
         return super().build(input_shape)
 
     def call(self, inputs, training=False):
-        N = inputs.shape[-2]
-        L = inputs.shape[-1]
-        inputs = tf.reshape(inputs, shape=(-1, N, N, L))
-
-
-
-# Message forming layer
-class Msg(layers.Layer):
-    def __init__(self, outputs, activation='leaky_relu'):
-        super().__init__()
-
-        self.activation = activations.get(activation)
-        self.num_outputs = outputs
-
-    def build(self, input_shape):
-        # Assumes input_shape is a list (tensor) of permutation
-        # equivariant 2d tensors indexed by last index.
-        # i.e. input_shape = (batch) x N x N x L where
-        # N is dimension of tensor and L is length of the list.
-        # Any linear combination of perm-eq tensors are perm-eq
-        l = input_shape[-1]
-        self.w = self.add_weight(
-            shape=(l, self.num_outputs),
-            initializer="random_normal",
-            trainable=True,
-        )
-
-        self.bnorm = layers.BatchNormalization()
-
-
-    def call(self, inputs, training=False):
-        x = tf.einsum("bijl, lf->bijf", inputs, self.w)
-        x = self.activation(x)
+        x = super().call(inputs)
         return self.bnorm(x, training=training)
 
+class LinEq2v0(layers.Layer):
+    def __init__(self, units, activation = None, **kwargs):
+        super().__init__(**kwargs)
+        self.dense = Dense(units, activation=activation, **kwargs)
+
+    def build(self, input_shape):
+        b, n, n, l = input_shape
+        self.dense.build((b, 2*l))
+
+    def call(self, inputs):
+        totsum = tf.einsum("...ijl -> ...l", inputs)
+        trace = tf.einsum("...iil->...l", inputs)
+
+        new_inputs = tf.concat([totsum, trace], axis=-1)
+        return self.dense(new_inputs)
 
 # Aggregation layers
 class LinEq2v2(layers.Layer):
-    def __init__(self, outputs, activation=None):
+    def __init__(self, outputs, activation=None, factorize=True):
         super().__init__()
 
         self.activation = activations.get(activation)
         self.num_outputs = outputs
+
+        # See https://github.com/abogatskiy/PELICAN/blob/main/src/layers/perm_equiv_models.py
+        self.factorize = factorize
+
 
     def build(self, input_shape):
         # Note: See comment under MSG layer build
@@ -70,11 +55,54 @@ class LinEq2v2(layers.Layer):
 
         self.n = input_shape[-2]
 
-        self.w = self.add_weight(
-            shape=(15, l, self.num_outputs),
+        self.diag_bias = self.add_weight(
+            shape=(self.num_outputs,),
             initializer="random_normal",
             trainable=True,
         )
+
+        self.totsum_bias = self.add_weight(
+            shape=(self.num_outputs,),
+            initializer="random_normal",
+            trainable=True,
+        )
+
+        # self.w = self.add_weight(
+        #     shape=(15, l, self.num_outputs),
+        #     initializer="random_normal",
+        #     trainable=True,
+        # )
+
+        if self.factorize:
+            # See https://github.com/abogatskiy/PELICAN/blob/main/src/layers/perm_equiv_models.py
+            self.coefs00 = self.add_weight(
+                shape=(15, l, 1),
+                initializer="random_normal",
+                trainable=True,
+            )
+            self.coefs01 = self.add_weight(
+                shape=(15, 1, self.num_outputs),
+                initializer="random_normal",
+                trainable=True,
+            )
+            self.coefs10 = self.add_weight(
+                shape=(1, l, self.num_outputs),
+                initializer="random_normal",
+                trainable=True,
+            )
+            self.coefs11 = self.add_weight(
+                shape=(1, l, self.num_outputs),
+                initializer="random_normal",
+                trainable=True,
+            )
+        else:
+            self.w = self.add_weight(
+                shape=(15, l, self.num_outputs),
+                initializer="random_normal",
+                trainable=True,
+            )
+
+
 
     def call(self, inputs):
 
@@ -86,6 +114,9 @@ class LinEq2v2(layers.Layer):
         diag    = tf.einsum("biil -> bli", inputs)
         rowsum  = tf.einsum("bijl -> bli", inputs)
         colsum  = tf.einsum("bijl -> blj", inputs)
+
+        if self.factorize:
+            self.w = self.coefs00*self.coefs10 + self.coefs01*self.coefs11
 
 
         # diagonal (bli), eye(N) (ij), self.weight[0] (lf)
@@ -117,10 +148,13 @@ class LinEq2v2(layers.Layer):
         # totsum (bl) self.w[] (lf) og eye(N) (ij)
         res14 = tf.einsum("bl, ij, lf->bijf", totsum, tf.ones((N, N)), self.w[14])
 
-        # 128 x 100 x 100 x 15 floats 60x35
+        diag_bias = tf.einsum("ij, f->ijf",tf.eye(N), self.diag_bias)
+        tot_bias = tf.einsum("ij, f->ijf", tf.ones((N, N)), self.totsum_bias)
 
+        # Add here for broadcasting
+        res14 += diag_bias + tot_bias
 
-        return tf.add_n(
+        return self.activation(tf.math.add_n(
             [res0,
              res1,
              res2,
@@ -137,7 +171,7 @@ class LinEq2v2(layers.Layer):
              res13,
              res14
              ]
-        )
+        ))
 
 
     def call_old(self, inputs):
@@ -161,9 +195,9 @@ class LinEq2v2(layers.Layer):
         output[2] = tf.einsum("...lij->...ijl", tf.linalg.diag(colsum)) #colsum_to_diag_5
 
         # The trace and total sum of the matrices broadcasted over diagonal
-        A = tf.eye(num_rows=N, batch_shape=(batch, L)) # batch x L x (eye(N))
-        output[3] = tf.einsum("...l, ...lij->...ijl", trace, A) #trace_to_diag_9
-        output[4] = tf.einsum("...l, ...lij->...ijl", totsum, A) #totsum_to_diag_12
+        # A = tf.eye(num_rows=N, batch_shape=(batch, L)) # batch x L x (eye(N))
+        output[3] = tf.einsum("bl, ij->bijl", trace, tf.eye(N)) #trace_to_diag_9
+        output[4] = tf.einsum("bl, ij->bijl", totsum, tf.eye(N)) #totsum_to_diag_12
 
         # The diagonal, rowsum and colsum broadcasted over the rows
         output[5] = tf.einsum("...li, ...lj ->...ijl", tf.ones_like(diag), diag) #diag_to_rows_2
@@ -191,29 +225,5 @@ class LinEq2v2(layers.Layer):
         # See https://proceedings.mlr.press/v151/pan22a/pan22a.pdf#page=13
         return self.activation(tf.einsum("...de,def->...f", output, self.w))
 
-class LinEq2v0(layers.Layer):
-    def __init__(self, outputs, activation=None):
-        super().__init__()
-
-        self.activation = activations.get(activation)
-        self.num_outputs = outputs
-
-    def build(self, input_shape):
-        # Note: See comment under MSG layer build
-        l = input_shape[-1]
-
-        self.w = self.add_weight(
-            shape=(l, 2, self.num_outputs),
-            initializer="random_normal",
-            trainable=True,
-        )
-
-    def call(self, inputs):
-        totsum = tf.einsum("...ijl -> ...l", inputs)
-        trace = tf.einsum("...iil->...l", inputs)
-
-        output = tf.stack([totsum, trace], axis=-1)
-
-        return self.activation(tf.einsum("...de,def->...f", output, self.w))
 
 

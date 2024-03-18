@@ -184,11 +184,11 @@ def __transpose_to_all_7(input):
     return res
 
 
+
 def trace_to_diag_9(input):
     trace = tf.einsum("...iil->...l", input)
-    diag = tf.einsum("...iil ->...li", input)
-    A = tf.eye(num_rows=diag.shape[-1], batch_shape=trace.shape)
-    return tf.einsum("...l, ...lij->...ijl", trace, A)
+    batch, N, _, L = input.shape
+    return tf.einsum("bl, ij->bijl", trace, tf.eye(N))
 
 
 def __trace_to_diag_9(input):
@@ -267,9 +267,8 @@ def __colsum_to_cols_11(input):
 def totsum_to_diag_12(input):
     totsum = tf.einsum("...ijl -> ...l", input)
     trace = tf.einsum("...iil->...l", input)
-    diag = tf.einsum("...iil ->...li", input)
-    A = tf.eye(num_rows=diag.shape[-1], batch_shape=trace.shape)
-    return tf.einsum("...l, ...lij->...ijl", totsum, A)
+    batch, N, _, L = input.shape
+    return tf.einsum("bl, ij->bijl", totsum, tf.eye(N))
 
 
 def __totsum_to_diag_12(input):
