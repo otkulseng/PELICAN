@@ -22,6 +22,21 @@ class Msg(Dense):
         return self.bnorm(x, training=training)
 
 class LinEq2v0(layers.Layer):
+    """ Creates takes in list of dim = Batch x N x N x L where each
+    L indexes a N x N permequivariant matrix. The two perm-invariant
+    transformations are totsum and trace, so this layer does:
+
+    1)
+    Batch x N x N x L -> Batch x 2L
+            A         ->    B
+    where B[:][:L] are the totsums, B[:][L:] the traces
+
+    2)
+    Batch x 2L -> Batch x units
+    Regular dense layer (only on last dimension)
+
+
+    """
     def __init__(self, units, activation = None, **kwargs):
         super().__init__(**kwargs)
         self.dense = Dense(units, activation=activation, **kwargs)
@@ -105,7 +120,6 @@ class LinEq2v2(layers.Layer):
 
 
     def call(self, inputs):
-
         batch, N, _, L = inputs.shape
         batch = 1 if batch is None else batch
 
