@@ -118,16 +118,17 @@ class LinEq2v2(layers.Layer):
             )
 
 
-
     def call(self, inputs):
+        # Get all permequivariant objects, then multiply
         batch, N, _, L = inputs.shape
         batch = 1 if batch is None else batch
 
-        totsum  = tf.einsum("bijl -> bl ", inputs)
-        trace   = tf.einsum("biil -> bl ", inputs)
-        diag    = tf.einsum("biil -> bli", inputs)
-        rowsum  = tf.einsum("bijl -> bli", inputs)
-        colsum  = tf.einsum("bijl -> blj", inputs)
+        # Divide over number of elements in aggregate func to obtain average rather than sum
+        totsum  = tf.einsum("bijl-> bl ", inputs) / (N**2)
+        trace   = tf.einsum("biil -> bl ", inputs) / N
+        diag    = tf.einsum("biil -> bli", inputs) / N
+        rowsum  = tf.einsum("bijl -> bli", inputs) / N
+        colsum  = tf.einsum("bijl -> blj", inputs) / N
 
         if self.factorize:
             self.w = self.coefs00*self.coefs10 + self.coefs01*self.coefs11
