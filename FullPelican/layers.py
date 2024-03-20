@@ -133,35 +133,41 @@ class LinEq2v2(layers.Layer):
         if self.factorize:
             self.w = self.coefs00*self.coefs10 + self.coefs01*self.coefs11
 
-
-        # diagonal (bli), eye(N) (ij), self.weight[0] (lf)
-        res0 = tf.einsum("bli, ij, lf->bijf", diag, tf.eye(N), self.w[0])
         res1 = tf.einsum("bli, ij, lf->bijf", rowsum, tf.eye(N), self.w[1])
-        res2 = tf.einsum("bli, ij, lf->bijf", colsum, tf.eye(N), self.w[2])
-
-        # trace (bl) self.w[] (lf) og eye(N) (ij)
-        res3 = tf.einsum("bl, ij, lf->bijf", trace, tf.eye(N), self.w[3])
-        res4 = tf.einsum("bl, ij, lf->bijf", totsum, tf.eye(N), self.w[4])
-
-        # diag (bli) self.w (lf) ones(N) (ij)
-        res5 = tf.einsum("blj, ij, lf->bijf", diag, tf.ones((N, N)), self.w[5])
         res6 = tf.einsum("blj, ij, lf->bijf", rowsum, tf.ones((N, N)), self.w[6])
-        res7 = tf.einsum("blj, ij, lf->bijf", colsum, tf.ones((N, N)), self.w[7])
-
-        # diag (bli) self.w (lf) ones(N) (ij)
-        res8 = tf.einsum("bli, ij, lf->bijf", diag, tf.ones((N, N)), self.w[8])
         res9 = tf.einsum("bli, ij, lf->bijf", rowsum, tf.ones((N, N)), self.w[9])
-        res10 = tf.einsum("bli, ij, lf->bijf", colsum, tf.ones((N, N)), self.w[10])
 
-
-        res11 = tf.einsum("bijl, lf->bjif", inputs, self.w[11]) #transpose
         res12 = tf.einsum("bijl, lf->bijf", inputs, self.w[12])
 
+        res4 = tf.einsum("bl, ij, lf->bijf", totsum, tf.eye(N), self.w[4])
+        res14 = tf.einsum("bl, ij, lf->bijf", totsum, tf.ones((N, N)), self.w[14])
+
+
+
+
+        # diagonal (bli), eye(N) (ij), self.weight[0] (lf)
+        # res0 = tf.einsum("bli, ij, lf->bijf", diag, tf.eye(N), self.w[0])
+        # res2 = tf.einsum("bli, ij, lf->bijf", colsum, tf.eye(N), self.w[2])
+
         # trace (bl) self.w[] (lf) og eye(N) (ij)
-        res13 = tf.einsum("bl, ij, lf->bijf", trace, tf.ones((N, N)), self.w[13])
+        # res3 = tf.einsum("bl, ij, lf->bijf", trace, tf.eye(N), self.w[3])
+
+        # diag (bli) self.w (lf) ones(N) (ij)
+        # res5 = tf.einsum("blj, ij, lf->bijf", diag, tf.ones((N, N)), self.w[5])
+        # res7 = tf.einsum("blj, ij, lf->bijf", colsum, tf.ones((N, N)), self.w[7])
+
+        # diag (bli) self.w (lf) ones(N) (ij)
+        # res8 = tf.einsum("bli, ij, lf->bijf", diag, tf.ones((N, N)), self.w[8])
+        # res9 = tf.einsum("bli, ij, lf->bijf", rowsum, tf.ones((N, N)), self.w[9])
+        # res10 = tf.einsum("bli, ij, lf->bijf", colsum, tf.ones((N, N)), self.w[10])
+
+
+        # res11 = tf.einsum("bijl, lf->bjif", inputs, self.w[11]) #transpose
+
+        # trace (bl) self.w[] (lf) og eye(N) (ij)
+        # res13 = tf.einsum("bl, ij, lf->bijf", trace, tf.ones((N, N)), self.w[13])
 
         # totsum (bl) self.w[] (lf) og eye(N) (ij)
-        res14 = tf.einsum("bl, ij, lf->bijf", totsum, tf.ones((N, N)), self.w[14])
 
         diag_bias = tf.einsum("ij, f->ijf",tf.eye(N), self.diag_bias)
         tot_bias = tf.einsum("ij, f->ijf", tf.ones((N, N)), self.totsum_bias)
