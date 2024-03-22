@@ -74,9 +74,6 @@ class Lineq2v2nano(Layer):
         input_shape : batch x N x N x L where L is number of input channels
         output_shape: batch x N x N x self.output_channels
         """
-
-        print(self.w)
-
         B, N, N, L = inputs.shape
 
         totsum = K.sum(inputs, axis=(1, 2))  # B x L

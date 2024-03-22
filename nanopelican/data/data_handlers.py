@@ -22,6 +22,6 @@ def inner_prods_from_Epxpypz(data):
     where the last axis are (E, px, py, pz)
     """
     M = tf.linalg.diag(tf.constant([1, -1, -1, -1], dtype=tf.float32))
-    return tf.einsum("bpi, ij, bqj->bpq", data, M, data)
+    return tf.einsum("...pi, ij, ...qj->...pq", data, M, data)
 
 

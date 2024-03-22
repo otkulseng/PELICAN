@@ -16,7 +16,7 @@ class DataHandler(Layer):
         # to the inner products Batch x num_particles x num_particles
 
         inner_prods = self.data_handler(inputs)
-        _, N, _ = inner_prods.shape
+        N = inner_prods.shape[-2]
 
         return tf.reshape(tf.expand_dims(inner_prods, -1), (-1, N, N, 1))
 
