@@ -17,13 +17,18 @@ def main():
             model.summary()
             break
 
-    history = model.fit(
+    print(model.history)
+    model.fit(
         dataset['train'].shuffle(dataset['train'].cardinality()).batch(args.batch_size),
         epochs=args.epochs,
         validation_data=dataset['val'].shuffle(dataset['val'].cardinality()).take(args.validation_size), # Not ideal!!!!!
         callbacks=[TqdmCallback()],
         verbose=0
     )
+
+    print(model.history.history)
+
+    model.save_all_to_dir("myones")
 
 
 

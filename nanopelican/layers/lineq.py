@@ -3,6 +3,7 @@ import tensorflow as tf
 from keras.layers import Layer
 from keras import activations
 from keras import backend as K
+import keras
 
 class LinearEquivariant(Layer):
 
@@ -15,6 +16,7 @@ class LinearEquivariant(Layer):
         """
         super().__init__(**kwargs)
 
+@keras.saving.register_keras_serializable(package='nano_pelican', name='Lineq2v2')
 class Lineq2v2nano(Layer):
     """ This layer assumes the input 2D tensor is:
             1. Symmetric
@@ -112,6 +114,19 @@ class Lineq2v2nano(Layer):
             + diag_bias
         )
 
+    def get_config(self):
+        config = super().get_config()
+
+        config.update(
+            {
+                'num_output_channels': self.num_outputs,
+                'activation': self.activation
+            }
+        )
+
+        return config
+
+@keras.saving.register_keras_serializable(package='nano_pelican', name='Lineq2v0')
 class Lineq2v0nano(Layer):
     def __init__(self, num_outputs, activation=None, **kwargs):
         super().__init__(**kwargs)
@@ -153,6 +168,18 @@ class Lineq2v0nano(Layer):
         return self.activation(
             tf.einsum("blk, lkf->bf", out, self.w) + self.bias
         )
+
+    def get_config(self):
+        config = super().get_config()
+
+        config.update(
+            {
+                'num_outputs': self.num_outputs,
+                'activation': self.activation
+            }
+        )
+
+        return config
 
 
 
