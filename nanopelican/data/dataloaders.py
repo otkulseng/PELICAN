@@ -12,7 +12,7 @@ class H5pyLoader(DataLoader):
         super().__init__()
         self.file = h5py.File(filename)
 
-        self.features  = self.file[args.feature_key]
+        self.features  = self.file[args.feature_key][..., :args.num_particles, :]
         self.labels    = tf.reshape(self.file[args.label_key], (-1, 1))
 
         print(filename, self.features.shape, self.labels.shape)

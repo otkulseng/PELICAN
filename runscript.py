@@ -9,10 +9,6 @@ def main():
     model = cli.make_model_from_args(args)
     dataset  = cli.make_dataset_from_args(args)
 
-
-
-
-
     if args.print_summary:
         # TODO: model.build only works if using data_format=fourvec
         for _, data in dataset.items():

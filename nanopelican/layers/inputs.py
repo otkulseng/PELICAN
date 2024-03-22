@@ -14,6 +14,7 @@ class DataHandler(Layer):
         # Batch x num_particles (padded) x CUSTOM
         # where self.data_handler is supposed to convert
         # to the inner products Batch x num_particles x num_particles
+        inputs = inputs[..., :5, :]
 
         inner_prods = self.data_handler(inputs)
         N = inner_prods.shape[-2]
