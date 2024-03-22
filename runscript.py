@@ -10,7 +10,6 @@ def main():
     dataset  = cli.make_dataset_from_args(args)
 
     if args.print_summary:
-        # TODO: model.build only works if using data_format=fourvec
         for _, data in dataset.items():
             data = data.as_numpy_iterator()
             feature, _ = next(data)

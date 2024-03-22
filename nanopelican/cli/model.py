@@ -1,6 +1,5 @@
 from nanopelican.models import PELICANnano
 from keras.optimizers import AdamW
-from keras.metrics import CategoricalAccuracy, BinaryAccuracy
 from keras.losses import CategoricalCrossentropy, BinaryCrossentropy
 
 def make_model_from_args(args):
@@ -11,10 +10,17 @@ def make_model_from_args(args):
         data_format=args.data_format
     )
 
+    loss = None
+
+    if args.n_outputs > 1:
+        loss = CategoricalCrossentropy(from_logits=True)
+    else:
+        loss = BinaryCrossentropy(from_logits=True)
+
     model.compile(
         optimizer=AdamW(),
-        loss=BinaryCrossentropy(from_logits=True),
-        metrics=[BinaryAccuracy()],
+        loss=loss,
+        metrics=['acc'],
     )
 
     return model
