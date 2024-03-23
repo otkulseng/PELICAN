@@ -36,13 +36,13 @@ class PELICANnano(Model):
         self.out_layer = layers.Lineq2v0nano(num_outputs=outputs, activation=None, dropout=dropout, batchnorm=batchnorm)
 
 
-    def call(self, inputs, training=None, mask=None):
+    def call(self, inputs, training=False, mask=None):
         # inputs shape batch x N x CUSTOM
         # where data_format is supposed to convert to inner products
 
         inputs = self.input_layer(inputs)   # batch x N x N x 1
-        inputs = self.agg_layer(inputs)     # batch x N x N x hidden
-        inputs = self.out_layer(inputs)     # batch x N x N x outputs
+        inputs = self.agg_layer(inputs, training=training)     # batch x N x N x hidden
+        inputs = self.out_layer(inputs, training=training)     # batch x N x N x outputs
         return inputs
 
     def save_all_to_dir(self, args):

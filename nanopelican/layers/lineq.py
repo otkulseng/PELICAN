@@ -82,16 +82,16 @@ class Lineq2v2nano(Layer):
 
         super(Lineq2v2nano, self).build(input_shape)
 
-    def call(self, inputs, *args, **kwargs):
+    def call(self, inputs, training=False, *args, **kwargs):
         """
         input_shape : batch x N x N x L where L is number of input channels
         output_shape: batch x N x N x self.output_channels
         """
 
         if self.use_batchnorm:
-            inputs = self.bnorm(inputs)
+            inputs = self.bnorm(inputs, training=training)
         if self.dropout_rate > 0:
-            inputs = self.dropout(inputs)
+            inputs = self.dropout(inputs, training=training)
 
 
         B, N, N, L = inputs.shape
@@ -188,13 +188,14 @@ class Lineq2v0nano(Layer):
 
         super(Lineq2v0nano, self).build(input_shape)
 
-    def call(self, inputs, *args, **kwargs):
+    def call(self, inputs, training=False, *args, **kwargs):
+
         # inputs.shape = B x N x N x L
 
         if self.use_batchnorm:
-            inputs = self.bnorm(inputs)
+            inputs = self.bnorm(inputs, training=training)
         if self.dropout_rate > 0:
-            inputs = self.dropout(inputs)
+            inputs = self.dropout(inputs, training=training)
 
         totsum  = tf.einsum("bijl->bl", inputs)         # B x L
         trace   = tf.einsum("biil->bl", inputs)         # B x L

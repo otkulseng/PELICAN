@@ -3,8 +3,11 @@ import argparse
 def new_parser():
     parser = argparse.ArgumentParser("Nano Pelican")
 
-    parser.add_argument('--n_hidden', type=int, required=True, help='Number of channels in the hidden layer')
-    parser.add_argument('--n_outputs', type=int, required=True, help='Number of outputs (classification classes)')
+
+    parser.add_argument('--evaluate_models', type=str, help='Evaluates models instead of training')
+
+    parser.add_argument('--n_hidden', type=int, help='Number of channels in the hidden layer')
+    parser.add_argument('--n_outputs', type=int, help='Number of outputs (classification classes)')
     parser.add_argument('--activation', type=str, default='relu', help='Activation after every equivariant block (LinEq2v2 block)')
     parser.add_argument('--dropout_rate', type=float, default=0.0, help='Dropout rate (default 0)')
     parser.add_argument('--use_batchnorm', action=argparse.BooleanOptionalAction, help='Equips layers with batch normalization')
