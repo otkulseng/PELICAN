@@ -17,7 +17,6 @@ def main():
             model.summary()
             break
 
-    print(model.history)
     model.fit(
         dataset['train'].shuffle(dataset['train'].cardinality()).batch(args.batch_size),
         epochs=args.epochs,
@@ -26,9 +25,7 @@ def main():
         verbose=0
     )
 
-    print(model.history.history)
-
-    model.save_all_to_dir("myones")
+    model.save_all_to_dir("myones", args)
 
 
 

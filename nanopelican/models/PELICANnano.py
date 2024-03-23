@@ -8,19 +8,19 @@ from nanopelican import layers
 
 from pathlib import Path
 import os
+import pickle
+from keras.models import load_model
+from keras.callbacks import History
 
 @keras.saving.register_keras_serializable(package='nano_pelican', name='PELICANnano')
 class PELICANnano(Model):
-    def __init__(self, hidden=1, outputs=2, activation='relu', data_format='fourvec',  *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
+    def __init__(self, hidden=1, outputs=2, activation='relu', data_format='fourvec'):
+        super().__init__()
 
         self.hidden = hidden
         self.outputs = outputs
         self.activation = activation
         self.dataformat = data_format
-        self.args = args
-        self.kwargs = kwargs
 
         self.input_layer = layers.DataHandler(data_format=data_format)
         self.agg_layer = layers.Lineq2v2nano(num_output_channels=hidden, activation=activation)
@@ -35,7 +35,7 @@ class PELICANnano(Model):
         inputs = self.out_layer(inputs)     # batch x N x N x outputs
         return inputs
 
-    def save_all_to_dir(self, dirname):
+    def save_all_to_dir(self, dirname, args={}):
         counter = 0
         root = 'experiments'
 
@@ -44,15 +44,19 @@ class PELICANnano(Model):
             os.mkdir(rootdir)
 
         while True:
-            self.path = (rootdir / f'{dirname}-{counter}')
-            if not self.path.exists():
+            self.folder = (rootdir / f'{dirname}-{counter}')
+            if not self.folder.exists():
                 break
 
             counter += 1
 
-        os.mkdir(self.path)
+        os.mkdir(self.folder)
 
-
+        super().save(self.folder / 'model.keras')
+        with open(self.folder / 'history.pkl', 'wb') as file_pi:
+            mydict = self.history.history
+            mydict['args'] = args
+            pickle.dump(mydict, file_pi)
 
     def get_config(self):
         config = super().get_config()
@@ -62,15 +66,11 @@ class PELICANnano(Model):
                 'hidden': self.hidden,
                 'outputs': self.outputs,
                 'activation': self.activation,
-                'dataformat': self.data_format,
-                'args': self.args,
-                'kwargs': self.kwargs
+                'data_format': self.dataformat
             }
         )
 
         return config
-
-
 
 
 
