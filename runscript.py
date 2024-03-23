@@ -25,7 +25,7 @@ def main():
         verbose=0
     )
 
-    model.save_all_to_dir("myones", args)
+    model.save_all_to_dir(args)
 
 
 

@@ -7,7 +7,9 @@ def make_model_from_args(args):
         hidden=args.n_hidden,
         outputs=args.n_outputs,
         activation=args.activation,
-        data_format=args.data_format
+        data_format=args.data_format,
+        dropout=args.dropout_rate,
+        batchnorm = args.use_batchnorm
     )
 
     loss = None

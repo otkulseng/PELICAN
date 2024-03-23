@@ -1,6 +1,6 @@
 # The different linear equivariant layers
 import tensorflow as tf
-from keras.layers import Layer
+from keras.layers import Layer, BatchNormalization, Dropout
 from keras import activations
 from keras import backend as K
 import keras
@@ -27,11 +27,22 @@ class Lineq2v2nano(Layer):
     Args:
         Layer (_type_): _description_
     """
-    def __init__(self, num_output_channels, activation=None, **kwargs):
+    def __init__(self, num_output_channels, activation=None, dropout=0.0, batchnorm=False, **kwargs):
         super().__init__(**kwargs)
 
         self.output_channels = num_output_channels
         self.activation = activations.get(activation)
+
+        self.dropout_rate = dropout
+        self.use_batchnorm = batchnorm
+
+        if self.dropout_rate > 0:
+            self.dropout = Dropout(self.dropout_rate)
+
+        if self.use_batchnorm:
+            self.bnorm = BatchNormalization()
+
+
 
     def build(self, input_shape):
         # input_shape = Batch x N x N x L Where L is the number
@@ -76,6 +87,13 @@ class Lineq2v2nano(Layer):
         input_shape : batch x N x N x L where L is number of input channels
         output_shape: batch x N x N x self.output_channels
         """
+
+        if self.use_batchnorm:
+            inputs = self.bnorm(inputs)
+        if self.dropout_rate > 0:
+            inputs = self.dropout(inputs)
+
+
         B, N, N, L = inputs.shape
 
         totsum = K.sum(inputs, axis=(1, 2))  # B x L
@@ -120,7 +138,9 @@ class Lineq2v2nano(Layer):
         config.update(
             {
                 'num_output_channels': self.num_outputs,
-                'activation': self.activation
+                'activation': self.activation,
+                'dropout': self.dropout_rate,
+                'batchnorm': self.use_batchnorm
             }
         )
 
@@ -128,10 +148,19 @@ class Lineq2v2nano(Layer):
 
 @keras.saving.register_keras_serializable(package='nano_pelican', name='Lineq2v0')
 class Lineq2v0nano(Layer):
-    def __init__(self, num_outputs, activation=None, **kwargs):
+    def __init__(self, num_outputs, activation=None, dropout=0.0, batchnorm=False, **kwargs):
         super().__init__(**kwargs)
         self.num_outputs = num_outputs
         self.activation = activations.get(activation)
+
+        self.dropout_rate = dropout
+        self.use_batchnorm = batchnorm
+
+        if self.dropout_rate > 0:
+            self.dropout = Dropout(self.dropout_rate)
+
+        if self.use_batchnorm:
+            self.bnorm = BatchNormalization()
 
     def build(self, input_shape):
         B, N, N, L = input_shape
@@ -161,6 +190,12 @@ class Lineq2v0nano(Layer):
 
     def call(self, inputs, *args, **kwargs):
         # inputs.shape = B x N x N x L
+
+        if self.use_batchnorm:
+            inputs = self.bnorm(inputs)
+        if self.dropout_rate > 0:
+            inputs = self.dropout(inputs)
+
         totsum  = tf.einsum("bijl->bl", inputs)         # B x L
         trace   = tf.einsum("biil->bl", inputs)         # B x L
         out     = tf.stack([totsum, trace], axis=-1)    # B x L x 2
@@ -175,7 +210,9 @@ class Lineq2v0nano(Layer):
         config.update(
             {
                 'num_outputs': self.num_outputs,
-                'activation': self.activation
+                'activation': self.activation,
+                'dropout': self.dropout_rate,
+                'batchnorm': self.use_batchnorm
             }
         )
 
