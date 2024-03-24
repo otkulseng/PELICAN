@@ -1,7 +1,8 @@
 from keras.optimizers.schedules import CosineDecayRestarts, LearningRateSchedule, ExponentialDecay
 import tensorflow as tf
+import keras
 
-@tf.keras.saving.register_keras_serializable(name='CosineAnnealingExpDecay')
+@keras.saving.register_keras_serializable(name='CosineAnnealingExpDecay')
 class LinearWarmupCosineAnnealing(LearningRateSchedule):
     """Schedule like the one proposed in https://arxiv.org/pdf/2310.16121.pdf
 
@@ -11,7 +12,9 @@ class LinearWarmupCosineAnnealing(LearningRateSchedule):
     def __init__(self, epochs, steps_per_epoch) -> None:
         super().__init__()
 
-        assert(epochs > 4 + 12) # Does not really make sense without sufficient epochs
+        self.warmup_epochs = 4
+        self.exp_decay_epochs = 4
+        assert(epochs > self.warmup_epochs + self.exp_decay_epochs) # Does not really make sense without sufficient epochs
 
         if type(steps_per_epoch) == dict:
             print(steps_per_epoch)
@@ -19,6 +22,7 @@ class LinearWarmupCosineAnnealing(LearningRateSchedule):
 
         self.steps_per_epoch = steps_per_epoch
         self.epochs = epochs
+
 
         self.init_lr = 0.001
         self.warmup_target = 0.01
@@ -40,16 +44,16 @@ class LinearWarmupCosineAnnealing(LearningRateSchedule):
         epoch = step // self.steps_per_epoch
 
         def warmup():
-            fraction = step / (4 * self.steps_per_epoch)
+            fraction = step / (self.warmup_epochs * self.steps_per_epoch)
             return tf.cast(self.init_lr +(self.warmup_target - self.init_lr) * fraction, dtype=tf.float32)
         def cosine():
             return self.cosine_decay(step - 4 * self.steps_per_epoch)
         def expdecay():
-            return self.exp_decay(step - (self.epochs - 12) * self.steps_per_epoch)
+            return self.exp_decay(step - (self.epochs - self.exp_decay_epochs) * self.steps_per_epoch)
 
 
         return tf.case(
-            [(tf.less(epoch, 4), warmup), (tf.less(epoch, self.epochs-12), cosine)],
+            [(tf.less(epoch, self.warmup_epochs), warmup), (tf.less(epoch, self.epochs-self.exp_decay_epochs), cosine)],
             default=expdecay
         )
 

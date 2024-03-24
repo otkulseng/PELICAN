@@ -16,7 +16,7 @@ def new_parser():
     parser.add_argument('--data_format', type=str, default='fourvec', help='How the data is formatted')
     parser.add_argument('--feature_key', type=str, help='What key the features of the database are stored under')
     parser.add_argument('--label_key', type=str, help='What key the labels of the database are stored under')
-    parser.add_argument('--num_particles', type=int, default=32, help='Number of particles to consider (and make the inner products of)')
+    parser.add_argument('--num_particles', type=int, default=-1, help='Number of particles to consider (and make the inner products of)')
     parser.add_argument('--num_particles_avg', type=int, default=1, help='Hyperparameter, should be approx equal to average number of particles')
 
     parser.add_argument('--print_summary', action=argparse.BooleanOptionalAction, help='Prints model summary before execution')

@@ -1,4 +1,6 @@
 from nanopelican import cli
+from keras.models import Sequential
+from keras.layers import Flatten, Dense
 
 from tqdm.keras import TqdmCallback
 from nanopelican.schedulers import LinearWarmupCosineAnnealing
@@ -11,6 +13,9 @@ import tensorflow as tf
 
 def run_training(args):
     dataset  = cli.make_dataset_from_args(args)
+    dataset['train'].shuffle().batch(args.batch_size)
+    dataset['val'].shuffle().batch(args.batch_size)
+
     model = cli.make_model_from_args(args)
 
     if args.print_summary:
@@ -36,12 +41,14 @@ def run_training(args):
         metrics=['acc'],
     )
 
+
+
     model.fit(
         dataset['train'],
         epochs=args.epochs,
-        validation_data=dataset['val'], # Not ideal!!!!!
+        validation_data=dataset['val'],
         callbacks=[TqdmCallback()],
-        verbose=0
+        verbose=0,
     )
 
     model.save_all_to_dir(args)

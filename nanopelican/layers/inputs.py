@@ -9,6 +9,10 @@ class DataHandler(Layer):
 
         self.data_handler = data.get_handler(data_format)
 
+    def build(self, input_shape):
+        print("DATAHANDLER: {input_shape}")
+        return super().build(input_shape)
+
     def call(self, inputs):
         # Assumes input_shape is
         # Batch x num_particles (padded) x CUSTOM
@@ -18,6 +22,7 @@ class DataHandler(Layer):
 
         inner_prods = self.data_handler(inputs)
         N = inner_prods.shape[-2]
+
 
         return tf.reshape(tf.expand_dims(inner_prods, -1), (-1, N, N, 1))
 

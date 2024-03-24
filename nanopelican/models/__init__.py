@@ -1,2 +1,2 @@
-from .PELICANnano import PELICANnano
+from .PELICANnano import PelicanNano
 from .util import load_experiment

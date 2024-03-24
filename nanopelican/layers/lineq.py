@@ -2,7 +2,7 @@
 import tensorflow as tf
 from keras.layers import Layer, BatchNormalization, Dropout
 from keras import activations
-from keras import backend as K
+import keras.backend as K
 import keras
 
 class LinearEquivariant(Layer):
@@ -54,31 +54,27 @@ class Lineq2v2nano(Layer):
 
         # For each input channel L, make 6 permequiv transformations,
         # and mix with a L*6 * self.output_channels dense layer
-        self.w = tf.Variable(
-            initial_value=w_init(
+
+        self.w = self.add_weight(
                 shape=(L, 6, self.output_channels),
-                dtype='float32'
-            ),
-            trainable=True
+                initializer=w_init,
+                trainable=True,
         )
 
         b_init = tf.zeros_initializer()
         # Bias to be broadcasted over diagonal (for each channel)
-        self.diag_bias = tf.Variable(
-            initial_value=b_init(
+
+        self.diag_bias = self.add_weight(
                 shape=(self.output_channels, ),
-                dtype='float32'
-            ),
-            trainable=True
+                initializer=b_init,
+                trainable=True,
         )
 
         # Bias to be broadcasted over entire output matrix (for each channel)
-        self.bias = tf.Variable(
-            initial_value=b_init(
+        self.bias = self.add_weight(
                 shape=(self.output_channels, ),
-                dtype='float32'
-            ),
-            trainable=True
+                initializer=b_init,
+                trainable=True,
         )
 
         super(Lineq2v2nano, self).build(input_shape)
@@ -99,8 +95,8 @@ class Lineq2v2nano(Layer):
 
         B, N, N, L = inputs.shape
 
-        totsum = K.sum(inputs, axis=(1, 2))/self.average_particles**2     # B x L
-        rowsum = K.sum(inputs, axis=1)/self.average_particles          # B x N x L
+        totsum = tf.einsum("bijl->bl", inputs)     # B x L
+        rowsum = tf.einsum("biil->bil", inputs)          # B x N x L
 
         ops = [None] * 6
 
@@ -140,7 +136,7 @@ class Lineq2v2nano(Layer):
 
         config.update(
             {
-                'num_output_channels': self.num_output_channels,
+                'num_output_channels': self.output_channels,
                 'activation': self.activation,
                 'dropout': self.dropout_rate,
                 'batchnorm': self.use_batchnorm,
@@ -154,7 +150,7 @@ class Lineq2v2nano(Layer):
 class Lineq2v0nano(Layer):
     def __init__(self, num_outputs, activation=None, dropout=0.0, batchnorm=False,num_average_particles=1, **kwargs):
         super().__init__(**kwargs)
-        self.num_outputs = num_outputs
+        self.num_output_channels = num_outputs
         self.activation = activations.get(activation)
 
         self.dropout_rate = dropout
@@ -173,23 +169,21 @@ class Lineq2v0nano(Layer):
 
         w_init = tf.random_normal_initializer(stddev=1/tf.cast(N, dtype=tf.float32))
         # For each input channel L, make 2 permequiv invariant,
-        # and mix with a L*2 * self.num_outputs dense layer
-        self.w = tf.Variable(
-            initial_value=w_init(
-                shape=(L, 2, self.num_outputs),
-                dtype='float32'
-            ),
-            trainable=True
+
+        # and mix with a L*2 * self.num_output_channels dense layer
+        self.w = self.add_weight(
+                shape=(L, 2, self.num_output_channels),
+                initializer=w_init,
+                trainable=True,
         )
 
         b_init = tf.zeros_initializer()
         # Bias to be broadcasted over entire output
-        self.bias = tf.Variable(
-            initial_value=b_init(
-                shape=(self.num_outputs, ),
-                dtype='float32'
-            ),
-            trainable=True
+
+        self.bias = self.add_weight(
+                shape=(self.num_output_channels, ),
+                initializer=b_init,
+                trainable=True,
         )
 
         super(Lineq2v0nano, self).build(input_shape)
@@ -204,8 +198,6 @@ class Lineq2v0nano(Layer):
         if self.use_batchnorm:
             inputs = self.bnorm(inputs, training=training)
 
-        N = inputs.shape[-2]
-
         totsum  = tf.einsum("bijl->bl", inputs)/self.average_particles**2         # B x L
         trace   = tf.einsum("biil->bl", inputs)/self.average_particles       # B x L
         out     = tf.stack([totsum, trace], axis=-1)    # B x L x 2
@@ -219,7 +211,7 @@ class Lineq2v0nano(Layer):
 
         config.update(
             {
-                'num_outputs': self.num_outputs,
+                'num_outputs': self.num_output_channels,
                 'activation': self.activation,
                 'dropout': self.dropout_rate,
                 'batchnorm': self.use_batchnorm,

@@ -1,8 +1,8 @@
-from nanopelican.models import PELICANnano
+from nanopelican.models import PelicanNano
 
 
 def make_model_from_args(args):
-    model = PELICANnano(
+    model = PelicanNano(
         hidden=args.n_hidden,
         outputs=args.n_outputs,
         activation=args.activation,

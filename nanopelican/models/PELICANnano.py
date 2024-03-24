@@ -2,18 +2,20 @@
 import keras
 from keras import backend as K
 from keras.models import Model
+from keras.layers import Reshape
 from nanopelican import data
 
 from nanopelican import layers
+import tensorflow as tf
+
 
 from pathlib import Path
 import os
 import pickle
-from keras.models import load_model
-from keras.callbacks import History
 
-@keras.saving.register_keras_serializable(package='nano_pelican', name='PELICANnano')
-class PELICANnano(Model):
+
+@keras.saving.register_keras_serializable(package='nano_pelican', name='PelicanNano')
+class PelicanNano(Model):
     def __init__(self,
                  hidden=1,
                  outputs=2,
@@ -21,8 +23,8 @@ class PELICANnano(Model):
                  data_format='fourvec',
                  dropout=0.0,
                  batchnorm=False,
-                 num_average_particles=1):
-        super().__init__()
+                 num_average_particles=1, **kwargs):
+        super(PelicanNano, self).__init__(**kwargs)
 
         self.hidden = hidden
         self.outputs = outputs
@@ -33,16 +35,24 @@ class PELICANnano(Model):
         self.num_avg_particles = num_average_particles
 
 
+
+
         self.input_layer = layers.DataHandler(data_format=data_format)
+        # self.reshape_layer = Reshape()
         self.agg_layer = layers.Lineq2v2nano(num_output_channels=hidden, activation=activation, dropout=dropout, batchnorm=batchnorm, num_average_particles=num_average_particles)
         self.out_layer = layers.Lineq2v0nano(num_outputs=outputs, activation=None, dropout=dropout, batchnorm=batchnorm, num_average_particles=num_average_particles)
 
+    def build(self, input_shape):
+        self.call(tf.zeros(input_shape))
 
-    def call(self, inputs, training=False, mask=None):
+
+
+    def call(self, inputs, training=False):
         # inputs shape batch x N x CUSTOM
         # where data_format is supposed to convert to inner products
 
         inputs = self.input_layer(inputs)   # batch x N x N x 1
+
         inputs = self.agg_layer(inputs, training=training)     # batch x N x N x hidden
         inputs = self.out_layer(inputs, training=training)     # batch x N x N x outputs
         return inputs
@@ -75,7 +85,7 @@ class PELICANnano(Model):
                 summary_file.write(f'{key} : {val} \n')
 
     def get_config(self):
-        config = super().get_config()
+        config = {}
 
         config.update(
             {
