@@ -25,7 +25,7 @@ def read_files(data_dict, args):
     database = {}
     for key, file in data_dict.items():
         if '.h5' in file.name:
-            database[key] = data.H5pyLoader(filename=file, args=args).to_tfds()
+            database[key] = data.load_h5py(filename=file, args=args)
         else:
             raise ValueError(f"Cannot read file {file}")
 

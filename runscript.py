@@ -14,12 +14,10 @@ def run_training(args):
     model = cli.make_model_from_args(args)
 
     if args.print_summary:
-        for _, data in dataset.items():
-            data = data.as_numpy_iterator()
-            feature, _ = next(data)
-            model.build(feature.shape)
-            model.summary()
-            break
+        data = list(dataset.values())[0]
+        features, _ = data[0]
+        model.build(features.shape)
+        model.summary()
 
     loss = None
     if args.n_outputs > 1:
@@ -30,16 +28,18 @@ def run_training(args):
     model.compile(
         optimizer=AdamW(learning_rate=LinearWarmupCosineAnnealing(
             epochs=args.epochs,
-            steps_per_epoch=dataset['train'].cardinality()//args.batch_size,
-        )),
+            steps_per_epoch=len(dataset['train']),
+
+        ), weight_decay=0.005),
+        # optimizer=AdamW( weight_decay=0.005),
         loss=loss,
         metrics=['acc'],
     )
 
     model.fit(
-        dataset['train'].shuffle(dataset['train'].cardinality()).batch(args.batch_size),
+        dataset['train'],
         epochs=args.epochs,
-        validation_data=dataset['val'].shuffle(dataset['val'].cardinality()).take(args.validation_size), # Not ideal!!!!!
+        validation_data=dataset['val'], # Not ideal!!!!!
         callbacks=[TqdmCallback()],
         verbose=0
     )
@@ -57,15 +57,15 @@ def evaluate_models(args):
             print(f'Found matching file {file.name}')
             try:
                 model, _ = load_experiment(file)
-                models.append(model)
+                models.append((model, file.name))
             except OSError as e:
                 print("Could not load {file.name}: error {e}")
                 continue
     print(f'Total number of models to evaluate: {len(models)}')
 
-    for model in models:
+    for model, filename in models:
         res = model.evaluate(data)
-        print(res)
+        print(f'file: {filename}: result {res}')
 
 
 def main():

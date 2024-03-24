@@ -20,7 +20,8 @@ class PELICANnano(Model):
                  activation='relu',
                  data_format='fourvec',
                  dropout=0.0,
-                 batchnorm=False):
+                 batchnorm=False,
+                 num_average_particles=1):
         super().__init__()
 
         self.hidden = hidden
@@ -29,11 +30,12 @@ class PELICANnano(Model):
         self.dataformat = data_format
         self.dropout = dropout
         self.batchnorm = batchnorm
+        self.num_avg_particles = num_average_particles
 
 
         self.input_layer = layers.DataHandler(data_format=data_format)
-        self.agg_layer = layers.Lineq2v2nano(num_output_channels=hidden, activation=activation, dropout=dropout, batchnorm=batchnorm)
-        self.out_layer = layers.Lineq2v0nano(num_outputs=outputs, activation=None, dropout=dropout, batchnorm=batchnorm)
+        self.agg_layer = layers.Lineq2v2nano(num_output_channels=hidden, activation=activation, dropout=dropout, batchnorm=batchnorm, num_average_particles=num_average_particles)
+        self.out_layer = layers.Lineq2v0nano(num_outputs=outputs, activation=None, dropout=dropout, batchnorm=batchnorm, num_average_particles=num_average_particles)
 
 
     def call(self, inputs, training=False, mask=None):
@@ -82,7 +84,8 @@ class PELICANnano(Model):
                 'activation': self.activation,
                 'data_format': self.dataformat,
                 'dropout': self.dropout,
-                'batchnorm': self.batchnorm
+                'batchnorm': self.batchnorm,
+                'num_average_particles': self.num_avg_particles
             }
         )
 

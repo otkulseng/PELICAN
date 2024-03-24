@@ -1,2 +1,2 @@
 from .data_handlers import get_handler
-from .dataloaders import H5pyLoader
+from .sequence import JetDataset, load_h5py
