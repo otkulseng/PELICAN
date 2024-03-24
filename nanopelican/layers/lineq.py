@@ -79,7 +79,7 @@ class Lineq2v2nano(Layer):
 
         super(Lineq2v2nano, self).build(input_shape)
 
-    def call(self, inputs, training=True, *args, **kwargs):
+    def call(self, inputs, training=False, *args, **kwargs):
         """
         input_shape : batch x N x N x L where L is number of input channels
         output_shape: batch x N x N x self.output_channels
@@ -188,7 +188,7 @@ class Lineq2v0nano(Layer):
 
         super(Lineq2v0nano, self).build(input_shape)
 
-    def call(self, inputs, training=True, *args, **kwargs):
+    def call(self, inputs, training=False, *args, **kwargs):
 
         # inputs.shape = B x N x N x L
 

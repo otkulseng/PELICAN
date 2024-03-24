@@ -12,7 +12,7 @@ from pathlib import Path
 import tensorflow as tf
 
 def run_training(args):
-    dataset  = cli.make_dataset_from_args(args)
+    dataset  = cli.make_dataset_from_args(args, filehandlers=['train', 'val'])
     dataset['train'].shuffle().batch(args.batch_size)
     dataset['val'].shuffle().batch(args.batch_size)
 
@@ -55,7 +55,7 @@ def run_training(args):
 
 
 def evaluate_models(args):
-    data = cli.make_dataset_from_args(args)['test']
+    data = cli.make_dataset_from_args(args, filehandlers=['test'])['test'].shuffle().batch(args.batch_size)
 
     models = []
     exp_dir = Path.cwd() / "experiments"
@@ -71,8 +71,8 @@ def evaluate_models(args):
     print(f'Total number of models to evaluate: {len(models)}')
 
     for model, filename in models:
-        res = model.evaluate(data)
-        print(f'file: {filename}: result {res}')
+        loss, acc = model.evaluate(data.x_data, data.y_data, args.batch_size)
+        print(f'file: {filename}: loss: {loss} accc: {acc}')
 
 
 def main():
@@ -80,7 +80,9 @@ def main():
     args = cli.init_args()
 
     if args.evaluate_models is None:
+        print("Running Models...")
         return run_training(args)
+    print("Evaluating Models...")
 
     return evaluate_models(args)
 

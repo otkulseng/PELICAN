@@ -9,8 +9,10 @@ class JetDataset(tf.keras.utils.Sequence):
         self.y_data = np.array(y_data).reshape((-1, 1))
 
         assert len(self.x_data) == len(self.y_data)
-        self.batched_x = [self.x_data]
-        self.batched_y = [self.y_data]
+        self.batched_x = self.x_data
+        self.batched_y = self.y_data
+
+        self.batched = False
 
         # self.on_epoch_end()  # Shuffle indices initially
 
@@ -21,6 +23,7 @@ class JetDataset(tf.keras.utils.Sequence):
         return self
 
     def batch(self, batch_size):
+        self.batched = True
         num_batches = math.floor(len(self.x_data) / batch_size)
         self.batched_x = np.array([
             self.batched_x[i*batch_size:(i+1)*batch_size] for i in range(num_batches)
@@ -39,16 +42,17 @@ class JetDataset(tf.keras.utils.Sequence):
         return self.batched_x[index], self.batched_y[index]
 
     def on_epoch_end(self):
-        perm = np.random.permutation(len(self.batched_x))
-        self.batched_x = self.batched_x[perm]
-        self.batched_y = self.batched_y[perm]
+        if self.batched:
+            perm = np.random.permutation(len(self.batched_x))
+            self.batched_x = self.batched_x[perm]
+            self.batched_y = self.batched_y[perm]
 
 
 
 def load_h5py(filename, args):
     file = h5py.File(filename, 'r')
     features = file[args.feature_key][..., :args.num_particles, :]
-    labels = file[args.label_key][:]
+    labels = file[args.label_key]
 
     print(f"Loading: {filename} of size {features.shape} vs {labels.shape}")
 

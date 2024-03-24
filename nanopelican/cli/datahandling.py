@@ -4,18 +4,15 @@ import warnings
 import tensorflow as tf
 from nanopelican import data
 
-def make_dataset_from_args(args):
+def make_dataset_from_args(args, filehandlers=['train', 'val', 'test']):
     path = pathlib.Path(args.data_dir)
 
     files = {}
 
     for file in path.iterdir():
-        if 'test' in file.name:
-            files['test'] = file
-        elif 'train' in file.name:
-            files['train'] = file
-        elif 'val' in file.name:
-            files['val'] = file
+        for key in filehandlers:
+            if key in file.name:
+                files[key] = file
     if len(files) == 0:
         raise ValueError(f"No test, train or validation files found in folder: {path.name}")
     return read_files(files, args)

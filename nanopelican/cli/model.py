@@ -9,7 +9,8 @@ def make_model_from_args(args):
         data_format=args.data_format,
         dropout=args.dropout_rate,
         batchnorm = args.use_batchnorm,
-        num_average_particles = args.num_particles_avg
+        num_average_particles = args.num_particles_avg,
+        shape=(args.num_particles, args.num_particles, 1)
     )
 
 
