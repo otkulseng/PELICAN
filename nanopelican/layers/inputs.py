@@ -4,10 +4,11 @@ from keras.layers import Layer
 from nanopelican import data
 
 class DataHandler(Layer):
-    def __init__(self,data_format='fourvec', **kwargs):
+    def __init__(self,data_format='fourvec', num_particles=32, **kwargs):
         super().__init__(trainable=False, **kwargs)
 
         self.data_handler = data.get_handler(data_format)
+        self.num_particles=num_particles
 
     def build(self, input_shape):
         print("DATAHANDLER: {input_shape}")
@@ -19,6 +20,7 @@ class DataHandler(Layer):
         # where self.data_handler is supposed to convert
         # to the inner products Batch x num_particles x num_particles
         # inputs = inputs[..., :5, :]
+        inputs = inputs[...,:self.num_particles, :]
 
         inner_prods = self.data_handler(inputs)
         N = inner_prods.shape[-2]

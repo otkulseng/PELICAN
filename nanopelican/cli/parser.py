@@ -1,4 +1,5 @@
 import argparse
+from argparse import Namespace, ArgumentParser
 
 def new_parser():
     parser = argparse.ArgumentParser("Nano Pelican")
@@ -37,10 +38,3 @@ def init_args():
     parser = new_parser()
     return parser.parse_args()
 
-
-def read_args_from_file(filename):
-    args = {}
-    with open(filename, 'r') as file:
-        for line in file.readlines():
-            line = line.replace(" ", "").rstrip().split(":")
-            print(line)

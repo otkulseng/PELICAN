@@ -51,7 +51,7 @@ class JetDataset(tf.keras.utils.Sequence):
 
 def load_h5py(filename, args):
     file = h5py.File(filename, 'r')
-    features = file[args.feature_key][..., :args.num_particles, :]
+    features = file[args.feature_key]
     labels = file[args.label_key]
 
     print(f"Loading: {filename} of size {features.shape} vs {labels.shape}")

@@ -11,13 +11,15 @@ from pathlib import Path
 
 import tensorflow as tf
 
+from nanopelican.models import PelicanNano
 
 def run_training(args):
     dataset  = cli.make_dataset_from_args(args, filehandlers=['train', 'val'])
+
     dataset['train'].shuffle().batch(args.batch_size)
     dataset['val'].shuffle().batch(args.batch_size)
 
-    model = cli.make_model_from_args(args)
+    model = PelicanNano(cli_args=vars(args))
 
     if args.print_summary:
         data = list(dataset.values())[0]
@@ -41,8 +43,6 @@ def run_training(args):
         loss=loss,
         metrics=['acc'],
     )
-
-
 
     model.fit(
         dataset['train'],
