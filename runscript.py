@@ -11,6 +11,7 @@ from pathlib import Path
 
 import tensorflow as tf
 
+
 def run_training(args):
     dataset  = cli.make_dataset_from_args(args, filehandlers=['train', 'val'])
     dataset['train'].shuffle().batch(args.batch_size)
@@ -55,8 +56,6 @@ def run_training(args):
 
 
 def evaluate_models(args):
-    data = cli.make_dataset_from_args(args, filehandlers=['test'])['test'].shuffle().batch(args.batch_size)
-
     models = []
     exp_dir = Path.cwd() / "experiments"
     for file in exp_dir.iterdir():
@@ -65,13 +64,16 @@ def evaluate_models(args):
             try:
                 model, _ = load_experiment(file)
                 models.append((model, file.name))
+
             except OSError as e:
-                print("Could not load {file.name}: error {e}")
+                print(f"Could not load {file.name}: error {e}")
                 continue
     print(f'Total number of models to evaluate: {len(models)}')
 
+    if len(models) > 0:
+        data = cli.make_dataset_from_args(args, filehandlers=['test'])['test'].shuffle().batch(args.batch_size)
     for model, filename in models:
-        loss, acc = model.evaluate(data.x_data, data.y_data, args.batch_size)
+        loss, acc = model.evaluate(data)
         print(f'file: {filename}: loss: {loss} accc: {acc}')
 
 
