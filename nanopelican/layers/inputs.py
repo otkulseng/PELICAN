@@ -11,7 +11,6 @@ class DataHandler(Layer):
         self.num_particles=num_particles
 
     def build(self, input_shape):
-        print("DATAHANDLER: {input_shape}")
         return super().build(input_shape)
 
     def call(self, inputs):
@@ -22,11 +21,13 @@ class DataHandler(Layer):
         # inputs = inputs[..., :5, :]
         inputs = inputs[...,:self.num_particles, :]
 
+        # Quantize Bits Here!!
+
+
+
         inner_prods = self.data_handler(inputs)
-        N = inner_prods.shape[-2]
 
-
-        return tf.reshape(tf.expand_dims(inner_prods, -1), (-1, N, N, 1))
+        return tf.reshape(tf.expand_dims(inner_prods, -1), (-1, self.num_particles, self.num_particles, 1))
 
 
 

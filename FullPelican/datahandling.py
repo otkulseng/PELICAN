@@ -17,8 +17,6 @@ def download_data():
 
     return dataloader.load_data()
 
-
-
 class DataLoader:
     def __init__(self, datasuffix='data') -> None:
         self.datasuffix = datasuffix
@@ -49,6 +47,7 @@ class DataLoader:
         self.output_files = {}
 
         for data_file_path, name in paths:
+            print(f"Loading: {data_file_path} : {name}")
             data_file_path = wget.download(data_file_path, out=str(self.raw_dir))
             data_tar = tarfile.open(data_file_path, "r:gz")
             data_tar.extractall(str(self.raw_dir))
@@ -76,3 +75,10 @@ class DataLoader:
                     self.output_files['test'] = path
             return self.load_data()
 
+
+def main():
+    data = DataLoader("zenodo_data")
+    data.download()
+
+if __name__ == '__main__':
+    main()

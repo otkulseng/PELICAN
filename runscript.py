@@ -39,20 +39,26 @@ def run_training(args):
             steps_per_epoch=len(dataset['train']),
 
         ), weight_decay=0.005),
-        # optimizer=AdamW( weight_decay=0.005),
         loss=loss,
         metrics=['acc'],
     )
 
-    model.fit(
-        dataset['train'],
-        epochs=args.epochs,
-        validation_data=dataset['val'],
-        callbacks=[TqdmCallback()],
-        verbose=0,
-    )
+    try:
+        model.fit(
+            dataset['train'],
+            epochs=args.epochs,
+            validation_data=dataset['val'],
+            callbacks=[TqdmCallback()],
+            verbose=0,
+        )
+        model.save_all_to_dir(args)
 
-    model.save_all_to_dir(args)
+
+    except KeyboardInterrupt:
+        print("Keyboard Interrupt! Saving progress")
+        model.save_all_to_dir(args)
+        return
+
 
 
 def evaluate_models(args):
@@ -81,12 +87,15 @@ def main():
     tf.get_logger().setLevel('INFO')
     args = cli.init_args()
 
+
     if args.evaluate_models is None:
         print("Running Models...")
-        return run_training(args)
-    print("Evaluating Models...")
+        run_training(args)
+    else:
+        print("Evaluating Models...")
+        evaluate_models(args)
 
-    return evaluate_models(args)
+    return
 
 
 if __name__ == '__main__':
