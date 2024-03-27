@@ -10,7 +10,7 @@ $ C:\users\PELICAN\ pip install .
 
 Example command:
 ```
-$ python runscript.py --n_hidden=1 --n_outputs=1 --print_summary --data_dir=data/sample_data --feature_key=Pmu --label_key=is_signal --validation_size=1000
+$ python runscript.py --n_hidden=1 --n_outputs=1 --print_summary --data_dir=data/sample_data --feature_key=Pmu --label_key=is_signal --data_format=fourvec
 ```
 
 ## Doc

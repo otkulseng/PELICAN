@@ -1,3 +1,3 @@
-from .data_handlers import get_handler, get_indeces
-from .sequence import JetDataset, load_h5py
+from .inner_products import get_handler
+from .dataset import load_dataset
 from .interpreters import get_interpreter

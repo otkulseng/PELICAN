@@ -1,40 +1,21 @@
 import tensorflow as tf
 from keras import backend as K
 
-
-def interpret_string(data_format):
-
-    data_format = data_format.rstrip("]").split("[")
-    if len(data_format)> 1:
-        data_format[1] = data_format[1].split(":")
-        data_format[1] = [int(elem) if elem != "" else None for elem in data_format[1]]
-
-    if len(data_format) == 1:
-        return data_format[0], (None, None)
-    return data_format[0], tuple(data_format[1])
-
-
 def get_handler(data_format):
     if callable(data_format):
         return data_format
-
-    function, _ = interpret_string(data_format)
 
     my_dict = {
         'fourvec': inner_prods_from_Epxpypz,
         'inverted': inner_prods_from_inverted_Epxpypz
     }
 
-    if type(function) == str and function in my_dict:
+    if type(data_format) == str and data_format in my_dict:
         return my_dict[data_format]
 
     raise TypeError(
-        f"Could not interpret data handler: {function}"
+        f"Could not interpret data handler: {data_format}"
     )
-
-def get_indeces(data_format):
-    _, indeces = interpret_string(data_format)
-    return indeces
 
 
 def inner_prods_from_Epxpypz(data):

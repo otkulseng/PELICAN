@@ -4,10 +4,39 @@ import tensorflow as tf
 import numpy as np
 import math
 from .interpreters import get_interpreter
+from pathlib import Path
+
+def load_dataset(foldername, args):
+    return Dataset(foldername, args)
+
+class Dataset:
+    def __init__(self, foldername, args) -> None:
+        self.folder = Path().cwd() / 'data' / foldername
+
+        self.keys = ['train', 'val', 'test']
+        self.data_dirs = {}
+
+        for file in self.folder.iterdir():
+            for key in self.keys:
+                if key in file.name:
+                    self.data_dirs[key] = JetDataDir(file, args)
+
+        if len(self.data_dirs) == 0:
+            raise FileNotFoundError(f"No files found in folder {self.folder.name}")
+
+    @property
+    def train(self):
+        return self.data_dirs['train']
+    @property
+    def test(self):
+        return self.data_dirs['test']
+    @property
+    def val(self):
+        return self.data_dirs['val']
 
 
 class JetDataDir(tf.keras.utils.Sequence):
-    """Takes in folder of files supporting
+    """Takes in folder of file(s) supporting
 
             file.get(args.feature_key)  (the resulting file must support sorted indexing)
             file.get(args.label_key)    (the resulting file must support sorted indexing)
@@ -31,17 +60,10 @@ class JetDataDir(tf.keras.utils.Sequence):
         self.folder = folder
 
         files = [h5py.File(filename, 'r') for filename in self.folder.iterdir()]
-
-        self.datasets = []
-        interpreter = get_interpreter(args.data_interpreter)
-        for file in files:
-            x_data = file.get(args.feature_key)
-            y_data = file.get(args.label_key)
-
-            x_data, y_data = interpreter(x_data, y_data)
-
-            self.datasets.append(JetDataset(x_data=x_data, y_data=y_data))
-
+        self.datasets = [
+            JetDataset(file.get(args.feature_key), file.get(args.label_key), args)
+            for file in files
+        ]
 
         curlen = len(self.datasets[0])
         for elem in self.datasets:
@@ -51,7 +73,14 @@ class JetDataDir(tf.keras.utils.Sequence):
             for dataset in self.datasets:
                 dataset.load()
 
-        self.batch_size = 1
+
+    @property
+    def x_data(self):
+        return np.concatenate([np.array(dataset.x_data) for dataset in self.datasets])
+
+    @property
+    def y_data(self):
+        return np.concatenate([np.array(dataset.y_data) for dataset in self.datasets])
 
     def shuffle(self):
         np.random.shuffle(self.datasets)
@@ -59,7 +88,6 @@ class JetDataDir(tf.keras.utils.Sequence):
         return self
 
     def batch(self, batch_size):
-        self.batch_size = batch_size
         self.datasets = [dataset.batch(batch_size) for dataset in self.datasets]
         return self
 
@@ -75,16 +103,18 @@ class JetDataDir(tf.keras.utils.Sequence):
     def on_epoch_end(self):
         self.shuffle()
 
-
-
 class JetDataset(tf.keras.utils.Sequence):
-    def __init__(self, x_data, y_data, load=False):
+    def __init__(self, x_data, y_data, args):
         self.x_data = x_data
         self.y_data = y_data
 
-        if load:
+        interpreter = get_interpreter(args.data_interpreter)
+        self.x_data, self.y_data = interpreter(self.x_data, self.y_data)
+
+        if args.load:
             self.x_data = np.array(x_data)
             self.y_data = np.array(y_data)
+
 
         assert len(self.x_data) == len(self.y_data)
 
@@ -124,9 +154,3 @@ class JetDataset(tf.keras.utils.Sequence):
         return self
 
 
-def load_h5py(filename, args):
-
-    return JetDataDir(
-        folder=filename,
-        args=args
-    )

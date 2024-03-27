@@ -3,8 +3,8 @@ import tensorflow as tf
 from keras.layers import Layer
 from nanopelican import data
 
-class DataHandler(Layer):
-    def __init__(self,data_format='fourvec', num_particles=32, **kwargs):
+class InnerProduct(Layer):
+    def __init__(self,data_format, num_particles, **kwargs):
         super().__init__(trainable=False, **kwargs)
 
         self.data_handler = data.get_handler(data_format)
@@ -21,9 +21,7 @@ class DataHandler(Layer):
         # inputs = inputs[..., :5, :]
         inputs = inputs[...,:self.num_particles, :]
 
-        # Quantize Bits Here!!
-
-
+        # TODO: Quantize Bits Here!!
 
         inner_prods = self.data_handler(inputs)
 

@@ -18,17 +18,10 @@ import pickle
 class PelicanNano(Model):
     def __init__(self, cli_args,**kwargs):
         super(PelicanNano, self).__init__(**kwargs)
-        # hidden=1,
-        #          outputs=2,
-        #          activation='relu',
-        #          data_format='fourvec',
-        #          dropout=0.0,
-        #          batchnorm=False,
-        #          num_average_particles=1
 
         self.cli_args = cli_args
 
-        self.input_layer = layers.DataHandler(
+        self.input_layer = layers.InnerProduct(
             data_format=cli_args['data_format'],
             num_particles=cli_args['num_particles'])
         self.agg_layer = layers.Lineq2v2nano(
