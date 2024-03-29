@@ -3,28 +3,22 @@
 from nanopelican.data import load_dataset
 from nanopelican import cli
 
-from keras.models import Sequential
-from keras.layers import Flatten, Dense
-
 from tqdm.keras import TqdmCallback
 from nanopelican.schedulers import LinearWarmupCosineAnnealing
 from keras.optimizers import AdamW
 from keras.losses import CategoricalCrossentropy, BinaryCrossentropy
-from nanopelican.models import load_experiment
-from pathlib import Path
 
-import tensorflow as tf
 from nanopelican.models import PelicanNano
 
 
 
 def run_training(args):
-    dataset  = load_dataset(args.data_dir, args)
+    model = PelicanNano(cli_args=vars(args))
 
+    dataset  = load_dataset(args.data_dir, args, ['train', 'val'])
     dataset.train.shuffle().batch(args.batch_size)
     dataset.val.shuffle().batch(args.batch_size)
 
-    model = PelicanNano(cli_args=vars(args))
 
     if args.print_summary:
         data = dataset.train

@@ -6,19 +6,19 @@ import math
 from .interpreters import get_interpreter
 from pathlib import Path
 
-def load_dataset(foldername, args):
-    return Dataset(foldername, args)
+def load_dataset(foldername, args, keys):
+    return Dataset(foldername, args, keys)
 
 class Dataset:
-    def __init__(self, foldername, args) -> None:
+    def __init__(self, foldername, args, keys=['train', 'val', 'test']) -> None:
         self.folder = Path().cwd() / 'data' / foldername
 
-        self.keys = ['train', 'val', 'test']
         self.data_dirs = {}
 
         for file in self.folder.iterdir():
-            for key in self.keys:
+            for key in keys:
                 if key in file.name:
+                    print(f"Loading directory {file}")
                     self.data_dirs[key] = JetDataDir(file, args)
 
         if len(self.data_dirs) == 0:
@@ -61,7 +61,7 @@ class JetDataDir(tf.keras.utils.Sequence):
 
         files = [h5py.File(filename, 'r') for filename in self.folder.iterdir()]
         self.datasets = [
-            JetDataset(file.get(args.feature_key), file.get(args.label_key), args)
+            JetDataset(file[args.feature_key], file[args.label_key], args)
             for file in files
         ]
 

@@ -85,7 +85,6 @@ class Lineq2v2nano(Layer):
         output_shape: batch x N x N x self.output_channels
         """
 
-
         if self.dropout_rate > 0:
             inputs = self.dropout(inputs, training=training)
 
@@ -93,13 +92,13 @@ class Lineq2v2nano(Layer):
             inputs = self.bnorm(inputs, training=training)
 
 
-        B, N, N, L = inputs.shape
+        # B, N, N, L = inputs.shape
+        N = inputs.shape[-2]
 
-        totsum = tf.einsum("bijl->bl", inputs)     # B x L
+        totsum = tf.einsum("bijl->bl", inputs)    # B x L
         rowsum = tf.einsum("biil->bil", inputs)          # B x N x L
 
         ops = [None] * 6
-
 
         ONES = tf.ones((N, N), dtype=tf.float32)
         IDENTITY = tf.eye(N, dtype=tf.float32)
@@ -121,10 +120,10 @@ class Lineq2v2nano(Layer):
 
         #   totsum broadcast over diagonals
         ops[5] = tf.einsum("bl, ij->bijl", totsum, IDENTITY)
-        diag_bias = tf.einsum("f, ij->ijf", self.diag_bias, IDENTITY)
-
         ops = tf.stack(ops, axis=-1) # B x N x N x L x 6
 
+
+        diag_bias = tf.einsum("f, ij->ijf", self.diag_bias, IDENTITY)
         return self.activation(
             tf.einsum("bijlk, lkf->bijf", ops, self.w)
             + self.bias
@@ -198,8 +197,10 @@ class Lineq2v0nano(Layer):
         if self.use_batchnorm:
             inputs = self.bnorm(inputs, training=training)
 
-        totsum  = tf.einsum("bijl->bl", inputs)/self.average_particles**2         # B x L
-        trace   = tf.einsum("biil->bl", inputs)/self.average_particles       # B x L
+        N = inputs.shape[-2]
+
+        totsum  = tf.einsum("bijl->bl", inputs)/N**2         # B x L
+        trace   = tf.einsum("biil->bl", inputs)/N      # B x L
         out     = tf.stack([totsum, trace], axis=-1)    # B x L x 2
 
         return self.activation(

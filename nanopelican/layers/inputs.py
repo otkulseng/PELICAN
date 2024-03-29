@@ -21,6 +21,10 @@ class InnerProduct(Layer):
         # inputs = inputs[..., :5, :]
         inputs = inputs[...,:self.num_particles, :]
 
+        # # Add instantons
+        # inputs[..., -1, :] = tf.constant([1, 0, 0, 1])
+        # inputs[..., -2, :] = tf.constant([1, 0, 0, -1])
+
         # TODO: Quantize Bits Here!!
 
         inner_prods = self.data_handler(inputs)

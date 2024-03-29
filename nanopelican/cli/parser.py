@@ -37,4 +37,5 @@ def train_parser():
 
     parser.add_argument('--batch_size', type=int,  help='Batch size')
     parser.add_argument('--epochs', type=int,  help='Number of epochs')
+    return parser.parse_args()
 

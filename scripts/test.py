@@ -7,7 +7,7 @@ def evaluate_models(args):
     models = []
     exp_dir = Path.cwd() / "experiments"
     for file in exp_dir.iterdir():
-        if args.evaluate_models in file.name:
+        if args.models in file.name:
             print(f'Found matching file {file.name}')
             try:
                 model, _ = load_experiment(file)
@@ -19,7 +19,7 @@ def evaluate_models(args):
     print(f'Total number of models to evaluate: {len(models)}')
 
     if len(models) > 0:
-        data = load_dataset(args.data_dir, args).test.batch(args.batch_size)
+        data = load_dataset(args.data_dir, args).test.batch(128)
     for model, filename in models:
         loss, acc = model.evaluate(data)
         print(f'file: {filename}: loss: {loss} accc: {acc}')
