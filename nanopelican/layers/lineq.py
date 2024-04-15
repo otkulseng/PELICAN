@@ -77,6 +77,14 @@ class Lineq2v2nano(Layer):
                 trainable=True,
         )
 
+
+        a_init = tf.random_uniform_initializer(minval=0, maxval=1)
+        self.alphas = self.add_weight(
+                shape=(self.output_channels, ),
+                initializer=a_init,
+                trainable=True,
+        )
+
         super(Lineq2v2nano, self).build(input_shape)
 
     def call(self, inputs, training=False, *args, **kwargs):
@@ -125,10 +133,10 @@ class Lineq2v2nano(Layer):
 
         diag_bias = tf.einsum("f, ij->ijf", self.diag_bias, IDENTITY)
         return self.activation(
-            tf.einsum("bijlk, lkf->bijf", ops, self.w)
+            (tf.einsum("bijlk, lkf->bijf", ops, self.w)
             + self.bias
-            + diag_bias
-        )
+            + diag_bias)
+         * tf.pow(N/self.average_particles, self.alphas))
 
     def get_config(self):
         config = super().get_config()

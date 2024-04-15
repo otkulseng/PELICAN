@@ -1,11 +1,12 @@
 # Inspired by
 
+import keras
 from nanopelican.data import load_dataset
 from nanopelican import cli
 
 from tqdm.keras import TqdmCallback
 from nanopelican.schedulers import LinearWarmupCosineAnnealing
-from keras.optimizers import AdamW
+from keras.optimizers import AdamW, Adam
 from keras.losses import CategoricalCrossentropy, BinaryCrossentropy
 
 from nanopelican.models import PelicanNano
@@ -33,11 +34,7 @@ def run_training(args):
         loss = BinaryCrossentropy(from_logits=True)
 
     model.compile(
-        optimizer=AdamW(learning_rate=LinearWarmupCosineAnnealing(
-            epochs=args.epochs,
-            steps_per_epoch=len(dataset.train),
-
-        ), weight_decay=0.005),
+        optimizer=Adam(learning_rate=LinearWarmupCosineAnnealing(args.epochs, len(dataset[0]))),
         loss=loss,
         metrics=['acc'],
     )
@@ -47,7 +44,11 @@ def run_training(args):
             dataset.train,
             epochs=args.epochs,
             validation_data=dataset.val,
-            callbacks=[TqdmCallback()],
+            callbacks=[TqdmCallback(), keras.callbacks.EarlyStopping(
+                    monitor="val_loss",
+                    patience=5,
+                    verbose=0
+                )],
             verbose=0,
         )
         model.save_all_to_dir(args)
