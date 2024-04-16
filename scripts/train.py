@@ -34,7 +34,10 @@ def run_training(args):
         loss = BinaryCrossentropy(from_logits=True)
 
     model.compile(
-        optimizer=Adam(learning_rate=LinearWarmupCosineAnnealing(args.epochs, len(dataset[0]))),
+        optimizer=AdamW(learning_rate=LinearWarmupCosineAnnealing(
+            epochs=args.epochs,
+            steps_per_epoch=len(dataset.train),
+        ), weight_decay=0.005),
         loss=loss,
         metrics=['acc'],
     )
@@ -44,11 +47,12 @@ def run_training(args):
             dataset.train,
             epochs=args.epochs,
             validation_data=dataset.val,
-            callbacks=[TqdmCallback(), keras.callbacks.EarlyStopping(
+            callbacks=[TqdmCallback(),
+                       keras.callbacks.EarlyStopping(
                     monitor="val_loss",
-                    patience=5,
-                    verbose=0
-                )],
+                    patience=10,
+                    verbose=0)
+            ],
             verbose=0,
         )
         model.save_all_to_dir(args)

@@ -13,7 +13,7 @@ class LinearWarmupCosineAnnealing(LearningRateSchedule):
         super().__init__()
 
         self.warmup_epochs = 4
-        self.exp_decay_epochs = 4
+        self.exp_decay_epochs = 12
         assert(epochs > self.warmup_epochs + self.exp_decay_epochs) # Does not really make sense without sufficient epochs
 
         if type(steps_per_epoch) == dict:
@@ -29,7 +29,7 @@ class LinearWarmupCosineAnnealing(LearningRateSchedule):
         self.min_lr = 1e-6
         self.cosine_decay = CosineDecayRestarts(
             initial_learning_rate=self.warmup_target,
-            first_decay_steps=4*steps_per_epoch,
+            first_decay_steps=self.warmup_epochs*steps_per_epoch,
             t_mul=2,
             alpha=self.min_lr/self.warmup_target,
         )

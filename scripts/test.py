@@ -19,7 +19,7 @@ def evaluate_models(args):
     print(f'Total number of models to evaluate: {len(models)}')
 
     if len(models) > 0:
-        data = load_dataset(args.data_dir, args).test.batch(128)
+        data = load_dataset(args.data_dir, args, ['test']).test.batch(128)
     for model, filename in models:
         loss, acc = model.evaluate(data)
         print(f'file: {filename}: loss: {loss} accc: {acc}')

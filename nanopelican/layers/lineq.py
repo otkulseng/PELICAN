@@ -78,12 +78,12 @@ class Lineq2v2nano(Layer):
         )
 
 
-        a_init = tf.random_uniform_initializer(minval=0, maxval=1)
-        self.alphas = self.add_weight(
-                shape=(self.output_channels, ),
-                initializer=a_init,
-                trainable=True,
-        )
+        # a_init = tf.random_uniform_initializer(minval=0, maxval=1)
+        # self.alphas = self.add_weight(
+        #         shape=(self.output_channels, ),
+        #         initializer=a_init,
+        #         trainable=True,
+        # )
 
         super(Lineq2v2nano, self).build(input_shape)
 
@@ -103,8 +103,8 @@ class Lineq2v2nano(Layer):
         # B, N, N, L = inputs.shape
         N = inputs.shape[-2]
 
-        totsum = tf.einsum("bijl->bl", inputs)    # B x L
-        rowsum = tf.einsum("biil->bil", inputs)          # B x N x L
+        totsum = tf.einsum("bijl->bl", inputs)/self.average_particles**2    # B x L
+        rowsum = tf.einsum("biil->bil", inputs)/self.average_particles          # B x N x L
 
         ops = [None] * 6
 
@@ -135,8 +135,8 @@ class Lineq2v2nano(Layer):
         return self.activation(
             (tf.einsum("bijlk, lkf->bijf", ops, self.w)
             + self.bias
-            + diag_bias)
-         * tf.pow(N/self.average_particles, self.alphas))
+            + diag_bias))
+        #  * tf.pow(N/self.average_particles, self.alphas))
 
     def get_config(self):
         config = super().get_config()
@@ -207,8 +207,8 @@ class Lineq2v0nano(Layer):
 
         N = inputs.shape[-2]
 
-        totsum  = tf.einsum("bijl->bl", inputs)/N**2         # B x L
-        trace   = tf.einsum("biil->bl", inputs)/N      # B x L
+        totsum  = tf.einsum("bijl->bl", inputs)/self.average_particles**2         # B x L
+        trace   = tf.einsum("biil->bl", inputs)/self.average_particles      # B x L
         out     = tf.stack([totsum, trace], axis=-1)    # B x L x 2
 
         return self.activation(
