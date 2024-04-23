@@ -18,7 +18,7 @@ def run_training(args):
 
     dataset  = load_dataset(args.data_dir, args, ['train', 'val'])
     dataset.train.shuffle().batch(args.batch_size)
-    dataset.val.shuffle().batch(args.batch_size)
+    dataset.val.shuffle()
 
 
     if args.print_summary:
@@ -49,7 +49,7 @@ def run_training(args):
             validation_data=dataset.val,
             callbacks=[TqdmCallback(),
                        keras.callbacks.EarlyStopping(
-                    monitor="val_loss",
+                    monitor="val_acc",
                     patience=10,
                     verbose=0)
             ],
