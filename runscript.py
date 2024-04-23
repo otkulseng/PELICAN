@@ -15,7 +15,7 @@ import tensorflow as tf
 def run_training(args):
     dataset  = cli.make_dataset_from_args(args, filehandlers=['train', 'val'])
     dataset['train'].shuffle().batch(args.batch_size)
-    dataset['val'].shuffle().batch(args.batch_size)
+    dataset['val'].shuffle()
 
     model = cli.make_model_from_args(args)
 
@@ -47,7 +47,7 @@ def run_training(args):
     model.fit(
         dataset['train'],
         epochs=args.epochs,
-        validation_data=dataset['val'],
+        validation_data=[dataset['val'].x_data, dataset['val'].y_data],
         callbacks=[TqdmCallback()],
         verbose=0,
     )
@@ -74,7 +74,7 @@ def evaluate_models(args):
         data = cli.make_dataset_from_args(args, filehandlers=['test'])['test'].shuffle().batch(args.batch_size)
     for model, filename in models:
         loss, acc = model.evaluate(data)
-        print(f'file: {filename}: loss: {loss} accc: {acc}')
+        print(f'file: {filename}: loss: {loss} test acc: {acc}')
 
 
 def main():

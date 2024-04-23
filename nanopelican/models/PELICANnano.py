@@ -23,8 +23,10 @@ class PelicanNano(Model):
                  data_format='fourvec',
                  dropout=0.0,
                  batchnorm=False,
-                 num_average_particles=1,**kwargs):
-        super(PelicanNano, self).__init__(**kwargs)
+                 num_average_particles=1):
+        super(PelicanNano, self).__init__()
+
+
 
         self.hidden = hidden
         self.outputs = outputs

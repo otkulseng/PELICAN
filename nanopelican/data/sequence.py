@@ -6,7 +6,7 @@ import math
 class JetDataset(tf.keras.utils.Sequence):
     def __init__(self, x_data, y_data):
         self.x_data = np.array(x_data)
-        self.y_data = np.array(y_data).reshape((-1, 1))
+        self.y_data = np.array(y_data).reshape((len(self.x_data), -1))
 
         assert len(self.x_data) == len(self.y_data)
         self.batched_x = self.x_data

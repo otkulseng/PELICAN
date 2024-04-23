@@ -5,7 +5,7 @@ import tensorflow as tf
 from nanopelican import data
 
 def make_dataset_from_args(args, filehandlers=['train', 'val', 'test']):
-    path = pathlib.Path(args.data_dir)
+    path = "data" / pathlib.Path(args.data_dir)
 
     files = {}
 
