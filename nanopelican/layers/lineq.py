@@ -121,7 +121,7 @@ class Lineq2v2nano(Layer):
         ops[2] = tf.einsum("bnl, nj->bnjl", rowsum, ONES)
 
         # Rowsum broadcasted over columns
-        ops[3] = tf.einsum("bnl, in->binl", rowsum, ONES)
+        ops[3] = tf.einsum("bnl, nj->bjnl", rowsum, ONES)
 
         # Rowsum broadcast over diagonals
         ops[4] = tf.einsum("bnl, nj->bnjl", rowsum, IDENTITY)
@@ -136,7 +136,6 @@ class Lineq2v2nano(Layer):
             (tf.einsum("bijlk, lkf->bijf", ops, self.w)
             + self.bias
             + diag_bias))
-        #  * tf.pow(N/self.average_particles, self.alphas))
 
     def get_config(self):
         config = super().get_config()

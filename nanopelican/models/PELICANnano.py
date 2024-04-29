@@ -16,26 +16,26 @@ import pickle
 
 @keras.saving.register_keras_serializable(package='nano_pelican', name='PelicanNano')
 class PelicanNano(Model):
-    def __init__(self, cli_args,**kwargs):
-        super(PelicanNano, self).__init__(**kwargs)
+    def __init__(self, arg_dict):
+        super(PelicanNano, self).__init__()
 
-        self.cli_args = cli_args
+        self.arg_dict = arg_dict
 
         self.input_layer = layers.InnerProduct(
-            data_format=cli_args['data_format'],
-            num_particles=cli_args['num_particles'])
+            data_format=arg_dict['data_format'],
+            num_particles=arg_dict['num_particles'])
         self.agg_layer = layers.Lineq2v2nano(
-            num_output_channels=cli_args['n_hidden'],
-            activation=cli_args['activation'],
-            dropout=cli_args['dropout_rate'],
-            batchnorm=cli_args['use_batchnorm'],
-            num_average_particles=cli_args['num_particles_avg'])
+            num_output_channels=arg_dict['n_hidden'],
+            activation=arg_dict['activation'],
+            dropout=arg_dict['dropout_rate'],
+            batchnorm=arg_dict['use_batchnorm'],
+            num_average_particles=arg_dict['num_particles_avg'])
         self.out_layer = layers.Lineq2v0nano(
-            num_outputs=cli_args['n_outputs'],
+            num_outputs=arg_dict['n_outputs'],
             activation=None,
-            dropout=cli_args['dropout_rate'],
-            batchnorm=cli_args['use_batchnorm'],
-            num_average_particles=cli_args['num_particles_avg'])
+            dropout=arg_dict['dropout_rate'],
+            batchnorm=arg_dict['use_batchnorm'],
+            num_average_particles=arg_dict['num_particles_avg'])
 
     def build(self, input_shape):
         self.call(tf.zeros(input_shape))
@@ -46,9 +46,10 @@ class PelicanNano(Model):
         # where data_format is supposed to convert to inner products
 
         inputs = self.input_layer(inputs)   # batch x N x N x 1
-
         inputs = self.agg_layer(inputs, training=training)     # batch x N x N x hidden
         inputs = self.out_layer(inputs, training=training)     # batch x N x N x outputs
+
+
         return inputs
 
     def save_all_to_dir(self, args):
@@ -83,7 +84,7 @@ class PelicanNano(Model):
 
         config.update(
             {
-                'cli_args': self.cli_args
+                'arg_dict': self.arg_dict
             }
         )
 
