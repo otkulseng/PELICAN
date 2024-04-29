@@ -4,14 +4,18 @@ from keras.layers import Layer
 from nanopelican import data
 
 class InnerProduct(Layer):
-    def __init__(self,data_format, num_particles, **kwargs):
-        super().__init__(trainable=False, **kwargs)
-
-        self.data_handler = data.get_handler(data_format)
-        self.num_particles=num_particles
+    def __init__(self, arg_dict):
+        super().__init__()
+        self.arg_dict = arg_dict
+        self.data_handler = data.get_handler(arg_dict['data_format'])
 
     def build(self, input_shape):
         return super().build(input_shape)
+
+    def compute_output_shape(self, input_shape):
+        # if inp is (B, N, custom)
+        N, C = input_shape
+        return (N, N)
 
     def call(self, inputs):
         # Assumes input_shape is
@@ -19,7 +23,6 @@ class InnerProduct(Layer):
         # where self.data_handler is supposed to convert
         # to the inner products Batch x num_particles x num_particles
         # inputs = inputs[..., :5, :]
-        inputs = inputs[...,:self.num_particles, :]
 
         # # Add instantons
         # inputs[..., -1, :] = tf.constant([1, 0, 0, 1])
@@ -29,7 +32,7 @@ class InnerProduct(Layer):
 
         inner_prods = self.data_handler(inputs)
 
-        return tf.reshape(tf.expand_dims(inner_prods, -1), (-1, self.num_particles, self.num_particles, 1))
+        return inner_prods
 
 
 

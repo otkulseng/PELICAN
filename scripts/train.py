@@ -16,9 +16,11 @@ from nanopelican.models import PelicanNano
 def run_training(args):
     model = PelicanNano(cli_args=vars(args))
 
-    dataset  = load_dataset(args.data_dir, args, ['train', 'val'])
+    dataset  = load_dataset(args['data'], ['train', 'val'])
     dataset.train.shuffle().batch(args.batch_size)
     dataset.val.shuffle()
+
+
 
 
     if args.print_summary:

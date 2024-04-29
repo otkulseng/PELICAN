@@ -27,14 +27,15 @@ class Lineq2v2nano(Layer):
     Args:
         Layer (_type_): _description_
     """
-    def __init__(self, num_output_channels, activation=None, dropout=0.0, batchnorm=False, num_average_particles=1, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, arg_dict):
+        super().__init__()
 
-        self.output_channels = num_output_channels
-        self.activation = activations.get(activation)
-
-        self.dropout_rate = dropout
-        self.use_batchnorm = batchnorm
+        self.arg_dict = arg_dict
+        self.output_channels = arg_dict['n_hidden']
+        self.activation = activations.get(arg_dict['activation'])
+        self.dropout_rate = arg_dict['dropout']
+        self.use_batchnorm = arg_dict['batchnorm']
+        self.average_particles = arg_dict['num_particles_avg']
 
         if self.dropout_rate > 0:
             self.dropout = Dropout(self.dropout_rate)
@@ -42,13 +43,22 @@ class Lineq2v2nano(Layer):
         if self.use_batchnorm:
             self.bnorm = BatchNormalization()
 
-        self.average_particles = num_average_particles
+
+    def compute_output_shape(self, input_shape):
+        # input_shape =  N x N x L
+        # out = Batch x N x N x self.output_channels
+        N = input_shape[1]
+        return (N, N, self.output_channels)
 
 
     def build(self, input_shape):
         # input_shape = Batch x N x N x L Where L is the number
         # of output channels from the previous layer
-        B, N, N, L = input_shape
+
+        # (NB) NEED TO CHANGE THIS IF TO BE USED AFTER INPUT
+        N = input_shape[1]
+        L = 1
+
 
         w_init = tf.random_normal_initializer(stddev=1/tf.cast(N, dtype=tf.float32))
 
@@ -101,10 +111,12 @@ class Lineq2v2nano(Layer):
 
 
         # B, N, N, L = inputs.shape
-        N = inputs.shape[-2]
+        if len(inputs.shape) < 4:
+            inputs = tf.expand_dims(inputs, axis=-1)
+        N = inputs.shape[1]
 
-        totsum = tf.einsum("bijl->bl", inputs)/self.average_particles**2    # B x L
-        rowsum = tf.einsum("biil->bil", inputs)/self.average_particles          # B x N x L
+        totsum = tf.einsum("...ijl->...l", inputs)/self.average_particles**2    # B x L
+        rowsum = tf.einsum("...iil->...il", inputs)/self.average_particles          # B x N x L
 
         ops = [None] * 6
 
@@ -115,25 +127,25 @@ class Lineq2v2nano(Layer):
         ops[0] = inputs
 
         # Totsum over entire output
-        ops[1] = tf.einsum("bl, ij->bijl", totsum, ONES)
+        ops[1] = tf.einsum("...l, ij->...ijl", totsum, ONES)
 
         # Rowsum broadcasted over rows
-        ops[2] = tf.einsum("bnl, nj->bnjl", rowsum, ONES)
+        ops[2] = tf.einsum("...nl, nj->...njl", rowsum, ONES)
 
         # Rowsum broadcasted over columns
-        ops[3] = tf.einsum("bnl, nj->bjnl", rowsum, ONES)
+        ops[3] = tf.einsum("...nl, nj->...jnl", rowsum, ONES)
 
         # Rowsum broadcast over diagonals
-        ops[4] = tf.einsum("bnl, nj->bnjl", rowsum, IDENTITY)
+        ops[4] = tf.einsum("...nl, nj->...njl", rowsum, IDENTITY)
 
         #   totsum broadcast over diagonals
-        ops[5] = tf.einsum("bl, ij->bijl", totsum, IDENTITY)
+        ops[5] = tf.einsum("...l, ij->...ijl", totsum, IDENTITY)
         ops = tf.stack(ops, axis=-1) # B x N x N x L x 6
 
 
         diag_bias = tf.einsum("f, ij->ijf", self.diag_bias, IDENTITY)
         return self.activation(
-            (tf.einsum("bijlk, lkf->bijf", ops, self.w)
+            (tf.einsum("...ijlk, lkf->...ijf", ops, self.w)
             + self.bias
             + diag_bias))
 
@@ -142,11 +154,7 @@ class Lineq2v2nano(Layer):
 
         config.update(
             {
-                'num_output_channels': self.output_channels,
-                'activation': self.activation,
-                'dropout': self.dropout_rate,
-                'batchnorm': self.use_batchnorm,
-                'num_average_particles': self.average_particles
+                'arg_dict': self.arg_dict,
             }
         )
 
@@ -154,13 +162,15 @@ class Lineq2v2nano(Layer):
 
 @keras.saving.register_keras_serializable(package='nano_pelican', name='Lineq2v0')
 class Lineq2v0nano(Layer):
-    def __init__(self, num_outputs, activation=None, dropout=0.0, batchnorm=False,num_average_particles=1, **kwargs):
-        super().__init__(**kwargs)
-        self.num_output_channels = num_outputs
-        self.activation = activations.get(activation)
+    def __init__(self, arg_dict):
+        super().__init__()
 
-        self.dropout_rate = dropout
-        self.use_batchnorm = batchnorm
+        self.arg_dict = arg_dict
+        self.num_output_channels = arg_dict['n_outputs']
+        self.activation = activations.get(arg_dict['activation'])
+        self.dropout_rate = arg_dict['dropout']
+        self.use_batchnorm = arg_dict['batchnorm']
+        self.average_particles = arg_dict['num_particles_avg']
 
         if self.dropout_rate > 0:
             self.dropout = Dropout(self.dropout_rate)
@@ -168,10 +178,9 @@ class Lineq2v0nano(Layer):
         if self.use_batchnorm:
             self.bnorm = BatchNormalization()
 
-        self.average_particles = num_average_particles
 
     def build(self, input_shape):
-        B, N, N, L = input_shape
+        N, N, L = input_shape
 
         w_init = tf.random_normal_initializer(stddev=1/tf.cast(N, dtype=tf.float32))
         # For each input channel L, make 2 permequiv invariant,
@@ -204,8 +213,6 @@ class Lineq2v0nano(Layer):
         if self.use_batchnorm:
             inputs = self.bnorm(inputs, training=training)
 
-        N = inputs.shape[-2]
-
         totsum  = tf.einsum("bijl->bl", inputs)/self.average_particles**2         # B x L
         trace   = tf.einsum("biil->bl", inputs)/self.average_particles      # B x L
         out     = tf.stack([totsum, trace], axis=-1)    # B x L x 2
@@ -219,11 +226,7 @@ class Lineq2v0nano(Layer):
 
         config.update(
             {
-                'num_outputs': self.num_output_channels,
-                'activation': self.activation,
-                'dropout': self.dropout_rate,
-                'batchnorm': self.use_batchnorm,
-                'num_average_particles': self.average_particles
+                'arg_dict': self.arg_dict,
             }
         )
 

@@ -5,21 +5,34 @@ import numpy as np
 import math
 from .interpreters import get_interpreter
 from pathlib import Path
+import logging
 
-def load_dataset(foldername, args, keys):
-    return Dataset(foldername, args, keys)
+def load_dataset(args, keys):
+    dataset = Dataset(args['folder'],
+                      feature_key=args['feature_key'],
+                      label_key=args['label_key'],
+                      num_particles=args['num_particles'],
+                      keys=keys
+                      )
+
+    load = args.get('load', False)
+    if load:
+        dataset.load()
+
+    return dataset
+
 
 class Dataset:
-    def __init__(self, foldername, args, keys=['train', 'val', 'test']) -> None:
-        self.folder = Path().cwd() / 'data' / foldername
+    def __init__(self, foldername, feature_key, label_key, num_particles=-1, keys=['train', 'val', 'test']) -> None:
+        self.folder = Path().cwd() / foldername
 
         self.data_dirs = {}
+
 
         for file in self.folder.iterdir():
             for key in keys:
                 if key in file.name:
-                    print(f"Loading directory {file}")
-                    self.data_dirs[key] = JetDataDir(file, args)
+                    self.data_dirs[key] = JetDataDir(file, feature_key, label_key, num_particles=num_particles)
 
         if len(self.data_dirs) == 0:
             raise FileNotFoundError(f"No files found in folder {self.folder.name}")
@@ -32,7 +45,14 @@ class Dataset:
         return self.data_dirs['test']
     @property
     def val(self):
-        return self.data_dirs['val']
+        for key, val in self.data_dirs.items():
+            if 'val' in key:
+                return val
+        return None
+
+    def load(self):
+        for _, val in self.data_dirs.items():
+            val.load()
 
 
 class JetDataDir(tf.keras.utils.Sequence):
@@ -55,23 +75,22 @@ class JetDataDir(tf.keras.utils.Sequence):
     Args:
         tf (_type_): _description_
     """
-    def __init__(self, folder, args):
-        self.load = args.load
+    def __init__(self, folder, feature_key, label_key, num_particles):
         self.folder = folder
+        logger = logging.getLogger('')
 
         files = [h5py.File(filename, 'r') for filename in self.folder.iterdir()]
+        for file in files:
+            logger.info(f"Loading file {file} of shape {file[feature_key].shape}")
+
         self.datasets = [
-            JetDataset(file[args.feature_key], file[args.label_key], args)
+            JetDataset(x_data=file[feature_key][:, :num_particles, ...], y_data=file[label_key][:])
             for file in files
         ]
 
         curlen = len(self.datasets[0])
         for elem in self.datasets:
             assert(curlen == len(elem)) # Currently, only same length files work
-
-        if self.load:
-            for dataset in self.datasets:
-                dataset.load()
 
 
     @property
@@ -103,18 +122,14 @@ class JetDataDir(tf.keras.utils.Sequence):
     def on_epoch_end(self):
         self.shuffle()
 
+    def load(self):
+        for dataset in self.datasets:
+            dataset.load()
+
 class JetDataset(tf.keras.utils.Sequence):
-    def __init__(self, x_data, y_data, args):
+    def __init__(self, x_data, y_data):
         self.x_data = x_data
         self.y_data = y_data
-
-        interpreter = get_interpreter(args.data_interpreter)
-        self.x_data, self.y_data = interpreter(self.x_data, self.y_data)
-
-        if args.load:
-            self.x_data = np.array(x_data)
-            self.y_data = np.array(y_data)
-
 
         assert len(self.x_data) == len(self.y_data)
 

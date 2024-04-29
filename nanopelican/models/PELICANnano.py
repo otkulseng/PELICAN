@@ -6,6 +6,7 @@ from keras.layers import Reshape
 from nanopelican import data
 
 from nanopelican import layers
+from nanopelican import data
 import tensorflow as tf
 
 
@@ -21,31 +22,27 @@ class PelicanNano(Model):
 
         self.arg_dict = arg_dict
 
-        self.input_layer = layers.InnerProduct(
-            data_format=arg_dict['data_format'],
-            num_particles=arg_dict['num_particles'])
-        self.agg_layer = layers.Lineq2v2nano(
-            num_output_channels=arg_dict['n_hidden'],
-            activation=arg_dict['activation'],
-            dropout=arg_dict['dropout_rate'],
-            batchnorm=arg_dict['use_batchnorm'],
-            num_average_particles=arg_dict['num_particles_avg'])
-        self.out_layer = layers.Lineq2v0nano(
-            num_outputs=arg_dict['n_outputs'],
-            activation=None,
-            dropout=arg_dict['dropout_rate'],
-            batchnorm=arg_dict['use_batchnorm'],
-            num_average_particles=arg_dict['num_particles_avg'])
+        self.input_layer = layers.InnerProduct(arg_dict['input'])
+        self.agg_layer = layers.Lineq2v2nano(arg_dict['lineq2v2'])
+        self.out_layer = layers.Lineq2v0nano(arg_dict['lineq2v0'])
 
     def build(self, input_shape):
-        self.call(tf.zeros(input_shape))
+
+        self.input_layer.build(input_shape)
+        input_shape = self.input_layer.compute_output_shape(input_shape)
+
+        self.agg_layer.build(input_shape)
+        input_shape = self.agg_layer.compute_output_shape(input_shape)
+
+        self.out_layer.build(input_shape)
+        self.built = True
 
 
     def call(self, inputs, training=False):
         # inputs shape batch x N x CUSTOM
         # where data_format is supposed to convert to inner products
 
-        inputs = self.input_layer(inputs)   # batch x N x N x 1
+        inputs = self.input_layer(inputs)   # batch x N x N
         inputs = self.agg_layer(inputs, training=training)     # batch x N x N x hidden
         inputs = self.out_layer(inputs, training=training)     # batch x N x N x outputs
 

@@ -6,12 +6,14 @@ def get_handler(data_format):
         return data_format
 
     my_dict = {
-        'fourvec': inner_prods_from_Epxpypz,
-        'inverted': inner_prods_from_inverted_Epxpypz
+        'epxpypz': inner_prods_from_Epxpypz,
+        'pxpypze': inner_prods_from_inverted_Epxpypz
     }
 
-    if type(data_format) == str and data_format in my_dict:
-        return my_dict[data_format]
+
+    key = data_format.lower()
+    if type(key) == str and key in my_dict:
+        return my_dict[key]
 
     raise TypeError(
         f"Could not interpret data handler: {data_format}"
@@ -24,6 +26,7 @@ def inner_prods_from_Epxpypz(data):
     """
     M = tf.linalg.diag(tf.constant([1, -1, -1, -1], dtype=tf.float32))
     return tf.einsum("...pi, ij, ...qj->...pq", data, M, data)
+
 
 def inner_prods_from_inverted_Epxpypz(data):
     """Assumes data is of shape Batch x num_particles x 4

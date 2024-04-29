@@ -1,0 +1,129 @@
+#!/usr/bin/env python
+
+import argparse
+import yaml
+import logging
+from pathlib import Path
+import os
+import pickle
+
+
+from nanopelican.models import PelicanNano
+from nanopelican.data import load_dataset
+from nanopelican.schedulers import LinearWarmupCosineAnnealing
+
+from tqdm.keras import TqdmCallback
+from keras.optimizers import AdamW, Adam
+from keras.losses import CategoricalCrossentropy, BinaryCrossentropy
+from keras.callbacks import CSVLogger
+
+logger = logging.getLogger('')
+
+def load_arguments():
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument("--config", required=True,  type=str)
+
+    args = parser.parse_args()
+
+    with open(args.config, "r") as stream:
+        config = yaml.load(stream, Loader=yaml.Loader)
+    return config
+
+def create_directory(args):
+
+    root = args['folder']
+    name = args['name']
+
+    rootdir = Path.cwd() / root
+    if not rootdir.exists():
+        os.mkdir(rootdir)
+
+    counter = 0
+    while True:
+        folder = rootdir / f'{name}-{counter}'
+        if not folder.exists():
+            break
+        counter += 1
+
+    os.mkdir(folder)
+    return folder
+
+
+def save_config_file(filename, data):
+    with open(filename, 'w') as outfile:
+        yaml.dump(data, outfile, default_flow_style=False)
+
+
+def save_experiment(folder, model, history):
+    model.save(folder / 'model.keras')
+
+    with open(folder / 'history.pkl', 'wb') as file_pi:
+        mydict = history
+        pickle.dump(mydict, file_pi)
+
+
+
+def run(conf):
+    save_dir = create_directory(conf['save_dir'])
+    # Save config to directory
+    save_config_file(save_dir / 'config.yml', conf)
+
+
+    # Initialize logger
+    logger.setLevel(logging.DEBUG)
+    logfile = logging.FileHandler(save_dir / 'log.log')
+    logging.basicConfig(level=logging.DEBUG, handlers=[logfile])
+    train_log = CSVLogger(save_dir / 'training.log')
+
+
+    model = PelicanNano(conf['model'])
+
+    dataset = load_dataset(conf['dataset'], keys=['train', 'valid'])
+
+    hyperparams = conf['hyperparams']
+
+
+    if True:
+        data = dataset.train
+        features, _ = data[345]
+        model.build(features.shape)
+        model.summary()
+
+
+    loss = BinaryCrossentropy(from_logits=True)
+    model.compile(
+        optimizer=AdamW(learning_rate=LinearWarmupCosineAnnealing(
+            epochs=hyperparams['epochs'],
+            steps_per_epoch=len(dataset.train),
+        ), weight_decay=hyperparams['weight_decay']),
+        loss=loss,
+        metrics=['acc'],
+    )
+
+    try:
+        history = model.fit(
+            dataset.train.batch(hyperparams['batch_size']),
+            epochs = hyperparams['epochs'],
+            validation_data = (dataset.val.x_data, dataset.val.y_data),
+            callbacks=[TqdmCallback(), train_log],
+            verbose=0
+        )
+        history = history.history
+
+    except KeyboardInterrupt:
+        logger.info("Keyboard Interrupt! Saving progress")
+        history = {}
+
+
+    save_experiment(save_dir, model, history)
+
+
+def main():
+    conf = load_arguments()
+    return run(conf)
+
+
+
+if __name__ == '__main__':
+    main()
+

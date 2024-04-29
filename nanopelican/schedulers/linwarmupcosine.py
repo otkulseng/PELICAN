@@ -14,7 +14,7 @@ class LinearWarmupCosineAnnealing(LearningRateSchedule):
 
         self.warmup_epochs = 4
         self.exp_decay_epochs = 12
-        assert(epochs > self.warmup_epochs + self.exp_decay_epochs) # Does not really make sense without sufficient epochs
+        # assert(epochs > self.warmup_epochs + self.exp_decay_epochs) # Does not really make sense without sufficient epochs
 
         if type(steps_per_epoch) == dict:
             print(steps_per_epoch)
