@@ -1,31 +1,27 @@
 dataset:
-  folder: data/nano_data
   feature_key: Pmu
+  folder: data/nano_data
   label_key: is_signal
   num_particles: 32
-
-save_dir:
-  folder: yamltest
-  name: nano
-
 hyperparams:
-  epochs: 140
   batch_size: 512
+  epochs: 140
   weight_decay: 0.005
-
 model:
   input:
     data_format: Epxpypz
-
-  lineq2v2:
-    n_hidden: 1
-    activation: relu
-    dropout: 0.0
-    batchnorm: True
-    num_particles_avg: 50
   lineq2v0:
-    n_outputs: 1
     activation: null
+    batchnorm: false
     dropout: 0.0
-    batchnorm: False
+    n_outputs: 1
     num_particles_avg: 50
+  lineq2v2:
+    activation: relu
+    batchnorm: false
+    dropout: 0.0
+    n_hidden: 1
+    num_particles_avg: 50
+save_dir:
+  folder: yamltest
+  name: nano

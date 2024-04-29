@@ -38,25 +38,25 @@ class PelicanNano(Model):
         self.built = True
 
 
-    def call(self, inputs, training=False):
+    def call(self, inputs):
         # inputs shape batch x N x CUSTOM
         # where data_format is supposed to convert to inner products
 
         inputs = self.input_layer(inputs)   # batch x N x N
-        inputs = self.agg_layer(inputs, training=training)     # batch x N x N x hidden
-        inputs = self.out_layer(inputs, training=training)     # batch x N x N x outputs
+        inputs = self.agg_layer(inputs)     # batch x N x N x hidden
+        inputs = self.out_layer(inputs)     # batch x N x N x outputs
 
 
         return inputs
 
     def save_all_to_dir(self, args):
-        counter = 0
         root = args.experiment_root
 
         rootdir = Path.cwd() / root
         if not rootdir.exists():
             os.mkdir(rootdir)
 
+        counter = 0
         while True:
             self.folder = (rootdir / f'{args.experiment_name}-{counter}')
             if not self.folder.exists():

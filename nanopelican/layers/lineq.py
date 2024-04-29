@@ -4,6 +4,7 @@ from keras.layers import Layer, BatchNormalization, Dropout
 from keras import activations
 import keras.backend as K
 import keras
+import logging
 
 class LinearEquivariant(Layer):
 
@@ -30,6 +31,8 @@ class Lineq2v2nano(Layer):
     def __init__(self, arg_dict):
         super().__init__()
 
+        logger = logging.getLogger('')
+
         self.arg_dict = arg_dict
         self.output_channels = arg_dict['n_hidden']
         self.activation = activations.get(arg_dict['activation'])
@@ -38,9 +41,11 @@ class Lineq2v2nano(Layer):
         self.average_particles = arg_dict['num_particles_avg']
 
         if self.dropout_rate > 0:
+            logger.info("Using dropout in 2v2")
             self.dropout = Dropout(self.dropout_rate)
 
         if self.use_batchnorm:
+            logger.info("Using bnorm in 2v2")
             self.bnorm = BatchNormalization()
 
 
@@ -97,17 +102,17 @@ class Lineq2v2nano(Layer):
 
         super(Lineq2v2nano, self).build(input_shape)
 
-    def call(self, inputs, training=False, *args, **kwargs):
+    def call(self, inputs):
         """
         input_shape : batch x N x N x L where L is number of input channels
         output_shape: batch x N x N x self.output_channels
         """
 
         if self.dropout_rate > 0:
-            inputs = self.dropout(inputs, training=training)
+            inputs = self.dropout(inputs)
 
         if self.use_batchnorm:
-            inputs = self.bnorm(inputs, training=training)
+            inputs = self.bnorm(inputs)
 
 
         # B, N, N, L = inputs.shape
