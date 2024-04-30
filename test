@@ -6,6 +6,7 @@ import logging
 from pathlib import Path
 import os
 import pickle
+from tqdm import tqdm
 
 
 from nanopelican.models import PelicanNano
@@ -67,10 +68,13 @@ def main():
 
     print(f'Found {len(experiments)} tests')
 
-    for exp in experiments:
-        run_test(exp)
-
-
+    for exp in tqdm(experiments):
+        try:
+            run_test(exp)
+        except KeyboardInterrupt:
+            break
+        except:
+            continue
 
 if __name__ == '__main__':
     main()

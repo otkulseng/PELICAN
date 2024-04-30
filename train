@@ -68,12 +68,6 @@ def run(conf):
     save_dir = create_directory(conf['save_dir'])
     # Save config to directory
     save_config_file(save_dir / 'config.yml', conf)
-
-
-    # Initialize logger
-    logger.setLevel(logging.DEBUG)
-    logfile = logging.FileHandler(save_dir / 'log.log')
-    logging.basicConfig(level=logging.DEBUG, handlers=[logfile])
     train_log = CSVLogger(save_dir / 'training.log')
 
 
@@ -83,7 +77,8 @@ def run(conf):
 
     hyperparams = conf['hyperparams']
 
-    with open(save_dir / 'summary.txt', 'w') as summary_file:
+    # with open(save_dir / 'summary.txt', 'w') as summary_file:
+    if True:
         data = dataset.train
         features, _ = data[0]
         model.build(features.shape)
@@ -113,7 +108,6 @@ def run(conf):
     except KeyboardInterrupt:
         logger.info("Keyboard Interrupt! Saving progress")
         history = {}
-
 
     save_experiment(save_dir, model, history)
 

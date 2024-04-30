@@ -5,7 +5,7 @@ dataset:
   num_particles: 32
 
 save_dir:
-  folder: yamltest
+  folder: experiments
   name: nano
 
 hyperparams:
