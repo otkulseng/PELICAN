@@ -7,7 +7,7 @@ from pathlib import Path
 import os
 import pickle
 
-
+import keras
 from nanopelican.models import PelicanNano
 from nanopelican.data import load_dataset
 from nanopelican.schedulers import LinearWarmupCosineAnnealing
@@ -64,6 +64,7 @@ def save_experiment(folder, model, history):
 
 
 def run(conf):
+
     save_dir = create_directory(conf['save_dir'])
     # Save config to directory
     save_config_file(save_dir / 'config.yml', conf)
@@ -82,8 +83,7 @@ def run(conf):
 
     hyperparams = conf['hyperparams']
 
-
-    if False:
+    with open(save_dir / 'summary.txt', 'w') as summary_file:
         data = dataset.train
         features, _ = data[0]
         model.build(features.shape)

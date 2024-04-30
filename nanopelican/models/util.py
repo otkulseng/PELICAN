@@ -3,13 +3,17 @@ from nanopelican.schedulers import LinearWarmupCosineAnnealing
 
 import pickle
 from keras.models import load_model
-def load_experiment(filename):
+from keras import models
+
+def load_model(filename):
     root = Path(filename)
     try:
-        model = load_model(root / 'model.keras', custom_objects={'CosineAnnealingExpDecay': LinearWarmupCosineAnnealing})
+        model = models.load_model(root, custom_objects={'CosineAnnealingExpDecay': LinearWarmupCosineAnnealing})
     except ValueError:
-        model = load_model(root /'model.keras')
+        model = models.load_model(root)
+    return model
 
-    with open(root / 'history.pkl', "rb") as file_pi:
+def load_history(filename):
+    with open(filename, "rb") as file_pi:
         history = pickle.load(file_pi)
-    return model, history
+    return history

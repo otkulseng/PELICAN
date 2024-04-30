@@ -14,8 +14,8 @@ class InnerProduct(Layer):
 
     def compute_output_shape(self, input_shape):
         # if inp is (B, N, custom)
-        N, C = input_shape
-        return (N, N)
+        N = input_shape[-2]
+        return (None, N, N, 1)
 
     def call(self, inputs):
         # Assumes input_shape is
@@ -25,6 +25,7 @@ class InnerProduct(Layer):
         # inputs = inputs[..., :5, :]
 
         # # Add instantons
+
         # inputs[..., -1, :] = tf.constant([1, 0, 0, 1])
         # inputs[..., -2, :] = tf.constant([1, 0, 0, -1])
 
@@ -32,7 +33,7 @@ class InnerProduct(Layer):
 
         inner_prods = self.data_handler(inputs)
 
-        return inner_prods
+        return tf.expand_dims(inner_prods, axis=-1)
 
 
 

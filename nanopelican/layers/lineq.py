@@ -53,17 +53,18 @@ class Lineq2v2nano(Layer):
         # input_shape =  N x N x L
         # out = Batch x N x N x self.output_channels
         N = input_shape[1]
-        return (N, N, self.output_channels)
+        return (None, N, N, self.output_channels)
 
 
     def build(self, input_shape):
         # input_shape = Batch x N x N x L Where L is the number
         # of output channels from the previous layer
+        if self.use_batchnorm:
+            self.bnorm.build(input_shape)
 
         # (NB) NEED TO CHANGE THIS IF TO BE USED AFTER INPUT
         N = input_shape[1]
-        L = 1
-
+        L = input_shape[-1]
 
         w_init = tf.random_normal_initializer(stddev=1/tf.cast(N, dtype=tf.float32))
 
@@ -116,8 +117,6 @@ class Lineq2v2nano(Layer):
 
 
         # B, N, N, L = inputs.shape
-        if len(inputs.shape) < 4:
-            inputs = tf.expand_dims(inputs, axis=-1)
         N = inputs.shape[1]
 
         totsum = tf.einsum("...ijl->...l", inputs)/self.average_particles**2    # B x L
@@ -177,15 +176,24 @@ class Lineq2v0nano(Layer):
         self.use_batchnorm = arg_dict['batchnorm']
         self.average_particles = arg_dict['num_particles_avg']
 
+
+        logger = logging.getLogger('')
         if self.dropout_rate > 0:
+            logger.info("Using dropout in 2v0")
             self.dropout = Dropout(self.dropout_rate)
 
         if self.use_batchnorm:
+            logger.info("Using bnorm in 2v0")
             self.bnorm = BatchNormalization()
 
 
     def build(self, input_shape):
-        N, N, L = input_shape
+        # N, N, L = input_shape
+        if self.use_batchnorm:
+            self.bnorm.build(input_shape)
+
+        L = input_shape[-1]
+        N = input_shape[-2]
 
         w_init = tf.random_normal_initializer(stddev=1/tf.cast(N, dtype=tf.float32))
         # For each input channel L, make 2 permequiv invariant,

@@ -27,7 +27,6 @@ class PelicanNano(Model):
         self.out_layer = layers.Lineq2v0nano(arg_dict['lineq2v0'])
 
     def build(self, input_shape):
-
         self.input_layer.build(input_shape)
         input_shape = self.input_layer.compute_output_shape(input_shape)
 
