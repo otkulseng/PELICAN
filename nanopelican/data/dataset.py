@@ -4,6 +4,7 @@ import tensorflow as tf
 import numpy as np
 import math
 from .interpreters import get_interpreter
+from .util import interleave
 from pathlib import Path
 import logging
 
@@ -101,9 +102,9 @@ class JetDataDir(tf.keras.utils.Sequence):
     def y_data(self):
         return np.concatenate([np.array(dataset.y_data) for dataset in self.datasets])
 
-    def shuffle(self):
+    def shuffle(self, keepratio=False):
         np.random.shuffle(self.datasets)
-        self.datasets = [dataset.shuffle() for dataset in self.datasets]
+        self.datasets = [dataset.shuffle(keepratio=keepratio) for dataset in self.datasets]
         return self
 
     def batch(self, batch_size):
@@ -132,8 +133,8 @@ class JetDataset(tf.keras.utils.Sequence):
         self.y_data = y_data
 
 
-        logger = logging.getLogger('')
-        logger.warning("Adding instantons here, make sure to match format")
+        self.logger = logging.getLogger('')
+        self.logger.warning("Adding instantons here, make sure to match format")
 
         self.x_data[:, -1, ...] = np.array([1, 0, 0, -1])
         self.x_data[:, -2, ...] = np.array([1, 0, 0, 1])
@@ -143,9 +144,22 @@ class JetDataset(tf.keras.utils.Sequence):
         self.batches = np.arange(len(x_data))
         self.batch_size=1
 
-    def shuffle(self):
-        # Only shuffles first axis, so works for both batched and unbatched
-        self.batches = np.random.permutation(self.batches)
+    def shuffle(self, keepratio=False):
+        if not keepratio or self.batch_size > 1:
+            # Only shuffles first axis, so works for both batched and unbatched
+            self.batches = np.random.permutation(self.batches)
+            return self
+
+        self.logger.warning("Does NOT work with more classes than up down")
+
+        # Shuffle while keeping same ratio of answers
+        top = np.where(self.y_data==1)[0]
+        bottom = np.where(self.y_data==0)[0]
+
+        top = np.random.permutation(top)
+        bottom = np.random.permutation(bottom)
+
+        self.batches = interleave([top, bottom])
         return self
 
     def batch(self, batch_size):
@@ -155,7 +169,7 @@ class JetDataset(tf.keras.utils.Sequence):
 
         true_len = num_batches * batch_size
         self.batches = self.batches.flatten()[:true_len].reshape((num_batches, -1))
-        # self.batches.sort(axis=-1)
+        self.batches.sort(axis=-1)
 
         return self
 
@@ -168,7 +182,7 @@ class JetDataset(tf.keras.utils.Sequence):
 
     def on_epoch_end(self):
         if self.batch_size > 1:
-            self.shuffle()
+            self.shuffle(keepratio=False)
 
     def load(self):
         self.x_data = np.array(self.x_data)

@@ -120,7 +120,7 @@ def run(conf):
 
     try:
         history = model.fit(
-            dataset.train.batch(hyperparams['batch_size']),
+            dataset.train.shuffle(keepratio=True).batch(hyperparams['batch_size']),
             epochs = hyperparams['epochs'],
             validation_data = (dataset.val.x_data, dataset.val.y_data),
             callbacks=[TqdmCallback(), train_log, ModelCheckpoint(
