@@ -8,6 +8,8 @@ import os
 import pickle
 from tqdm import tqdm
 
+import matplotlib.pyplot as plt
+import pandas as pd
 
 from nanopelican.models import PelicanNano
 from nanopelican.data import load_dataset
@@ -16,6 +18,9 @@ from nanopelican.models import load_model, load_history
 from nanopelican.schedulers import LinearWarmupCosineAnnealing
 
 from tqdm.keras import TqdmCallback
+
+from keras import callbacks
+
 from keras.optimizers import AdamW, Adam
 from keras.losses import CategoricalCrossentropy, BinaryCrossentropy
 from keras.callbacks import CSVLogger
@@ -25,7 +30,7 @@ logger = logging.getLogger('')
 def load_arguments():
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("--dir", required=True,  type=str)
-    parser.add_argument("--name", required=True,  type=str)
+    parser.add_argument("--name",  type=str, default='')
 
     args = parser.parse_args()
     return args
@@ -35,17 +40,46 @@ def load_yaml(filename):
         config = yaml.load(stream, Loader=yaml.Loader)
     return config
 
+def generate_plot(filename):
+    file = pd.read_csv(filename)
+    fig, (axL, axR) = plt.subplots(ncols=2, figsize=(10, 5))
+    for key in file:
+        if 'acc' in key:
+            axL.plot(file[key], label=key)
+
+        if 'loss' in key:
+            axR.plot(file[key], label=key)
+
+    axL.set_title('Accuracy')
+    axL.legend(loc='lower right')
+
+    axR.set_title('Loss')
+    axR.legend()
+    fig.supxlabel('Epochs')
+    return fig
+
 def run_test(experiment):
-    model = load_model(experiment / 'model.keras')
+    logger.setLevel(logging.DEBUG)
+    logfile = logging.FileHandler(experiment / 'test.log')
+    logging.basicConfig(level=logging.INFO, handlers=[logfile])
+
+    logger.info('-' * 10 + 'START TEST' + 10 * '-')
+
     config = load_yaml(experiment / 'config.yml')
     dataset = load_dataset(config['dataset'], keys=['test'])
 
-    logger.setLevel(logging.DEBUG)
-    logfile = logging.FileHandler(experiment / 'test.log')
-    logging.basicConfig(level=logging.DEBUG, handlers=[logfile])
+    for name in ['model.keras', 'model.best.keras']:
+        try:
+            model = load_model(experiment / name)
+            loss, acc = model.evaluate(dataset.test.batch(1000))
+            logger.info(f'{name}: finish \n loss: {loss} accuracy: {acc}')
+        except:
+            continue
 
-    loss, acc = model.evaluate(dataset.test.batch(128))
-    logger.info(f'loss: {loss} accc: {acc}')
+    logger.info('-' * 10 + 'STOP TEST' + 10 * '-')
+
+    fig = generate_plot(experiment / 'training.log')
+    fig.savefig(experiment / 'plot.pdf')
 
 def main():
     args = load_arguments()

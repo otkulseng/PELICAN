@@ -131,6 +131,13 @@ class JetDataset(tf.keras.utils.Sequence):
         self.x_data = x_data
         self.y_data = y_data
 
+
+        logger = logging.getLogger('')
+        logger.warning("Adding instantons here, make sure to match format")
+
+        self.x_data[:, -1, ...] = np.array([1, 0, 0, -1])
+        self.x_data[:, -2, ...] = np.array([1, 0, 0, 1])
+
         assert len(self.x_data) == len(self.y_data)
 
         self.batches = np.arange(len(x_data))
@@ -148,7 +155,7 @@ class JetDataset(tf.keras.utils.Sequence):
 
         true_len = num_batches * batch_size
         self.batches = self.batches.flatten()[:true_len].reshape((num_batches, -1))
-        self.batches.sort(axis=-1)
+        # self.batches.sort(axis=-1)
 
         return self
 

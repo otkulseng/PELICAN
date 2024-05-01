@@ -2,7 +2,7 @@
 import keras
 from keras import backend as K
 from keras.models import Model
-from keras.layers import Reshape
+from keras.layers import Reshape, Input
 from nanopelican import data
 
 from nanopelican import layers
@@ -26,6 +26,11 @@ class PelicanNano(Model):
         self.agg_layer = layers.Lineq2v2nano(arg_dict['lineq2v2'])
         self.out_layer = layers.Lineq2v0nano(arg_dict['lineq2v0'])
 
+    def summary(self):
+        x = Input(shape=(17, 4))
+        model = Model(inputs=[x], outputs=self.call(x))
+        return model.summary()
+
     def build(self, input_shape):
         self.input_layer.build(input_shape)
         input_shape = self.input_layer.compute_output_shape(input_shape)
@@ -37,13 +42,13 @@ class PelicanNano(Model):
         self.built = True
 
 
-    def call(self, inputs):
+    def call(self, inputs, training=False):
         # inputs shape batch x N x CUSTOM
         # where data_format is supposed to convert to inner products
 
         inputs = self.input_layer(inputs)   # batch x N x N
-        inputs = self.agg_layer(inputs)     # batch x N x N x hidden
-        inputs = self.out_layer(inputs)     # batch x N x N x outputs
+        inputs = self.agg_layer(inputs, training=training)     # batch x N x N x hidden
+        inputs = self.out_layer(inputs, training=training)     # batch x N x N x outputs
 
 
         return inputs

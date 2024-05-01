@@ -62,8 +62,7 @@ class Lineq2v2nano(Layer):
         if self.use_batchnorm:
             self.bnorm.build(input_shape)
 
-        # (NB) NEED TO CHANGE THIS IF TO BE USED AFTER INPUT
-        N = input_shape[1]
+        N = input_shape[-2]
         L = input_shape[-1]
 
         w_init = tf.random_normal_initializer(stddev=1/tf.cast(N, dtype=tf.float32))
@@ -103,24 +102,24 @@ class Lineq2v2nano(Layer):
 
         super(Lineq2v2nano, self).build(input_shape)
 
-    def call(self, inputs):
+    def call(self, inputs, training=False):
         """
         input_shape : batch x N x N x L where L is number of input channels
         output_shape: batch x N x N x self.output_channels
         """
 
         if self.dropout_rate > 0:
-            inputs = self.dropout(inputs)
+            inputs = self.dropout(inputs, training=training)
 
         if self.use_batchnorm:
-            inputs = self.bnorm(inputs)
+            inputs = self.bnorm(inputs, training=training)
 
 
         # B, N, N, L = inputs.shape
         N = inputs.shape[1]
 
         totsum = tf.einsum("...ijl->...l", inputs)/self.average_particles**2    # B x L
-        rowsum = tf.einsum("...iil->...il", inputs)/self.average_particles          # B x N x L
+        rowsum = tf.reduce_sum(inputs, axis=-2)/self.average_particles          # B x N x L
 
         ops = [None] * 6
 
@@ -216,7 +215,7 @@ class Lineq2v0nano(Layer):
 
         super(Lineq2v0nano, self).build(input_shape)
 
-    def call(self, inputs, training=False, *args, **kwargs):
+    def call(self, inputs, training=False):
 
         # inputs.shape = B x N x N x L
 

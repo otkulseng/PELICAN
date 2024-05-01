@@ -6,6 +6,7 @@ import logging
 from pathlib import Path
 import os
 import pickle
+import numpy as np
 
 import keras
 from nanopelican.models import PelicanNano
@@ -15,15 +16,20 @@ from nanopelican.schedulers import LinearWarmupCosineAnnealing
 from tqdm.keras import TqdmCallback
 from keras.optimizers import AdamW, Adam
 from keras.losses import CategoricalCrossentropy, BinaryCrossentropy
-from keras.callbacks import CSVLogger
+from keras.callbacks import CSVLogger, ModelCheckpoint, EarlyStopping
+
+
+import tensorflow as tf
 
 logger = logging.getLogger('')
 
 def load_arguments():
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("--config", required=True,  type=str)
-
+    parser.add_argument("--gpu", type=str, default="0")
     args = parser.parse_args()
+
+    os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
 
     with open(args.config, "r") as stream:
         config = yaml.load(stream, Loader=yaml.Loader)
@@ -67,7 +73,20 @@ def run(conf):
 
     save_dir = create_directory(conf['save_dir'])
     # Save config to directory
+
+
+    if 'seed' not in conf:
+        conf['seed'] = np.random.randint(0, 2**31)
+
+    keras.utils.set_random_seed(conf['seed'])
+
     save_config_file(save_dir / 'config.yml', conf)
+
+
+    # Initialize logger
+    logger.setLevel(logging.DEBUG)
+    logfile = logging.FileHandler(save_dir / 'log.log')
+    logging.basicConfig(level=logging.DEBUG, handlers=[logfile])
     train_log = CSVLogger(save_dir / 'training.log')
 
 
@@ -77,7 +96,6 @@ def run(conf):
 
     hyperparams = conf['hyperparams']
 
-    # with open(save_dir / 'summary.txt', 'w') as summary_file:
     if True:
         data = dataset.train
         features, _ = data[0]
@@ -92,15 +110,26 @@ def run(conf):
             steps_per_epoch=len(dataset.train),
         ), weight_decay=hyperparams['weight_decay']),
         loss=loss,
-        metrics=['acc'],
+        metrics=['accuracy'],
     )
+    # model.compile(
+    #     optimizer=AdamW(weight_decay=hyperparams['weight_decay']),
+    #     loss=loss,
+    #     metrics=['accuracy'],
+    # )
 
     try:
         history = model.fit(
             dataset.train.batch(hyperparams['batch_size']),
             epochs = hyperparams['epochs'],
             validation_data = (dataset.val.x_data, dataset.val.y_data),
-            callbacks=[TqdmCallback(), train_log],
+            callbacks=[TqdmCallback(), train_log, ModelCheckpoint(
+                filepath = save_dir / 'model.best.keras',
+                monitor='val_accuracy',
+                mode='max',
+                save_best_only=True
+            ), keras.callbacks.EarlyStopping(monitor='val_loss', patience=10, mode='min')
+        ],
             verbose=0
         )
         history = history.history
