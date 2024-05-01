@@ -69,18 +69,31 @@ def save_experiment(folder, model, history):
 
 
 
+def add_default_values(conf):
+    if 'seed' not in conf:
+        conf['seed'] = np.random.randint(0, 2**31)
+
+    if 'val_size' not in conf['hyperparams']:
+        conf['hyperparams'].update({'val_size': -1})
+
+    if 'patience' not in conf['hyperparams']:
+        conf['hyperparams'].update({'patience': conf['hyperparams']['epochs']})
+
+    if 'weight_decay' not in conf['hyperparams']:
+        conf['hyperparams'].update({'weight_decay': 0.0})
+
+    return conf
+
+
 def run(conf):
 
     save_dir = create_directory(conf['save_dir'])
     # Save config to directory
 
-
-    if 'seed' not in conf:
-        conf['seed'] = np.random.randint(0, 2**31)
+    conf = add_default_values(conf)
+    save_config_file(save_dir / 'config.yml', conf)
 
     keras.utils.set_random_seed(conf['seed'])
-
-    save_config_file(save_dir / 'config.yml', conf)
 
 
     # Initialize logger
@@ -112,23 +125,25 @@ def run(conf):
         loss=loss,
         metrics=['accuracy'],
     )
-    # model.compile(
-    #     optimizer=AdamW(weight_decay=hyperparams['weight_decay']),
-    #     loss=loss,
-    #     metrics=['accuracy'],
-    # )
 
+
+
+    dataset.val.shuffle(keepratio=True)
     try:
         history = model.fit(
             dataset.train.shuffle(keepratio=True).batch(hyperparams['batch_size']),
             epochs = hyperparams['epochs'],
-            validation_data = (dataset.val.x_data, dataset.val.y_data),
+            validation_data = (dataset.val.x_data[:hyperparams['val_size']], dataset.val.y_data[:hyperparams['val_size']]),
             callbacks=[TqdmCallback(), train_log, ModelCheckpoint(
                 filepath = save_dir / 'model.best.keras',
                 monitor='val_accuracy',
                 mode='max',
                 save_best_only=True
-            ), keras.callbacks.EarlyStopping(monitor='val_loss', patience=10, mode='min')
+            ), keras.callbacks.EarlyStopping(
+                monitor='val_accuracy',
+                patience=hyperparams['patience'],
+                mode='max'
+            ),
         ],
             verbose=0
         )

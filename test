@@ -40,6 +40,22 @@ def load_yaml(filename):
         config = yaml.load(stream, Loader=yaml.Loader)
     return config
 
+
+from sklearn.metrics import roc_curve, auc
+from scipy.special import softmax
+
+def generate_auc(model, data):
+    y_score = model.predict(data.x_data)
+    y_true = data.y_data
+
+    fig, ax = plt.subplots()
+    fpr, tpr, thresholds = roc_curve(y_true, y_score)
+    score = auc(fpr, tpr)
+    ax.plot(fpr, tpr)
+    fig.suptitle(f'AUC {round(score, 4)}')
+    ax.set_aspect('equal')
+    return fig, (fpr, tpr, score)
+
 def generate_plot(filename):
     file = pd.read_csv(filename)
     fig, (axL, axR) = plt.subplots(ncols=2, figsize=(10, 5))
@@ -72,14 +88,21 @@ def run_test(experiment):
         try:
             model = load_model(experiment / name)
             loss, acc = model.evaluate(dataset.test.batch(1000))
-            logger.info(f'{name}: finish \n loss: {loss} accuracy: {acc}')
-        except:
+
+            fig, (fpr, tpr, auc) = generate_auc(model, dataset.test)
+            logger.info(f'{name}: finish \n loss: {loss} accuracy: {acc} AUC: {auc}')
+            # logger.info(f'{name}: FPR: {fpr} TPR: {tpr}')
+
+            fig.savefig(experiment / f'{name} - auc.pdf')
+        except Exception as e:
+            logger.info(f'Failed with error {str(e)}')
             continue
 
     logger.info('-' * 10 + 'STOP TEST' + 10 * '-')
 
     fig = generate_plot(experiment / 'training.log')
     fig.savefig(experiment / 'plot.pdf')
+
 
 def main():
     args = load_arguments()

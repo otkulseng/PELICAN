@@ -46,9 +46,9 @@ class Dataset:
         return self.data_dirs['test']
     @property
     def val(self):
-        for key, val in self.data_dirs.items():
+        for key, value in self.data_dirs.items():
             if 'val' in key:
-                return val
+                return value
         return None
 
     def load(self):
@@ -92,6 +92,7 @@ class JetDataDir(tf.keras.utils.Sequence):
         curlen = len(self.datasets[0])
         for elem in self.datasets:
             assert(curlen == len(elem)) # Currently, only same length files work
+
 
 
     @property

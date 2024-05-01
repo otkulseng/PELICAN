@@ -6,19 +6,19 @@ dataset:
 
 save_dir:
   folder: experiments
-  name: nano
+  name: long
 
 hyperparams:
   epochs: 140
   batch_size: 512
-  weight_decay: 0.0
+  val_size: 50000
 
 model:
   input:
     data_format: Epxpypz
 
   lineq2v2:
-    n_hidden: 2
+    n_hidden: 3
     activation: relu
     dropout: 0.0
     batchnorm: True
@@ -30,4 +30,4 @@ model:
     batchnorm: True
     num_particles_avg: 25
 
-seed: 1592664504
+seed: 2071694758

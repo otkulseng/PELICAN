@@ -1,6 +1,23 @@
 import tensorflow as tf
 from keras import backend as K
 
+def get_instantons(data_format, dtype=tf.float32):
+    my_dict = {
+        'epxpypz': tf.constant([[1, 0, 0, -1],
+                                [1, 0, 0, 1]], dtype=dtype),
+        'pxpypze': tf.constant([[-1, 0, 0, 1],
+                                [1, 0, 0, 1]], dtype=dtype)
+    }
+
+    key = data_format.lower()
+
+    if type(key) == str and key in my_dict:
+        return my_dict[key]
+
+    raise TypeError(
+        f"Could not find instantons for data_format: {data_format}"
+    )
+
 def get_handler(data_format):
     if callable(data_format):
         return data_format
