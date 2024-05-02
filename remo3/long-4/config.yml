@@ -2,11 +2,11 @@ dataset:
   feature_key: Pmu
   folder: data/nano_data
   label_key: is_signal
-  num_particles: 30
+  num_particles: 32
 hyperparams:
   batch_size: 512
   epochs: 140
-  patience: 20
+  patience: 140
   val_size: 50000
   weight_decay: 0.0
 model:
@@ -22,9 +22,9 @@ model:
     activation: relu
     batchnorm: true
     dropout: 0.0
-    n_hidden: 3
+    n_hidden: 2
     num_particles_avg: 25
 save_dir:
   folder: experiments
   name: long
-seed: 1065192928
+seed: 2071694758

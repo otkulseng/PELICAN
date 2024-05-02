@@ -2,16 +2,17 @@ dataset:
   feature_key: Pmu
   folder: data/nano_data
   label_key: is_signal
-  num_particles: 30
+  num_particles: 48
 hyperparams:
   batch_size: 512
   epochs: 140
   patience: 20
-  val_size: 50000
+  val_size: -1
   weight_decay: 0.0
 model:
   input:
     data_format: Epxpypz
+    instantons: True
   lineq2v0:
     activation: null
     batchnorm: true
@@ -27,4 +28,4 @@ model:
 save_dir:
   folder: experiments
   name: long
-seed: 1065192928
+seed: 745955914

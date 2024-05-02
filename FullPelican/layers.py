@@ -145,27 +145,27 @@ class LinEq2v2(layers.Layer):
 
 
 
-        # diagonal (bli), eye(N) (ij), self.weight[0] (lf)
-        # res0 = tf.einsum("bli, ij, lf->bijf", diag, tf.eye(N), self.w[0])
-        # res2 = tf.einsum("bli, ij, lf->bijf", colsum, tf.eye(N), self.w[2])
+        diagonal (bli), eye(N) (ij), self.weight[0] (lf)
+        res0 = tf.einsum("bli, ij, lf->bijf", diag, tf.eye(N), self.w[0])
+        res2 = tf.einsum("bli, ij, lf->bijf", colsum, tf.eye(N), self.w[2])
 
-        # trace (bl) self.w[] (lf) og eye(N) (ij)
-        # res3 = tf.einsum("bl, ij, lf->bijf", trace, tf.eye(N), self.w[3])
+        trace (bl) self.w[] (lf) og eye(N) (ij)
+        res3 = tf.einsum("bl, ij, lf->bijf", trace, tf.eye(N), self.w[3])
 
-        # diag (bli) self.w (lf) ones(N) (ij)
-        # res5 = tf.einsum("blj, ij, lf->bijf", diag, tf.ones((N, N)), self.w[5])
-        # res7 = tf.einsum("blj, ij, lf->bijf", colsum, tf.ones((N, N)), self.w[7])
+        diag (bli) self.w (lf) ones(N) (ij)
+        res5 = tf.einsum("blj, ij, lf->bijf", diag, tf.ones((N, N)), self.w[5])
+        res7 = tf.einsum("blj, ij, lf->bijf", colsum, tf.ones((N, N)), self.w[7])
 
-        # diag (bli) self.w (lf) ones(N) (ij)
-        # res8 = tf.einsum("bli, ij, lf->bijf", diag, tf.ones((N, N)), self.w[8])
-        # res9 = tf.einsum("bli, ij, lf->bijf", rowsum, tf.ones((N, N)), self.w[9])
-        # res10 = tf.einsum("bli, ij, lf->bijf", colsum, tf.ones((N, N)), self.w[10])
+        diag (bli) self.w (lf) ones(N) (ij)
+        res8 = tf.einsum("bli, ij, lf->bijf", diag, tf.ones((N, N)), self.w[8])
+        res9 = tf.einsum("bli, ij, lf->bijf", rowsum, tf.ones((N, N)), self.w[9])
+        res10 = tf.einsum("bli, ij, lf->bijf", colsum, tf.ones((N, N)), self.w[10])
 
 
-        # res11 = tf.einsum("bijl, lf->bjif", inputs, self.w[11]) #transpose
+        res11 = tf.einsum("bijl, lf->bjif", inputs, self.w[11]) #transpose
 
-        # trace (bl) self.w[] (lf) og eye(N) (ij)
-        # res13 = tf.einsum("bl, ij, lf->bijf", trace, tf.ones((N, N)), self.w[13])
+        trace (bl) self.w[] (lf) og eye(N) (ij)
+        res13 = tf.einsum("bl, ij, lf->bijf", trace, tf.ones((N, N)), self.w[13])
 
         # totsum (bl) self.w[] (lf) og eye(N) (ij)
 
