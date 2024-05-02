@@ -16,6 +16,7 @@ hyperparams:
 model:
   input:
     data_format: Epxpypz
+    instantons: True
 
   lineq2v2:
     n_hidden: 3

@@ -134,11 +134,11 @@ class JetDataset(tf.keras.utils.Sequence):
         self.y_data = y_data
 
 
-        self.logger = logging.getLogger('')
-        self.logger.warning("Adding instantons here, make sure to match format")
+        # self.logger = logging.getLogger('')
+        # self.logger.warning("Adding instantons here, make sure to match format")
 
-        self.x_data[:, -1, ...] = np.array([1, 0, 0, -1])
-        self.x_data[:, -2, ...] = np.array([1, 0, 0, 1])
+        # self.x_data[:, -1, ...] = np.array([1, 0, 0, -1])
+        # self.x_data[:, -2, ...] = np.array([1, 0, 0, 1])
 
         assert len(self.x_data) == len(self.y_data)
 
