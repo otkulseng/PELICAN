@@ -17,6 +17,7 @@ from tqdm.keras import TqdmCallback
 from keras.optimizers import AdamW, Adam
 from keras.losses import CategoricalCrossentropy, BinaryCrossentropy
 from keras.callbacks import CSVLogger, ModelCheckpoint, EarlyStopping
+from keras import losses
 
 
 import tensorflow as tf
@@ -115,7 +116,6 @@ def run(conf):
         model.build(features.shape)
         model.summary(features.shape)
 
-
     loss = BinaryCrossentropy(from_logits=True)
     model.compile(
         optimizer=AdamW(learning_rate=LinearWarmupCosineAnnealing(
@@ -126,24 +126,23 @@ def run(conf):
         metrics=['accuracy'],
     )
 
-
-
     dataset.val.shuffle(keepratio=True)
     try:
         history = model.fit(
             dataset.train.shuffle(keepratio=True).batch(hyperparams['batch_size']),
             epochs = hyperparams['epochs'],
             validation_data = (dataset.val.x_data[:hyperparams['val_size']], dataset.val.y_data[:hyperparams['val_size']]),
-            callbacks=[TqdmCallback(), train_log, ModelCheckpoint(
-                filepath = save_dir / 'model.best.keras',
+            callbacks=[TqdmCallback(verbose=hyperparams['verbose']), train_log, ModelCheckpoint(
+                filepath = save_dir / 'model.best_acc.keras',
                 monitor='val_accuracy',
                 mode='max',
                 save_best_only=True
-            ), keras.callbacks.EarlyStopping(
-                monitor='val_accuracy',
-                patience=hyperparams['patience'],
-                mode='max'
-            ),
+            ), ModelCheckpoint(
+                filepath = save_dir / 'model.best_loss.keras',
+                monitor='val_loss',
+                mode='min',
+                save_best_only=True
+            )
         ],
             verbose=0
         )

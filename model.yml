@@ -2,7 +2,7 @@ dataset:
   folder: data/nano_data
   feature_key: Pmu
   label_key: is_signal
-  num_particles: 16
+  num_particles: 34
 
 save_dir:
   folder: experiments
@@ -11,7 +11,7 @@ save_dir:
 hyperparams:
   epochs: 140
   batch_size: 512
-  patience: 20
+  verbose: 0
 
 model:
   input:
@@ -19,7 +19,7 @@ model:
     instantons: True
 
   lineq2v2:
-    n_hidden: 3
+    n_hidden: 1
     activation: relu
     dropout: 0.0
     batchnorm: True

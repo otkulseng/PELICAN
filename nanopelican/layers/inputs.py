@@ -2,6 +2,7 @@ import tensorflow as tf
 
 from nanopelican import data
 from keras import layers
+import logging
 
 def repeat_const(tensor, myconst):
     # https://stackoverflow.com/questions/68345125/how-to-concatenate-a-tensor-to-a-keras-layer-along-batch-without-specifying-bat
@@ -13,8 +14,10 @@ class InnerProduct(layers.Layer):
         super().__init__()
         self.arg_dict = arg_dict
         self.data_handler = data.get_handler(arg_dict['data_format'])
-        self.use_instantons = arg_dict.get('instantons', False)
 
+        self.logger = logging.getLogger('')
+        logging.warning("Instantons do not work here yet")
+        self.use_instantons = False
         if self.use_instantons:
             self.instantons = data.get_instantons(arg_dict['data_format'])
             self.instantons = tf.expand_dims(self.instantons, axis=0)

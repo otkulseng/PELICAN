@@ -75,7 +75,7 @@ def generate_plot(filename):
     return fig
 
 def run_test(experiment):
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(logging.INFO)
     logfile = logging.FileHandler(experiment / 'test.log')
     logging.basicConfig(level=logging.INFO, handlers=[logfile])
 
