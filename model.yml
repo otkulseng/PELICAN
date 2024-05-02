@@ -2,7 +2,7 @@ dataset:
   folder: data/nano_data
   feature_key: Pmu
   label_key: is_signal
-  num_particles: 32
+  num_particles: 50
 
 save_dir:
   folder: experiments
@@ -11,7 +11,7 @@ save_dir:
 hyperparams:
   epochs: 140
   batch_size: 512
-  val_size: 50000
+  patience: 20
 
 model:
   input:
@@ -29,5 +29,3 @@ model:
     dropout: 0.0
     batchnorm: True
     num_particles_avg: 25
-
-seed: 2071694758
