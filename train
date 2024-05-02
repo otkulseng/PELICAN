@@ -113,7 +113,7 @@ def run(conf):
         data = dataset.train
         features, _ = data[0]
         model.build(features.shape)
-        model.summary()
+        model.summary(features.shape)
 
 
     loss = BinaryCrossentropy(from_logits=True)

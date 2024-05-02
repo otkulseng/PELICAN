@@ -26,8 +26,8 @@ class PelicanNano(Model):
         self.agg_layer = layers.Lineq2v2nano(arg_dict['lineq2v2'])
         self.out_layer = layers.Lineq2v0nano(arg_dict['lineq2v0'])
 
-    def summary(self):
-        x = Input(shape=(17, 4))
+    def summary(self, input_shape):
+        x = Input(shape=input_shape)
         model = Model(inputs=[x], outputs=self.call(x))
         return model.summary()
 

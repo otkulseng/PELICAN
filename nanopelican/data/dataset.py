@@ -134,7 +134,7 @@ class JetDataset(tf.keras.utils.Sequence):
         self.y_data = y_data
 
 
-        # self.logger = logging.getLogger('')
+        self.logger = logging.getLogger('')
         # self.logger.warning("Adding instantons here, make sure to match format")
 
         # self.x_data[:, -1, ...] = np.array([1, 0, 0, -1])

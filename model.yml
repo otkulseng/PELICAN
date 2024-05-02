@@ -2,11 +2,11 @@ dataset:
   folder: data/nano_data
   feature_key: Pmu
   label_key: is_signal
-  num_particles: 50
+  num_particles: 16
 
 save_dir:
   folder: experiments
-  name: long
+  name: test
 
 hyperparams:
   epochs: 140
