@@ -1,5 +1,4 @@
 # Based on https://github.com/abogatskiy/PELICAN-nano/
-import keras
 from keras import backend as K
 from keras.models import Model
 from keras.layers import Reshape, Input
@@ -15,7 +14,7 @@ import os
 import pickle
 
 
-@keras.saving.register_keras_serializable(package='nano_pelican', name='PelicanNano')
+@tf.keras.utils.register_keras_serializable(package='nano_pelican', name='PelicanNano')
 class PelicanNano(Model):
     def __init__(self, arg_dict):
         super(PelicanNano, self).__init__()

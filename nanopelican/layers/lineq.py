@@ -1,12 +1,8 @@
 # The different linear equivariant layers
 import tensorflow as tf
-from keras.layers import Layer, BatchNormalization, Dropout
-from keras import activations
-import keras.backend as K
-import keras
 import logging
 
-class LinearEquivariant(Layer):
+class LinearEquivariant(tf.keras.layers.Layer):
 
     def __init__(self, tensor_dims, **kwargs):
         """ General Linear Equivariant Layers
@@ -17,8 +13,8 @@ class LinearEquivariant(Layer):
         """
         super().__init__(**kwargs)
 
-@keras.saving.register_keras_serializable(package='nano_pelican', name='Lineq2v2')
-class Lineq2v2nano(Layer):
+@tf.keras.utils.register_keras_serializable(package='nano_pelican', name='Lineq2v2')
+class Lineq2v2nano(tf.keras.layers.Layer):
     """ This layer assumes the input 2D tensor is:
             1. Symmetric
             2. Hollow (zero diagonal)
@@ -35,18 +31,18 @@ class Lineq2v2nano(Layer):
 
         self.arg_dict = arg_dict
         self.output_channels = arg_dict['n_hidden']
-        self.activation = activations.get(arg_dict['activation'])
+        self.activation = tf.keras.activations.get(arg_dict['activation'])
         self.dropout_rate = arg_dict['dropout']
         self.use_batchnorm = arg_dict['batchnorm']
         self.average_particles = arg_dict['num_particles_avg']
 
         if self.dropout_rate > 0:
             logger.info("Using dropout in 2v2")
-            self.dropout = Dropout(self.dropout_rate)
+            self.dropout = tf.keras.layers.Dropout(self.dropout_rate)
 
         if self.use_batchnorm:
             logger.info("Using bnorm in 2v2")
-            self.bnorm = BatchNormalization()
+            self.bnorm = tf.keras.layers.BatchNormalization()
 
 
     def compute_output_shape(self, input_shape):
@@ -65,7 +61,7 @@ class Lineq2v2nano(Layer):
         N = input_shape[-2]
         L = input_shape[-1]
 
-        w_init = tf.random_normal_initializer(stddev=1/tf.cast(N, dtype=tf.float32))
+        w_init = tf.random_normal_initializer(stddev=1/tf.cast(N, dtype=tf.dtypes.float32))
 
         # For each input channel L, make 6 permequiv transformations,
         # and mix with a L*6 * self.output_channels dense layer
@@ -116,15 +112,15 @@ class Lineq2v2nano(Layer):
 
 
         # B, N, N, L = inputs.shape
-        N = inputs.shape[1]
+        N = tf.shape(inputs)[-2]
 
         totsum = tf.einsum("...ijl->...l", inputs)/self.average_particles**2    # B x L
         rowsum = tf.reduce_sum(inputs, axis=-2)/self.average_particles          # B x N x L
 
         ops = [None] * 6
 
-        ONES = tf.ones((N, N), dtype=tf.float32)
-        IDENTITY = tf.eye(N, dtype=tf.float32)
+        ONES = tf.ones((N, N), dtype=tf.dtypes.float32)
+        IDENTITY = tf.eye(N, dtype=tf.dtypes.float32)
 
         # Identity
         ops[0] = inputs
@@ -163,14 +159,14 @@ class Lineq2v2nano(Layer):
 
         return config
 
-@keras.saving.register_keras_serializable(package='nano_pelican', name='Lineq2v0')
-class Lineq2v0nano(Layer):
+@tf.keras.utils.register_keras_serializable(package='nano_pelican', name='Lineq2v0')
+class Lineq2v0nano(tf.keras.layers.Layer):
     def __init__(self, arg_dict):
         super().__init__()
 
         self.arg_dict = arg_dict
         self.num_output_channels = arg_dict['n_outputs']
-        self.activation = activations.get(arg_dict['activation'])
+        self.activation = tf.keras.activations.get(arg_dict['activation'])
         self.dropout_rate = arg_dict['dropout']
         self.use_batchnorm = arg_dict['batchnorm']
         self.average_particles = arg_dict['num_particles_avg']
@@ -179,11 +175,11 @@ class Lineq2v0nano(Layer):
         logger = logging.getLogger('')
         if self.dropout_rate > 0:
             logger.info("Using dropout in 2v0")
-            self.dropout = Dropout(self.dropout_rate)
+            self.dropout = tf.keras.layers.Dropout(self.dropout_rate)
 
         if self.use_batchnorm:
             logger.info("Using bnorm in 2v0")
-            self.bnorm = BatchNormalization()
+            self.bnorm = tf.keras.layers.BatchNormalization()
 
 
     def build(self, input_shape):
@@ -194,7 +190,7 @@ class Lineq2v0nano(Layer):
         L = input_shape[-1]
         N = input_shape[-2]
 
-        w_init = tf.random_normal_initializer(stddev=1/tf.cast(N, dtype=tf.float32))
+        w_init = tf.random_normal_initializer(stddev=1/tf.cast(N, dtype=tf.dtypes.float32))
         # For each input channel L, make 2 permequiv invariant,
 
         # and mix with a L*2 * self.num_output_channels dense layer

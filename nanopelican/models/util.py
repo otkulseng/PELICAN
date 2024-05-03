@@ -2,15 +2,14 @@ from pathlib import Path
 from nanopelican.schedulers import LinearWarmupCosineAnnealing
 
 import pickle
-from keras.models import load_model
-from keras import models
+import tensorflow as tf
 
 def load_model(filename):
     root = Path(filename)
     try:
-        model = models.load_model(root, custom_objects={'CosineAnnealingExpDecay': LinearWarmupCosineAnnealing})
+        model = tf.keras.models.load_model(root, custom_objects={'CosineAnnealingExpDecay': LinearWarmupCosineAnnealing})
     except ValueError:
-        model = models.load_model(root)
+        model = tf.keras.models.load_model(root)
     return model
 
 def load_history(filename):

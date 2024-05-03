@@ -1,7 +1,7 @@
 import tensorflow as tf
 from keras import backend as K
 
-def get_instantons(data_format, dtype=tf.float32):
+def get_instantons(data_format, dtype=tf.dtypes.float32):
     my_dict = {
         'epxpypz': tf.constant([[1, 0, 0, -1],
                                 [1, 0, 0, 1]], dtype=dtype),
@@ -41,7 +41,7 @@ def inner_prods_from_Epxpypz(data):
     """Assumes data is of shape Batch x num_particles x 4
     where the last axis are (E, px, py, pz)
     """
-    M = tf.linalg.diag(tf.constant([1, -1, -1, -1], dtype=tf.float32))
+    M = tf.linalg.diag(tf.constant([1, -1, -1, -1], dtype=tf.dtypes.float32))
     return tf.einsum("...pi, ij, ...qj->...pq", data, M, data)
 
 
@@ -49,6 +49,6 @@ def inner_prods_from_inverted_Epxpypz(data):
     """Assumes data is of shape Batch x num_particles x 4
     where the last axis are (px, py, pz, E)
     """
-    M = tf.linalg.diag(tf.constant([-1, -1, -1, 1], dtype=tf.float32))
+    M = tf.linalg.diag(tf.constant([-1, -1, -1, 1], dtype=tf.dtypes.float32))
     return tf.einsum("...pi, ij, ...qj->...pq", data, M, data)
 

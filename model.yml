@@ -6,12 +6,12 @@ dataset:
 
 save_dir:
   folder: experiments
-  name: test
+  name: multi-test
 
 hyperparams:
   epochs: 140
   batch_size: 512
-  verbose: 0
+  verbose: 1
 
 model:
   input:

@@ -75,6 +75,7 @@ def generate_plot(filename):
     return fig
 
 def run_test(experiment):
+    print(experiment, experiment.is_dir())
     logger.setLevel(logging.INFO)
     logfile = logging.FileHandler(experiment / 'test.log')
     logging.basicConfig(level=logging.INFO, handlers=[logfile])
@@ -84,9 +85,14 @@ def run_test(experiment):
     config = load_yaml(experiment / 'config.yml')
     dataset = load_dataset(config['dataset'], keys=['test'])
 
-    for name in ['model.keras', 'model.best.keras']:
+
+    for file in experiment.iterdir():
+        name = file.name
+        if '.keras' not in name:
+            continue
         try:
-            model = load_model(experiment / name)
+            logger.info(f'Testing {name}')
+            model = load_model(file)
             loss, acc = model.evaluate(dataset.test.batch(1000))
 
             fig, (fpr, tpr, auc) = generate_auc(model, dataset.test)
@@ -130,7 +136,7 @@ def main():
             run_test(exp)
         except KeyboardInterrupt:
             break
-        except:
+        except :
             continue
 
 if __name__ == '__main__':

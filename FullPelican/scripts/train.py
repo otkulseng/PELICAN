@@ -1,6 +1,5 @@
 # Inspired by
 
-import keras
 from nanopelican.data import load_dataset
 from nanopelican import cli
 
@@ -10,7 +9,7 @@ from keras.optimizers import AdamW, Adam
 from keras.losses import CategoricalCrossentropy, BinaryCrossentropy
 
 from nanopelican.models import PelicanNano
-
+import tensorflow as tf
 
 
 def run_training(args):
