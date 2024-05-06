@@ -2,11 +2,11 @@ dataset:
   folder: data/nano_data
   feature_key: Pmu
   label_key: is_signal
-  num_particles: 34
+  num_particles: 32
 
 save_dir:
-  folder: experiments
-  name: multi-test
+  folder: nano-pelican
+  name: long
 
 hyperparams:
   epochs: 140
@@ -16,7 +16,6 @@ hyperparams:
 model:
   input:
     data_format: Epxpypz
-    instantons: True
 
   lineq2v2:
     n_hidden: 1

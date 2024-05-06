@@ -90,7 +90,7 @@ def run(conf):
     conf = add_default_values(conf)
     save_config_file(save_dir / 'config.yml', conf)
 
-    # tf.keras.utils.set_random_seed(conf['seed'])
+    tf.keras.utils.set_random_seed(conf['seed'])
 
 
     # Initialize logger
