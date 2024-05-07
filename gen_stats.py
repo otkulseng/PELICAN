@@ -90,7 +90,7 @@ def run_test(experiment):
                 continue
 
         df = pd.DataFrame(models_dataframe, columns=['Name', 'acc', 'auc', 'loss'])
-        df.to_csv(experiment / 'evaluation.csv')
+        df.to_csv(experiment / 'evaluation.csv', index=False)
 
 
 def load_arguments():
@@ -163,7 +163,7 @@ def main():
     # Step 3: Go through all experiments, create averages etc
     df = generate_dataframe(experiments, ['n_hidden', 'num_particles'])
     filename = Path(args.dir) / f'eval-{args.name}.csv'
-    df.to_csv(filename)
+    df.to_csv(filename, index=False)
 
 if __name__ == '__main__':
     main()
