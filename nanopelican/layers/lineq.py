@@ -5,6 +5,7 @@ from keras import activations
 import keras.backend as K
 import keras
 import logging
+from nanopelican import data
 
 class LinearEquivariant(Layer):
 
@@ -47,6 +48,33 @@ class Lineq2v2nano(Layer):
         if self.use_batchnorm:
             logger.info("Using bnorm in 2v2")
             self.bnorm = BatchNormalization()
+
+    def get_flops(self, input_shape):
+        # input_shape = N x N x L
+        L = input_shape[-1]
+        N = input_shape[-2]
+
+        # Totsum
+        totsum = N**2 * L
+
+        # Rowsum
+        rowsum = N**2 * L
+
+        # lineq ops
+        # multiply each N x N x 6 x L by weights 6 x L x self.output_channels
+
+        # each N x N matrix, indexed by 6 x L, is multiplied and added. Hence 1 + 1
+        mult = self.output_channels * L * 6 * (1 + 1)
+
+        #biases
+        diag_bias = N * self.output_channels
+
+        bias = N * N * self.output_channels
+
+        # activation
+        activation = data.get_flops_activ([N, N, self.output_channels], self.arg_dict['activation'])
+
+        return totsum + rowsum + mult + diag_bias + bias + activation
 
 
     def compute_output_shape(self, input_shape):
@@ -176,6 +204,7 @@ class Lineq2v0nano(Layer):
         self.average_particles = arg_dict['num_particles_avg']
 
 
+
         logger = logging.getLogger('')
         if self.dropout_rate > 0:
             logger.info("Using dropout in 2v0")
@@ -185,6 +214,28 @@ class Lineq2v0nano(Layer):
             logger.info("Using bnorm in 2v0")
             self.bnorm = BatchNormalization()
 
+    def get_flops(self, input_shape):
+        # Input shape N x N x L
+
+        L = input_shape[-1]
+        N = input_shape[-2]
+
+        # totsum
+        totsum = N * N * L
+
+        # trace
+        trace = N * L
+
+        # weight
+        weight = self.num_output_channels * L * 2 * (1 + 1)
+
+        # bias
+        bias = self.num_output_channels
+
+        # activation
+        activation = data.get_flops_activ(self.num_output_channels, self.arg_dict['activation'])
+
+        return totsum + trace + weight + bias + activation
 
     def build(self, input_shape):
         # N, N, L = input_shape

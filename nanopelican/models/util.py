@@ -9,7 +9,8 @@ def load_model(filename):
     root = Path(filename)
     try:
         model = models.load_model(root, custom_objects={'CosineAnnealingExpDecay': LinearWarmupCosineAnnealing})
-    except ValueError:
+    except Exception as e:
+        print("Trying without")
         model = models.load_model(root)
     return model
 

@@ -1,5 +1,45 @@
 import tensorflow as tf
 from keras import backend as K
+import functools
+
+def get_flops_activ(input_shape, activation):
+    # from https://github.com/bb511/deepsets_synth/tree/main/fast_deepsets
+    """Approximates the number of floating point operations in an activation.
+
+    According to https://stackoverflow.com/q/41251698 tanh has 20-100 FLOPs.
+    """
+    if isinstance(input_shape, list):
+        ninputs = functools.reduce(lambda x, y: x * y, input_shape)
+    else:
+        ninputs = input_shape
+
+    switcher = {
+        ""
+        "relu": lambda: ninputs,
+        "tanh": lambda: ninputs * 50,
+        "linear": lambda: 0,
+    }
+
+    activation_flops = switcher.get(activation, lambda: None)()
+    if activation_flops == None:
+        raise RuntimeError(f"Number of flops calc. not implemented for {activation}.")
+
+    return activation_flops
+
+def get_flops(data_format, input_shape):
+
+    if data_format.lower() in ['epxpypz', 'pxpypze']:
+        # Input_shape is num_particles x 4
+        num_particles, _ = input_shape
+        # 4 multiplications, 4 additions per element in
+        # square matrix
+        return num_particles**2 * (4 + 4)
+
+    raise TypeError(
+        f"Could not find flops for data_format: {data_format}"
+    )
+
+
 
 def get_instantons(data_format, dtype=tf.float32):
     my_dict = {

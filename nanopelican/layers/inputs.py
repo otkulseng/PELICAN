@@ -22,6 +22,10 @@ class InnerProduct(layers.Layer):
             self.instantons = data.get_instantons(arg_dict['data_format'])
             self.instantons = tf.expand_dims(self.instantons, axis=0)
 
+    def get_flops(self, input_shape):
+        # input_shape (N, custom)
+        return data.get_flops(self.arg_dict['data_format'], input_shape)
+
 
     def build(self, input_shape):
         return super().build(input_shape)

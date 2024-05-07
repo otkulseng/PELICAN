@@ -26,6 +26,17 @@ class PelicanNano(Model):
         self.agg_layer = layers.Lineq2v2nano(arg_dict['lineq2v2'])
         self.out_layer = layers.Lineq2v0nano(arg_dict['lineq2v0'])
 
+    def get_flops(self, input_shape):
+        inp = self.input_layer.get_flops(input_shape)
+        input_shape = self.input_layer.compute_output_shape(input_shape)
+
+        agg = self.agg_layer.get_flops(input_shape)
+        input_shape = self.agg_layer.compute_output_shape(input_shape)
+
+        out = self.out_layer.get_flops(input_shape)
+
+        return inp + agg + out
+
     def summary(self, input_shape):
         x = Input(shape=input_shape)
         model = Model(inputs=[x], outputs=self.call(x))
