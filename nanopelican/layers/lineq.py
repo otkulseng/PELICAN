@@ -3,7 +3,6 @@ import tensorflow as tf
 import logging
 
 class LinearEquivariant(tf.keras.layers.Layer):
-
     def __init__(self, tensor_dims, **kwargs):
         """ General Linear Equivariant Layers
 
@@ -88,14 +87,6 @@ class Lineq2v2nano(tf.keras.layers.Layer):
                 trainable=True,
         )
 
-
-        # a_init = tf.random_uniform_initializer(minval=0, maxval=1)
-        # self.alphas = self.add_weight(
-        #         shape=(self.output_channels, ),
-        #         initializer=a_init,
-        #         trainable=True,
-        # )
-
         super(Lineq2v2nano, self).build(input_shape)
 
     def call(self, inputs, training=False):
@@ -111,14 +102,14 @@ class Lineq2v2nano(tf.keras.layers.Layer):
             inputs = self.bnorm(inputs, training=training)
 
 
-        # B, N, N, L = inputs.shape
-        N = tf.shape(inputs)[-2]
 
         totsum = tf.einsum("...ijl->...l", inputs)/self.average_particles**2    # B x L
         rowsum = tf.reduce_sum(inputs, axis=-2)/self.average_particles          # B x N x L
 
         ops = [None] * 6
 
+        # B, N, N, L = inputs.shape
+        N = tf.shape(inputs)[-2]
         ONES = tf.ones((N, N), dtype=tf.dtypes.float32)
         IDENTITY = tf.eye(N, dtype=tf.dtypes.float32)
 
@@ -139,6 +130,7 @@ class Lineq2v2nano(tf.keras.layers.Layer):
 
         #   totsum broadcast over diagonals
         ops[5] = tf.einsum("...l, ij->...ijl", totsum, IDENTITY)
+
         ops = tf.stack(ops, axis=-1) # B x N x N x L x 6
 
 

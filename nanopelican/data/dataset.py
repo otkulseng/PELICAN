@@ -3,7 +3,6 @@ import h5py
 import tensorflow as tf
 import numpy as np
 import math
-from .interpreters import get_interpreter
 from .util import interleave
 from pathlib import Path
 import logging
