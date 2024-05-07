@@ -25,6 +25,9 @@ from keras.optimizers import AdamW, Adam
 from keras.losses import CategoricalCrossentropy, BinaryCrossentropy
 from keras.callbacks import CSVLogger
 
+from sklearn.metrics import roc_curve, auc
+from scipy.special import softmax
+
 logger = logging.getLogger('')
 
 def load_arguments():
@@ -40,9 +43,6 @@ def load_yaml(filename):
         config = yaml.load(stream, Loader=yaml.Loader)
     return config
 
-
-from sklearn.metrics import roc_curve, auc
-from scipy.special import softmax
 
 def generate_auc(model, data):
     y_score = model.predict(data.x_data)
@@ -84,16 +84,17 @@ def run_test(experiment):
     config = load_yaml(experiment / 'config.yml')
     dataset = load_dataset(config['dataset'], keys=['test'])
 
-    for name in ['model.keras', 'model.best.keras']:
+    for file in experiment.iterdir():
+        if '.keras' not in file.name:
+            continue
         try:
-            model = load_model(experiment / name)
+            model = load_model(file)
             loss, acc = model.evaluate(dataset.test.batch(1000))
 
             fig, (fpr, tpr, auc) = generate_auc(model, dataset.test)
-            logger.info(f'{name}: finish \n loss: {loss} accuracy: {acc} AUC: {auc}')
-            # logger.info(f'{name}: FPR: {fpr} TPR: {tpr}')
+            logger.info(f'{file.name}: finish \n loss: {loss} accuracy: {acc} AUC: {auc}')
 
-            fig.savefig(experiment / f'{name} - auc.pdf')
+            fig.savefig(experiment / f'{file.name} - auc.pdf')
         except Exception as e:
             logger.info(f'Failed with error {str(e)}')
             continue
@@ -130,7 +131,8 @@ def main():
             run_test(exp)
         except KeyboardInterrupt:
             break
-        except:
+        except Exception as e:
+            print(f'Experiment failed with error {e}')
             continue
 
 if __name__ == '__main__':

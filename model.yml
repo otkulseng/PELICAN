@@ -2,16 +2,16 @@ dataset:
   folder: data/nano_data
   feature_key: Pmu
   label_key: is_signal
-  num_particles: 34
+  num_particles: 8
 
 save_dir:
-  folder: experiments
-  name: test
+  folder: nano-pelican
+  name: long
 
 hyperparams:
   epochs: 140
   batch_size: 512
-  verbose: 0
+  verbose: 1
 
 model:
   input:
