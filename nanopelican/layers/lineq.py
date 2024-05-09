@@ -66,9 +66,10 @@ class Lineq2v2nano(tf.keras.layers.Layer):
         # and mix with a L*6 * self.output_channels dense layer
 
         self.w = self.add_weight(
-                shape=(L, 6, self.output_channels),
+                shape=(L, 4, self.output_channels),
                 initializer=w_init,
                 trainable=True,
+                name='2v2w'
         )
 
         b_init = tf.zeros_initializer()
@@ -78,6 +79,7 @@ class Lineq2v2nano(tf.keras.layers.Layer):
                 shape=(self.output_channels, ),
                 initializer=b_init,
                 trainable=True,
+                name='2v2db'
         )
 
         # Bias to be broadcasted over entire output matrix (for each channel)
@@ -85,6 +87,7 @@ class Lineq2v2nano(tf.keras.layers.Layer):
                 shape=(self.output_channels, ),
                 initializer=b_init,
                 trainable=True,
+                name='2v2b'
         )
 
         super(Lineq2v2nano, self).build(input_shape)
@@ -106,7 +109,7 @@ class Lineq2v2nano(tf.keras.layers.Layer):
         totsum = tf.einsum("...ijl->...l", inputs)/self.average_particles**2    # B x L
         rowsum = tf.reduce_sum(inputs, axis=-2)/self.average_particles          # B x N x L
 
-        ops = [None] * 6
+        ops = [None] * 4
 
         # B, N, N, L = inputs.shape
         N = tf.shape(inputs)[-2]
@@ -117,19 +120,19 @@ class Lineq2v2nano(tf.keras.layers.Layer):
         ops[0] = inputs
 
         # Totsum over entire output
-        ops[1] = tf.einsum("...l, ij->...ijl", totsum, ONES)
+        # ops[1] = tf.einsum("...l, ij->...ijl", totsum, ONES)
 
         # Rowsum broadcasted over rows
-        ops[2] = tf.einsum("...nl, nj->...njl", rowsum, ONES)
+        ops[1] = tf.einsum("...nl, nj->...njl", rowsum, ONES)
 
         # Rowsum broadcasted over columns
-        ops[3] = tf.einsum("...nl, nj->...jnl", rowsum, ONES)
+        ops[2] = tf.einsum("...nl, nj->...jnl", rowsum, ONES)
 
         # Rowsum broadcast over diagonals
-        ops[4] = tf.einsum("...nl, nj->...njl", rowsum, IDENTITY)
+        ops[3] = tf.einsum("...nl, nj->...njl", rowsum, IDENTITY)
 
         #   totsum broadcast over diagonals
-        ops[5] = tf.einsum("...l, ij->...ijl", totsum, IDENTITY)
+        # ops[5] = tf.einsum("...l, ij->...ijl", totsum, IDENTITY)
 
         ops = tf.stack(ops, axis=-1) # B x N x N x L x 6
 
@@ -187,9 +190,10 @@ class Lineq2v0nano(tf.keras.layers.Layer):
 
         # and mix with a L*2 * self.num_output_channels dense layer
         self.w = self.add_weight(
-                shape=(L, 2, self.num_output_channels),
+                shape=(L, self.num_output_channels),
                 initializer=w_init,
                 trainable=True,
+                name='2v0w'
         )
 
         b_init = tf.zeros_initializer()
@@ -199,6 +203,7 @@ class Lineq2v0nano(tf.keras.layers.Layer):
                 shape=(self.num_output_channels, ),
                 initializer=b_init,
                 trainable=True,
+                name='2v0b'
         )
 
         super(Lineq2v0nano, self).build(input_shape)
@@ -218,7 +223,9 @@ class Lineq2v0nano(tf.keras.layers.Layer):
         out     = tf.stack([totsum, trace], axis=-1)    # B x L x 2
 
         return self.activation(
-            tf.einsum("blk, lkf->bf", out, self.w) + self.bias
+            tf.einsum("bl, lf->bf", totsum, self.w) +
+            trace +
+            self.bias
         )
 
     def get_config(self):

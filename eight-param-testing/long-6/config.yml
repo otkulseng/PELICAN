@@ -28,3 +28,4 @@ model:
 save_dir:
   folder: eight-param-testing
   name: long
+seed: 211201650
