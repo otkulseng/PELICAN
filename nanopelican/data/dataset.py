@@ -147,7 +147,8 @@ class JetDataset(tf.keras.utils.Sequence):
             return self
 
         # Shuffle while keeping same ratio of answers
-        if self.y_data.shape[-1] == 0:
+        if self.y_data.shape[-1] == 1 or len(self.y_data.shape) < 2:
+            # sample x 1
             self.logger.warning("Assumes this means either 1 or 0")
             top = np.where(self.y_data==1)[0]
             bottom = np.where(self.y_data==0)[0]

@@ -1,11 +1,11 @@
 dataset:
-  folder: data/zenodo_data
-  feature_key: feats
-  label_key: label
+  feature_key: Pmu
+  folder: data/nano_data
+  label_key: is_signal
   num_particles: 32
 
 save_dir:
-  folder: zenodo-testing
+  folder: totsum-testing
   name: long
 
 hyperparams:
@@ -15,19 +15,18 @@ hyperparams:
 
 model:
   input:
-    data_format: pxpypze
-    spurions: True
+    data_format: epxpypz
+    spurions: False
 
   lineq2v2:
-    n_hidden: 5
+    n_hidden: 1
     activation: relu
     dropout: 0.0
     batchnorm: False
     num_particles_avg: 25
   lineq2v0:
-    n_outputs: 5
+    n_outputs: 1
     activation: null
     dropout: 0.0
     batchnorm: False
     num_particles_avg: 25
-seed: 1812682482
