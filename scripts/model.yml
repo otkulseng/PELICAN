@@ -1,11 +1,11 @@
 dataset:
-  folder: data/nano_data
-  feature_key: Pmu
-  label_key: is_signal
+  folder: data/zenodo_data
+  feature_key: feats
+  label_key: label
   num_particles: 32
 
 save_dir:
-  folder: nano-pelican-testing
+  folder: zenodo-testing
   name: long
 
 hyperparams:
@@ -15,17 +15,19 @@ hyperparams:
 
 model:
   input:
-    data_format: Epxpypz
+    data_format: pxpypze
+    spurions: True
 
   lineq2v2:
-    n_hidden: 2
+    n_hidden: 5
     activation: relu
     dropout: 0.0
     batchnorm: False
     num_particles_avg: 25
   lineq2v0:
-    n_outputs: 1
+    n_outputs: 5
     activation: null
     dropout: 0.0
     batchnorm: False
     num_particles_avg: 25
+seed: 1812682482

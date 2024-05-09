@@ -38,11 +38,12 @@ def load_arguments():
 def run(conf):
 
     model = PelicanNano(conf['model'])
-    shape = (conf['dataset']['num_particles'], 4)
+    shape = (2, 7, 4)
 
-    # model.build(features.shape)
+    model.build(shape)
     model.summary(shape)
-    print(model.get_flops(shape))
+
+    model(tf.zeros(shape))
 
 def main():
     conf = load_arguments()

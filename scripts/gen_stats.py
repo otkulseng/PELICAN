@@ -68,11 +68,6 @@ def run_test(experiment):
                 model = load_model(file)
                 model_group = save_file.create_group(file.name)
 
-                (fpr, tpr, thresholds, auc) = generate_auc(model, dataset)
-                auc_group = model_group.create_group('auc')
-                auc_group.create_dataset('fpr', data=fpr)
-                auc_group.create_dataset('tpr', data=tpr)
-                auc_group.create_dataset('thresholds',  data=thresholds)
 
 
                 (loss, acc) = evaluate_model(model, dataset)
@@ -80,6 +75,12 @@ def run_test(experiment):
                 models_dataframe.append(
                     [file.name, acc, auc, loss]
                 )
+
+                (fpr, tpr, thresholds, auc) = generate_auc(model, dataset)
+                auc_group = model_group.create_group('auc')
+                auc_group.create_dataset('fpr', data=fpr)
+                auc_group.create_dataset('tpr', data=tpr)
+                auc_group.create_dataset('thresholds',  data=thresholds)
 
                 print(f"Done with {file.name}")
 

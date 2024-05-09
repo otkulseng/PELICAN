@@ -5,7 +5,7 @@ def repeat_const(tensor, myconst):
     shapes = tf.shape(tensor)
     return tf.repeat(myconst, shapes[0], axis=0)
 
-def get_instantons(data_format, dtype=tf.dtypes.float32):
+def get_spurions(data_format, dtype=tf.dtypes.float32):
     my_dict = {
         'epxpypz': tf.constant([[1, 0, 0, -1],
                                 [1, 0, 0, 1]], dtype=dtype),
@@ -19,7 +19,7 @@ def get_instantons(data_format, dtype=tf.dtypes.float32):
         return my_dict[key]
 
     raise TypeError(
-        f"Could not find instantons for data_format: {data_format}"
+        f"Could not find spurions for data_format: {data_format}"
     )
 
 def get_handler(data_format):

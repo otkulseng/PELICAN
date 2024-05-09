@@ -16,6 +16,6 @@ def interleave(elems):
         minlen = min(minlen, len(elem))
 
     res = np.array([x for x in chain(*zip_longest(*elems)) if x is not None])
-    return res[:len(elems) * minlen]
+    return res
 
 

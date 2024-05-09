@@ -134,10 +134,6 @@ class JetDataset(tf.keras.utils.Sequence):
 
 
         self.logger = logging.getLogger('')
-        self.logger.warning("Adding instantons here, make sure to match format")
-
-        self.x_data[:, -1, ...] = np.array([1, 0, 0, -1])
-        self.x_data[:, -2, ...] = np.array([1, 0, 0, 1])
 
         assert len(self.x_data) == len(self.y_data)
 
@@ -145,21 +141,30 @@ class JetDataset(tf.keras.utils.Sequence):
         self.batch_size=1
 
     def shuffle(self, keepratio=False):
-        if not keepratio or self.batch_size > 1:
+        if (not keepratio) or (self.batch_size > 1):
             # Only shuffles first axis, so works for both batched and unbatched
             self.batches = np.random.permutation(self.batches)
             return self
 
-        self.logger.warning("Does NOT work with more classes than up down")
-
         # Shuffle while keeping same ratio of answers
-        top = np.where(self.y_data==1)[0]
-        bottom = np.where(self.y_data==0)[0]
+        if self.y_data.shape[-1] == 0:
+            self.logger.warning("Assumes this means either 1 or 0")
+            top = np.where(self.y_data==1)[0]
+            bottom = np.where(self.y_data==0)[0]
 
-        top = np.random.permutation(top)
-        bottom = np.random.permutation(bottom)
+            top = np.random.permutation(top)
+            bottom = np.random.permutation(bottom)
 
-        self.batches = interleave([top, bottom])
+            self.batches = interleave([top, bottom])
+        else:
+            self.logger.warning("One-hot encoding")
+            number_enc = np.argmax(self.y_data, axis=-1)
+            elems = []
+            for i in range(self.y_data.shape[-1]):
+                new_elem = np.where(number_enc==i)[0]
+                new_elem = np.random.permutation(new_elem)
+                elems.append(new_elem)
+            self.batches = interleave(elems)
         return self
 
     def batch(self, batch_size):
