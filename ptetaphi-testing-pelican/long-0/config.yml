@@ -12,8 +12,11 @@ hyperparams:
   weight_decay: 0.0
 model:
   input:
-    data_format: ptetaphi
-    spurions: false
+    activation: relu
+    batchnorm: false
+    dropout: 0.0
+    n_outputs: 3
+    num_particles_avg: 50
   lineq2v0:
     activation: null
     batchnorm: false
@@ -24,8 +27,9 @@ model:
     activation: relu
     batchnorm: false
     dropout: 0.0
-    n_hidden: 1
+    n_hidden: 5
     num_particles_avg: 50
 save_dir:
-  folder: ptetaphi-testing
+  folder: ptetaphi-testing-pelican
   name: long
+seed: 1812682482

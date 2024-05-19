@@ -8,7 +8,7 @@ import os
 import pickle
 import numpy as np
 
-from nanopelican.models import PelicanNano
+from nanopelican.models import PelicanNano, Pelican
 from nanopelican.data import load_dataset
 from nanopelican.schedulers import LinearWarmupCosineAnnealing
 

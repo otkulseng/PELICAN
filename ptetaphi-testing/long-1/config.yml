@@ -29,3 +29,4 @@ model:
 save_dir:
   folder: ptetaphi-testing
   name: long
+seed: 215421087

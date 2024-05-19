@@ -28,7 +28,8 @@ def get_handler(data_format):
 
     my_dict = {
         'epxpypz': inner_prods_from_Epxpypz,
-        'pxpypze': inner_prods_from_inverted_Epxpypz
+        'pxpypze': inner_prods_from_inverted_Epxpypz,
+        'ptetaphi': inner_prods_from_ptetaphi
     }
 
 
@@ -43,7 +44,7 @@ def get_handler(data_format):
 
 def inner_prods_from_Epxpypz(data):
     """Assumes data is of shape Batch x num_particles x 4
-    where the last axis are (E, px, py, pz)
+    where the last axis is (E, px, py, pz)
     """
     M = tf.linalg.diag(tf.constant([1, -1, -1, -1], dtype=tf.dtypes.float32))
     return tf.einsum("...pi, ij, ...qj->...pq", data, M, data)
@@ -51,8 +52,24 @@ def inner_prods_from_Epxpypz(data):
 
 def inner_prods_from_inverted_Epxpypz(data):
     """Assumes data is of shape Batch x num_particles x 4
-    where the last axis are (px, py, pz, E)
+    where the last axis is (px, py, pz, E)
     """
     M = tf.linalg.diag(tf.constant([-1, -1, -1, 1], dtype=tf.dtypes.float32))
     return tf.einsum("...pi, ij, ...qj->...pq", data, M, data)
+
+def inner_prods_from_ptetaphi(data):
+    """Assumes data is of shape Batch x num_particles x 3
+    where last axis (pt, eta, phi)
+    """
+
+    pt = data[..., 0]
+    eta = data[..., 1]
+    phi = data[..., 2]
+
+    pt_matr = tf.einsum('...p, ...q->...pq', pt, pt)
+    eta_matr = tf.expand_dims(eta, axis=-1) - tf.expand_dims(eta, axis=-2)
+    phi_matr = tf.expand_dims(phi, axis=-1) - tf.expand_dims(phi, axis=-2)
+
+    # * is elementwise (hadamard)
+    return pt_matr * (tf.cosh(eta_matr) - tf.cos(phi_matr))
 

@@ -35,15 +35,25 @@ def load_arguments():
     return config
 
 
+
+
 def run(conf):
 
-    model = PelicanNano(conf['model'])
-    shape = (2, 7, 4)
+    dataset = load_dataset(conf['dataset'], keys=['test']).test
+    print(dataset.x_data.shape)
 
-    model.build(shape)
-    model.summary(shape)
 
-    model(tf.zeros(shape))
+    pt = dataset.x_data[..., 0]
+    eta = dataset.x_data[..., 1]
+    phi = dataset.x_data[..., 2]
+
+    pt_matr = tf.einsum('...p, ...q->...pq', pt, pt)
+    eta_matr = tf.expand_dims(eta, axis=-1) - tf.expand_dims(eta, axis=-2)
+    phi_matr = tf.expand_dims(phi, axis=-1) - tf.expand_dims(phi, axis=-2)
+
+    # * is elementwise (hadamard)
+    inner_prods = pt_matr * (tf.cosh(eta_matr) - tf.cos(phi_matr))
+    print(inner_prods.shape)
 
 def main():
     conf = load_arguments()

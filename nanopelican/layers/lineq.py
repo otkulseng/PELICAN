@@ -128,7 +128,7 @@ class Lineq2v2nano(tf.keras.layers.Layer):
         # Rowsum broadcast over diagonals
         ops[4] = tf.einsum("...nl, nj->...njl", rowsum, IDENTITY)
 
-        #   totsum broadcast over diagonals
+        # Totsum broadcast over diagonals
         ops[5] = tf.einsum("...l, ij->...ijl", totsum, IDENTITY)
 
         ops = tf.stack(ops, axis=-1) # B x N x N x L x 6
@@ -238,5 +238,135 @@ class Lineq2v0nano(tf.keras.layers.Layer):
         return config
 
 
+@tf.keras.utils.register_keras_serializable(package='nano_pelican', name='Lineq1v2')
+class Lineq1v2(tf.keras.layers.Layer):
+    """ takes in num_particles x scalars, and creates
+    num_particles x num_particles x len(scalars)
+    Args:
+        Layer (_type_): _description_
+    """
+    def __init__(self, arg_dict):
+        super().__init__()
+
+        logger = logging.getLogger('')
+
+        self.arg_dict = arg_dict
+        self.activation = tf.keras.activations.get(arg_dict['activation'])
+        self.output_channels = arg_dict['n_outputs']
+        self.dropout_rate = arg_dict['dropout']
+        self.use_batchnorm = arg_dict['batchnorm']
+        self.average_particles = arg_dict['num_particles_avg']
+
+        if self.dropout_rate > 0:
+            logger.info("Using dropout in 1v2")
+            self.dropout = tf.keras.layers.Dropout(self.dropout_rate)
+
+        if self.use_batchnorm:
+            logger.info("Using bnorm in 1v2")
+            self.bnorm = tf.keras.layers.BatchNormalization()
 
 
+    def compute_output_shape(self, input_shape):
+        # input_shape =  N x N x L
+        # out = Batch x N x N x self.output_channels
+        N = input_shape[-2]
+        return (None, N, N, self.output_channels)
+
+
+    def build(self, input_shape):
+        # input_shape = Batch x N x N x L Where L is the number
+        # of output channels from the previous layer
+        if self.use_batchnorm:
+            self.bnorm.build(input_shape)
+
+        N = input_shape[-2]
+        L = input_shape[-1]
+
+        w_init = tf.random_normal_initializer(stddev=1/tf.cast(N, dtype=tf.dtypes.float32))
+
+        # For each input channel L, make 6 permequiv transformations,
+        # and mix with a L*6 * self.output_channels dense layer
+
+        self.w = self.add_weight(
+                shape=(L, 5, self.output_channels),
+                initializer=w_init,
+                trainable=True,
+        )
+
+        b_init = tf.zeros_initializer()
+        # Bias to be broadcasted over diagonal (for each channel)
+
+        self.diag_bias = self.add_weight(
+                shape=(self.output_channels, ),
+                initializer=b_init,
+                trainable=True,
+        )
+
+        # Bias to be broadcasted over entire output matrix (for each channel)
+        self.bias = self.add_weight(
+                shape=(self.output_channels, ),
+                initializer=b_init,
+                trainable=True,
+        )
+
+        super(Lineq1v2, self).build(input_shape)
+
+    def call(self, inputs, training=False):
+        """
+        input_shape : batch x N  x L where L is number of input channels
+        output_shape: batch x N x L
+        """
+
+        if self.dropout_rate > 0:
+            inputs = self.dropout(inputs, training=training)
+
+        if self.use_batchnorm:
+            inputs = self.bnorm(inputs, training=training)
+
+
+        totsum = tf.einsum('...il->...l', inputs) / self.average_particles
+
+        ops = [None] * 5
+
+        # B, N, N, L = inputs.shape
+        N = tf.shape(inputs)[-2]
+        L = tf.shape(inputs)[-1]
+
+
+        ONES = tf.ones((N, N), dtype=tf.dtypes.float32)
+        IDENTITY = tf.eye(N, dtype=tf.dtypes.float32)
+
+        # Totsum broadcast over diagonals
+        ops[0] = tf.einsum("...l, ij->...ijl", totsum, IDENTITY)
+
+        # Totsum over entire output
+        ops[1] = tf.einsum("...l, ij->...ijl", totsum, ONES)
+
+        # Scalars broadcasted over rows
+        ops[2] = tf.einsum("...nl, nj->...njl", inputs, ONES)
+
+        # Scalars broadcasted over columns
+        ops[3] = tf.einsum("...nl, nj->...jnl", inputs, ONES)
+
+        # Inputs broadcast over diagonals
+        ops[4] = tf.einsum("...nl, nj->...njl", inputs, IDENTITY)
+
+        ops = tf.stack(ops, axis=-1) # B x N x N x L x 5
+
+
+        diag_bias = tf.einsum("f, ij->ijf", self.diag_bias, IDENTITY)
+        return self.activation(
+            (tf.einsum("...ijlk, lkf->...ijf", ops, self.w)
+            + self.bias
+            + diag_bias))
+
+    def get_config(self):
+        config = super().get_config()
+
+        config.update(
+            {
+                'arg_dict': self.arg_dict,
+            }
+        )
+
+        return config
