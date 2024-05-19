@@ -73,11 +73,11 @@ def add_default_values(conf):
     if 'val_size' not in conf['hyperparams']:
         conf['hyperparams'].update({'val_size': -1})
 
-    if 'patience' not in conf['hyperparams']:
-        conf['hyperparams'].update({'patience': conf['hyperparams']['epochs']})
+    # if 'patience' not in conf['hyperparams']:
+    #     conf['hyperparams'].update({'patience': conf['hyperparams']['epochs']})
 
-    if 'weight_decay' not in conf['hyperparams']:
-        conf['hyperparams'].update({'weight_decay': 0.0})
+    # if 'weight_decay' not in conf['hyperparams']:
+    #     conf['hyperparams'].update({'weight_decay': 0.0})
 
     return conf
 
@@ -112,8 +112,11 @@ def run(conf):
         model.build(features.shape)
         model.summary(features.shape)
 
-    # loss = tf.keras.losses.CategoricalCrossentropy(from_logits=True)
-    loss = tf.keras.losses.BinaryCrossentropy(from_logits=True)
+    if model.output_shape[-1] > 1:
+        loss = tf.keras.losses.CategoricalCrossentropy(from_logits=True)
+    else:
+        loss = tf.keras.losses.BinaryCrossentropy(from_logits=True)
+
     model.compile(
         optimizer=tf.keras.optimizers.Adam(learning_rate=LinearWarmupCosineAnnealing(
             epochs=hyperparams['epochs'],
@@ -155,8 +158,6 @@ def run(conf):
 def main():
     conf = load_arguments()
     return run(conf)
-
-
 
 if __name__ == '__main__':
     main()

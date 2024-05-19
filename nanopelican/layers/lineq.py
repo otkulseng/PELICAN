@@ -173,6 +173,11 @@ class Lineq2v0nano(tf.keras.layers.Layer):
             logger.info("Using bnorm in 2v0")
             self.bnorm = tf.keras.layers.BatchNormalization()
 
+    def compute_output_shape(self, input_shape):
+        # input_shape =  N x N x L
+        # out = Batch x N x N x self.output_channels
+        return (None, self.num_output_channels)
+
 
     def build(self, input_shape):
         # N, N, L = input_shape

@@ -41,6 +41,10 @@ class PelicanNano(Model):
         input_shape = self.agg_layer.compute_output_shape(input_shape)
 
         self.out_layer.build(input_shape)
+        input_shape = self.out_layer.compute_output_shape(input_shape)
+
+
+        self.output_shape = input_shape
         self.built = True
 
 

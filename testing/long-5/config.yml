@@ -13,7 +13,7 @@ hyperparams:
 model:
   input:
     data_format: Epxpypz
-    spurions: True
+    spurions: true
   lineq2v0:
     activation: null
     batchnorm: false
