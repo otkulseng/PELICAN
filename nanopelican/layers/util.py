@@ -42,6 +42,54 @@ def get_spurions(data_format, dtype=tf.dtypes.float32):
         f"Could not find spurions for data_format: {data_format}"
     )
 
+
+def fourvec_flops(input_shape):
+
+    # Assumes shape N x 4
+    N, F = input_shape
+    assert(F == 4)
+
+    # For each inner product (N**2 in total) between, say, p and q
+    # do: + p_0 * q_0 - p_1 * p_1 - p_2 * p_2 - p_3 * p_3
+    flops = {
+        'inner-products': N**2 * (4 + 4 + 4)
+    }
+    return flops
+
+def ptetaphi_flops(input_shape):
+    # assumes shape N x 3
+    N, F = input_shape
+    assert(F == 3)
+
+    flops = {
+        'pt-outer-product': N**2,
+        'eta-sum': 2 * N**2,
+        'phi-sum': 2 * N**2,
+        'cosh': N**2 * 1, #Lookup table?
+        'cos':  N**2 * 1, # ditto,
+        'diff': 2 * N**2,
+        'prod': N**2
+    }
+    return flops
+
+
+
+def get_flops(data_format):
+    my_dict = {
+        'epxpypz': fourvec_flops,
+        'pxpypze': fourvec_flops,
+        'ptetaphi': ptetaphi_flops
+    }
+
+    key = data_format.lower()
+    if type(key) == str and key in my_dict:
+        return my_dict[key]
+
+    raise TypeError(
+        f"Could not interpret data handler: {data_format}"
+    )
+
+
 def get_handler(data_format):
     if callable(data_format):
         return data_format

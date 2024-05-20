@@ -47,6 +47,20 @@ class PelicanNano(Model):
         self.output_shape = input_shape
         self.built = True
 
+    def get_flops(self, input_shape):
+        # no batch dim. Assumes num_particles x num_features
+        flops = {}
+
+        flops['inner_product'] = self.input_layer.get_flops(input_shape)
+        input_shape = self.input_layer.compute_output_shape(input_shape)
+
+
+        flops['lineq2v2'] = self.agg_layer.get_flops(input_shape)
+        input_shape = self.agg_layer.compute_output_shape(input_shape)
+
+        flops['lineq2v0'] = self.out_layer.get_flops(input_shape)
+        return flops
+
 
 
     def get_config(self):

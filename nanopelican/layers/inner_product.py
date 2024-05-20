@@ -3,7 +3,7 @@ import tensorflow as tf
 from keras import layers
 import logging
 
-from .util import get_handler, get_spurions, repeat_const
+from .util import get_handler, get_spurions, repeat_const, get_flops
 
 
 
@@ -17,6 +17,14 @@ class InnerProduct(layers.Layer):
         if self.use_spurions:
             self.spurions = get_spurions(arg_dict['data_format'])
             self.spurions = tf.expand_dims(self.spurions, axis=0)
+
+    def get_flops(self, input_shape):
+        # assumes num_particles x num_features
+        N, F = input_shape
+        if self.use_spurions:
+            N += len(self.spurions)
+
+        return get_flops(self.arg_dict['data_format'])(input_shape)
 
 
     def build(self, input_shape):
