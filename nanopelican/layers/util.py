@@ -5,12 +5,32 @@ def repeat_const(tensor, myconst):
     shapes = tf.shape(tensor)
     return tf.repeat(myconst, shapes[0], axis=0)
 
+
+def ptetaphi_spurions(dtype=None):
+    """
+    For massless particles,
+        E   = p_T cosh(eta)
+        p_z = p_T sinh(eta)
+
+    """
+
+    # Set eta big, not necessary to set to inf
+    eta = 1.0e1
+    phi = 0.0
+    p_T = 2.0*tf.exp(-eta)
+
+    return tf.stack([
+        [p_T, eta, phi],
+        [p_T, -eta, phi]
+    ], axis=0)
+
 def get_spurions(data_format, dtype=tf.dtypes.float32):
     my_dict = {
         'epxpypz': tf.constant([[1, 0, 0, -1],
                                 [1, 0, 0, 1]], dtype=dtype),
         'pxpypze': tf.constant([[-1, 0, 0, 1],
-                                [1, 0, 0, 1]], dtype=dtype)
+                                [1, 0, 0, 1]], dtype=dtype),
+        'ptetaphi': ptetaphi_spurions(dtype=dtype)
     }
 
     key = data_format.lower()
