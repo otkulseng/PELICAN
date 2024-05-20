@@ -14,18 +14,19 @@ model:
   input:
     data_format: ptetaphi
     spurions: false
-  lineq2v2:
-    activation: relu
-    batchnorm: false
-    dropout: 0.0
-    n_hidden: 1
-    num_particles_avg: 25
   lineq2v0:
     activation: null
     batchnorm: false
     dropout: 0.0
     n_outputs: 5
-    num_particles_avg: 25
+    num_particles_avg: 50
+  lineq2v2:
+    activation: relu
+    batchnorm: false
+    dropout: 0.0
+    n_hidden: 1
+    num_particles_avg: 50
 save_dir:
   folder: ptetaphirel-testing
   name: long
+seed: 2024974534

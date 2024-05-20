@@ -58,10 +58,11 @@ def inner_prods_from_inverted_Epxpypz(data):
     return tf.einsum("...pi, ij, ...qj->...pq", data, M, data)
 
 def inner_prods_from_ptetaphi(data):
-    """Assumes data is of shape Batch x num_particles x 3
-    where last axis (pt, eta, phi)
+    """Assumes data is of shape ... x num_particles x 3
+    where last axis is (pt, eta, phi)
     """
 
+    # All of these are now ... x num_particles
     pt = data[..., 0]
     eta = data[..., 1]
     phi = data[..., 2]
