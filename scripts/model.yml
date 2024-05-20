@@ -2,7 +2,7 @@ dataset:
   feature_key: feats
   folder: data/zenodo_data/ptetaphi_rel
   label_key: label
-  num_particles: 32
+  num_particles: 8
 hyperparams:
   batch_size: 512
   epochs: 140

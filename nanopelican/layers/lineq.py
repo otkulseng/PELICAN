@@ -2,6 +2,8 @@
 import tensorflow as tf
 import logging
 
+from .flops import get_flops_activ
+
 class LinearEquivariant(tf.keras.layers.Layer):
     def __init__(self, tensor_dims, **kwargs):
         """ General Linear Equivariant Layers
@@ -49,6 +51,22 @@ class Lineq2v2nano(tf.keras.layers.Layer):
         # out = Batch x N x N x self.output_channels
         N = input_shape[1]
         return (None, N, N, self.output_channels)
+
+    def get_flops(self, input_shape):
+        # input_shape = N x N x L
+        L = input_shape[-1]
+        N = input_shape[-2]
+        flops = {
+            'totsum': N**2 * L,
+            'rowsum': N * L,
+            # For each output channel, 6*L matrices of size N * N are multiplied by
+            # their own number, and added.
+            'linear-layer': N**2 * self.output_channels * (6*L * 2),
+            'diag-bias': N * self.output_channels,
+            'tot-bias': N**2 * self.output_channels,
+            'activation': get_flops_activ(N**2, self.arg_dict['activation'])
+        }
+        return flops
 
 
     def build(self, input_shape):
@@ -177,6 +195,20 @@ class Lineq2v0nano(tf.keras.layers.Layer):
         # input_shape =  N x N x L
         # out = Batch x N x N x self.output_channels
         return (None, self.num_output_channels)
+
+    def get_flops(self, input_shape):
+        # input_shape = N x N x L
+        L = input_shape[-1]
+        N = input_shape[-2]
+
+        flops = {
+            'totsum': N**2 * L,
+            'trace': N * L,
+            'linear-layer': self.num_output_channels * (2*L *2),
+            'bias': self.num_output_channels,
+            'activation': get_flops_activ(self.num_output_channels, self.arg_dict['activation'])
+        }
+        return flops
 
 
     def build(self, input_shape):
