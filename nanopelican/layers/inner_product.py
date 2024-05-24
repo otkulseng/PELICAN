@@ -53,6 +53,7 @@ class InnerProduct(layers.Layer):
         # TODO: Quantize Bits Here!!
 
         inner_prods = self.data_handler(inputs)
+        # inner_prods = tf.math.log(1 + inner_prods)
 
 
         return tf.expand_dims(inner_prods, axis=-1)

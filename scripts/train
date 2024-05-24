@@ -142,6 +142,10 @@ def run(conf):
                 monitor='val_loss',
                 mode='min',
                 save_best_only=True
+            ), tf.keras.callbacks.EarlyStopping(
+                monitor="val_accuracy",
+                patience=20,
+                mode="max",
             )
         ],
             verbose=0
