@@ -24,9 +24,9 @@ model:
     activation: relu
     batchnorm: false
     dropout: 0.0
-    n_hidden: 2
+    n_hidden: 1
     num_particles_avg: 25
 save_dir:
   folder: experiments/full-pelican
   name: long
-# seed: 618105507
+seed: 618105507

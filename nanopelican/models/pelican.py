@@ -1,6 +1,6 @@
 # Based on https://github.com/abogatskiy/PELICAN-nano/
 from keras.models import Model
-from keras.layers import Input
+from keras.layers import Input, Layer
 
 from nanopelican import layers
 import tensorflow as tf
@@ -13,7 +13,8 @@ class Pelican(Model):
 
         self.arg_dict = arg_dict
 
-        self.input_layer = layers.Lineq1v2(arg_dict['input'])
+        self.input_layer = layers.InnerProduct(arg_dict['input'])
+        self.log_layer = LogLayer()
         self.agg_layer = layers.Lineq2v2nano(arg_dict['lineq2v2'])
         self.out_layer = layers.Lineq2v0nano(arg_dict['lineq2v0'])
 
@@ -21,8 +22,9 @@ class Pelican(Model):
         # inputs shape batch x N x CUSTOM
         # where data_format is supposed to convert to inner products
 
-        inputs = self.input_layer(inputs)   # batch x N x N x L
+        inputs = self.input_layer(inputs)   # batch x N x N x LS
         inputs = self.agg_layer(inputs, training=training)     # batch x N x N x hidden
+        inputs = self.log_layer(inputs)
         inputs = self.out_layer(inputs, training=training)     # batch x N x N x outputs
 
         return inputs
@@ -38,6 +40,9 @@ class Pelican(Model):
 
         self.agg_layer.build(input_shape)
         input_shape = self.agg_layer.compute_output_shape(input_shape)
+
+        self.log_layer.build(input_shape)
+        input_shape = self.log_layer.compute_output_shape(input_shape)
 
         self.out_layer.build(input_shape)
         input_shape = self.out_layer.compute_output_shape(input_shape)

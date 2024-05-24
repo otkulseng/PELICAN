@@ -100,7 +100,7 @@ def run(conf):
     train_log = tf.keras.callbacks.CSVLogger(save_dir / 'training.log')
 
 
-    model = PelicanNano(conf['model'])
+    model = Pelican(conf['model'])
 
     dataset = load_dataset(conf['dataset'], keys=['train', 'valid'])
 

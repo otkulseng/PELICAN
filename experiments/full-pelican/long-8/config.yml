@@ -29,4 +29,4 @@ model:
 save_dir:
   folder: experiments/full-pelican
   name: long
-# seed: 618105507
+seed: 618105507

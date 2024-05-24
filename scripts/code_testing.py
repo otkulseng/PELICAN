@@ -56,6 +56,8 @@ def run(conf):
 
    model =  PelicanNano(conf['model'])
 
+   data = load_dataset(conf[''])
+
    flops = model.get_flops((32, 3))
    pretty_print(flops)
 
