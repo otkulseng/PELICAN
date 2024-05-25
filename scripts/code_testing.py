@@ -62,8 +62,11 @@ def run(conf):
 
 
 def main():
-
-    pass
+    parser = argparse.ArgumentParser(prog='PROG')
+    parser.add_argument('--foo', type=str)
+    parser.add_argument('args', nargs=argparse.REMAINDER)
+    args = parser.parse_args()
+    print(args)
 
 
 

@@ -7,10 +7,54 @@ import tensorflow as tf
 from keras import callbacks, losses, optimizers
 
 from tqdm.keras import TqdmCallback
+import argparse
+
+def add_keys_to_parser(parser, dikt):
+    for k, v, in dikt.items():
+        if isinstance(v, dict):
+            parser = add_keys_to_parser(parser, v)
+            continue
+        parser.add_argument(f'--{k}', type=type(v))
+    return parser
+
+def set_key(dikt, key, val):
+    for k, v in dikt.items():
+        if isinstance(v, dict):
+            set_key(v, key, val)
+            continue
+
+        if k != key:
+            continue
+
+        dikt.update({key : val})
+    return dikt
+
+def overload_arguments(conf):
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument("--gpu", type=str, default="0")
+
+
+    parser = add_keys_to_parser(parser, conf)
+
+
+    args = parser.parse_args()
+    os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
+
+    for arg in vars(args):
+        attr = getattr(args, arg)
+        if attr is None:
+            continue
+
+        conf = set_key(conf, arg, attr)
+
+    return conf
 
 
 def train(model):
     conf = load_arguments()
+
+    conf = overload_arguments(conf)
+
 
     # For reproducibility
     tf.keras.utils.set_random_seed(conf['seed'])
@@ -18,6 +62,8 @@ def train(model):
     # Logging and save directory
     save_dir = create_directory(conf['save_dir'])
     save_config_file(save_dir / 'config.yml', conf)
+
+    return
 
 
     # Model and dataset
