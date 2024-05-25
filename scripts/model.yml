@@ -30,3 +30,6 @@ save_dir:
   folder: experiments/full-pelican
   name: long
 # seed: 618105507
+
+test:
+  shape: (None, 3, 2, 4)

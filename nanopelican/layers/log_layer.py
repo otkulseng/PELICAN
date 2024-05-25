@@ -1,9 +1,7 @@
-from keras.layers import Layer
+from keras import layers
 import tensorflow as tf
 
-class LogLayer(Layer):
-
-
+class LogLayer(layers.Layer):
     def build(self, input_shape):
         L = input_shape[-1]
 

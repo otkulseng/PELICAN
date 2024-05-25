@@ -1,0 +1,25 @@
+#!/usr/bin/env python
+from nanopelican.layers import *
+from nanopelican.util import train, test
+from keras import layers, Model
+import tensorflow as tf
+def CreateModel(shape, conf):
+    x = x_in = layers.Input(shape)
+    x = InnerProduct(conf['inner_product'])(x)
+
+    ops = []
+    for _ in range(conf['num_channels']):
+        out = PelicanNano(**conf['nano'])(x)
+        ops.append(out)
+
+    x = layers.Concatenate()(ops)
+    x = layers.Softmax()(x)
+    return Model(inputs=x_in, outputs=x)
+
+def main():
+    # train(CreateModel)
+    test(CreateModel)
+
+if __name__ == '__main__':
+    main()
+

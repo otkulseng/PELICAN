@@ -158,7 +158,6 @@ class JetDataset(tf.keras.utils.Sequence):
 
             self.batches = interleave([top, bottom])
         else:
-            self.logger.warning("One-hot encoding")
             number_enc = np.argmax(self.y_data, axis=-1)
             elems = []
             for i in range(self.y_data.shape[-1]):

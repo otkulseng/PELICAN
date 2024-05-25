@@ -1,0 +1,20 @@
+#!/usr/bin/env python
+from nanopelican.layers import *
+from nanopelican.util import train, test
+from keras import layers, Model
+import tensorflow as tf
+
+def CreateModel(shape, conf):
+    x = x_in = layers.Input(shape)
+
+    x = InnerProduct(conf['inner_product'])(x)
+    x = PelicanNano(**conf['nano'])(x)
+    return Model(inputs=x_in, outputs=x)
+
+def main():
+    train(CreateModel)
+    test(CreateModel)
+
+if __name__ == '__main__':
+    main()
+

@@ -51,10 +51,6 @@ def pretty_print(flop_dict):
     return total
 
 
-
-
-
-
 def run(conf):
 
    model =  PelicanNano(conf['model'])
@@ -66,8 +62,8 @@ def run(conf):
 
 
 def main():
-    conf = load_arguments()
-    return run(conf)
+
+    pass
 
 
 

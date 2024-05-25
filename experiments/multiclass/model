@@ -1,0 +1,34 @@
+#!/usr/bin/env python
+from nanopelican.layers import *
+from nanopelican.util import train, test
+from keras import layers, Model
+
+def CreatePelican(x, conf):
+    x = Lineq2v2(symmetric=True, hollow=True, num_avg=conf['num_avg'])(x)
+    x = layers.Dense(conf['n_hidden'])(x)
+    x = layers.Activation(activation=conf['activation'])(x)
+    x = Lineq2v0(num_avg=conf['num_avg'])(x)
+    x = layers.Dense(conf['n_outputs'])(x)
+
+    return x
+
+def CreateModel(shape, conf):
+    x = x_in = layers.Input(shape)
+    x = InnerProduct(conf['inner_product'])(x)
+
+    ops = []
+    for _ in range(conf['num_channels']):
+        out = CreatePelican(x, conf['nano'])
+        ops.append(out)
+
+    x = layers.Concatenate()(ops)
+    x = layers.Softmax()(x)
+    return Model(inputs=x_in, outputs=x)
+
+def main():
+    # train(CreateMod--el)
+    test(CreateModel)
+
+if __name__ == '__main__':
+    main()
+

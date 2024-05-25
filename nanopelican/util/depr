@@ -20,41 +20,6 @@ import tensorflow as tf
 
 logger = logging.getLogger('')
 
-def load_arguments():
-    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument("--config", required=True,  type=str)
-    parser.add_argument("--gpu", type=str, default="0")
-    args = parser.parse_args()
-
-    os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
-
-    with open(args.config, "r") as stream:
-        config = yaml.load(stream, Loader=yaml.Loader)
-    return config
-
-def create_directory(args):
-
-    root = args['folder']
-    name = args['name']
-
-    rootdir = Path.cwd() / root
-    if not rootdir.exists():
-        os.mkdir(rootdir)
-
-    counter = 0
-    while True:
-        folder = rootdir / f'{name}-{counter}'
-        if not folder.exists():
-            break
-        counter += 1
-
-    os.mkdir(folder)
-    return folder
-
-
-def save_config_file(filename, data):
-    with open(filename, 'w') as outfile:
-        yaml.dump(data, outfile, default_flow_style=False)
 
 
 def save_experiment(folder, model, history):
@@ -66,21 +31,6 @@ def save_experiment(folder, model, history):
 
 
 
-def add_default_values(conf):
-    if 'seed' not in conf:
-        conf['seed'] = np.random.randint(0, 2**31)
-
-    if 'val_size' not in conf['hyperparams']:
-        conf['hyperparams'].update({'val_size': -1})
-
-    # if 'patience' not in conf['hyperparams']:
-    #     conf['hyperparams'].update({'patience': conf['hyperparams']['epochs']})
-
-    # if 'weight_decay' not in conf['hyperparams']:
-    #     conf['hyperparams'].update({'weight_decay': 0.0})
-
-    return conf
-
 
 def run(conf):
 
@@ -88,9 +38,9 @@ def run(conf):
     # Save config to directory
 
     conf = add_default_values(conf)
-    save_config_file(save_dir / 'config.yml', conf)
 
-    tf.keras.utils.set_random_seed(conf['seed'])
+
+
 
 
     # Initialize logger

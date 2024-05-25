@@ -6,10 +6,10 @@ from itertools import zip_longest, chain
 
 
 def interleave(elems):
-    log = logging.getLogger('')
-    log.warning("Using interleave.\
-                By def, this only works \
-                if the lists are approximately the same length")
+    # log = logging.getLogger('')
+    # log.warning("Using interleave.\
+    #             By def, this only works \
+    #             if the lists are approximately the same length")
 
     minlen = len(elems[0])
     for elem in elems:
