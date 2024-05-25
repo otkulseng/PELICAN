@@ -20,15 +20,7 @@ def load_yaml(filename):
 
 
 def load_arguments():
-    # parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    # parser.add_argument("--config", type=str, default='config.yml')
-    # parser.add_argument("--gpu", type=str, default="0")
-    # args = parser.parse_args()
-
-    # os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
-
     config = load_yaml('config.yml')
-
     config = add_default_values(config)
 
     return config

@@ -1,6 +1,5 @@
 from nanopelican import data, schedulers
 from .load_arguments import load_arguments
-from .logger import *
 
 import tensorflow as tf
 
@@ -9,51 +8,10 @@ from keras import callbacks, losses, optimizers
 from tqdm.keras import TqdmCallback
 import argparse
 
-def add_keys_to_parser(parser, dikt):
-    for k, v, in dikt.items():
-        if isinstance(v, dict):
-            parser = add_keys_to_parser(parser, v)
-            continue
-        parser.add_argument(f'--{k}', type=type(v))
-    return parser
-
-def set_key(dikt, key, val):
-    for k, v in dikt.items():
-        if isinstance(v, dict):
-            set_key(v, key, val)
-            continue
-
-        if k != key:
-            continue
-
-        dikt.update({key : val})
-    return dikt
-
-def overload_arguments(conf):
-    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument("--gpu", type=str, default="0")
 
 
-    parser = add_keys_to_parser(parser, conf)
 
-
-    args = parser.parse_args()
-    os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
-
-    for arg in vars(args):
-        attr = getattr(args, arg)
-        if attr is None:
-            continue
-
-        conf = set_key(conf, arg, attr)
-
-    return conf
-
-
-def train(model):
-    conf = load_arguments()
-
-    conf = overload_arguments(conf)
+def train(model, conf):
 
 
     # For reproducibility
