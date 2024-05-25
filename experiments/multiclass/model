@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 from nanopelican.layers import *
-from nanopelican.util import train, test
+from nanopelican.util import run
 from keras import layers, Model
 
 def CreatePelican(x, conf):
@@ -26,8 +26,7 @@ def CreateModel(shape, conf):
     return Model(inputs=x_in, outputs=x)
 
 def main():
-    # train(CreateMod--el)
-    test(CreateModel)
+    run(CreateModel)
 
 if __name__ == '__main__':
     main()

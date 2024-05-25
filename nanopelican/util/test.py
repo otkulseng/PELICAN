@@ -13,6 +13,8 @@ import os
 import numpy as np
 
 from sklearn.metrics import roc_curve, auc
+from collections.abc import Iterable
+
 
 def test(model, args):
     for elem in Path.cwd().iterdir():
@@ -35,9 +37,46 @@ def evaluate_model(model, folder):
 def generate_plots(data_file, save_dir):
 
     # # Metrics plot
-    # fig = generate_plot(folder / 'training.log')
+    # fig = metrics_plot(folder / 'training.log')
     # fig.savefig(eval_dir / 'metrics.pdf')
-    pass
+
+    if 'runtime' in data_file:
+        fig = metrics_plot(data_file['runtime'])
+        fig.savefig(save_dir / 'metrics.pdf')
+
+
+    df = pd.read_csv(save_dir / 'result.csv', index_col=False)
+    auc_files = {}
+    for elem in data_file.keys():
+        if 'auc' not in data_file[elem]:
+            continue
+        auc_files[elem] = {
+            'file': data_file[elem]['auc'],
+            'title': df[df['name']==elem]['auc'].to_string().split()[-1]
+        }
+
+    fig = auc_plot(auc_files)
+    fig.savefig(save_dir / 'auc.pdf')
+
+def auc_plot(files):
+    fig, axes = plt.subplots(ncols=len(files), figsize=(5 * len(files), 5))
+
+    if not isinstance(axes, Iterable):
+        axes = [axes]
+
+    for ax, (name, file) in zip(axes, files.items()):
+
+        title = file['title']
+        file = file['file']
+        for n in range(file['fpr'].shape[0]):
+
+            fpr = file['fpr'][n, :]
+            tpr = file['tpr'][n, :]
+            ax.plot(fpr[fpr != 0], tpr[fpr != 0])
+        ax.set_title(name + f'\n{title}')
+    fig.suptitle('AUC')
+    return fig
+
 
 def generate_data(model, data_dir, save_dir):
     conf = load_yaml(data_dir / 'config.yml')
@@ -56,12 +95,6 @@ def generate_data(model, data_dir, save_dir):
         metric_fn = metrics.binary_accuracy
         from_logits = True
 
-    # model.compile(
-    #     loss=loss,
-    #     metrics=['accuracy'],
-    # )
-
-
     save_file = h5py.File(save_dir / 'data.h5', 'a')
 
     # Runtime data
@@ -71,7 +104,6 @@ def generate_data(model, data_dir, save_dir):
         if elem in runtime_group:
             continue
         runtime_group.create_dataset(elem, data=runtime_data[elem])
-
 
 
     # Data generation
@@ -114,33 +146,27 @@ def generate_data(model, data_dir, save_dir):
 
         # print(name, loss, acc, scores)
 
-        df = pd.DataFrame(
-            {
-                'name': name,
-                'loss': loss,
-                'acc': acc,
-                'auc': scores
-            }
-        )
+
+        df = pd.DataFrame.from_dict({
+            'name': name,
+            'loss': loss,
+            'acc': [acc],
+            'auc': "|".join([str(round(score, 4)) for score in scores])
+        })
+
         dfs.append(df)
     df = pd.concat(dfs)
-    print(df)
     df.to_csv(save_dir / 'result.csv', index=False)
     return save_file
 
-    #     scores = generate_auc(y_true=y_true, y_pred=preds, ax=next(axes), title=name)
-
-    # fig.savefig(eval_dir / 'auc.pdf')
-
-def generate_plot(filename):
-    file = pd.read_csv(filename)
+def metrics_plot(file):
     fig, (axL, axR) = plt.subplots(ncols=2, figsize=(10, 5))
     for key in file:
         if 'acc' in key:
-            axL.plot(file[key], label=key)
+            axL.plot(file[key][:], label=key)
 
         if 'loss' in key:
-            axR.plot(file[key], label=key)
+            axR.plot(file[key][:], label=key)
 
     axL.set_title('Accuracy')
     axL.legend(loc='lower right')
@@ -150,22 +176,27 @@ def generate_plot(filename):
     fig.supxlabel('Epochs')
     return fig
 
+
+def pad_list(elem):
+    maxlen = max([len(e) for e in elem])
+    ret = np.zeros(
+        shape=(len(elem), maxlen)
+    )
+    for i, e in enumerate(elem):
+        ret[i][:len(e)] = e
+    return ret
+
 def generate_auc(y_true, y_pred):
-    scores = [0]*y_pred.shape[-1]
+    scores  = [None] * y_pred.shape[-1]
+    fprs    = [None] * y_pred.shape[-1]
+    tprs    = [None] * y_pred.shape[-1]
+
     for n in range(y_pred.shape[-1]):
         fpr, tpr, _ = roc_curve(y_true[..., n], y_pred[..., n])
         scores[n] = auc(fpr, tpr)
+        tprs[n] = tpr
+        fprs[n] = fpr
 
-    return scores, fpr, tpr
 
-
-# def generate_auc_(y_true, y_pred, ax, title):
-
-#     for n in range(y_pred.shape[-1]):
-#         ax.plot(fpr, tpr)
-
-#         ax.set_aspect('equal')
-
-#     ax.set_title(title + '\n' + "|".join([str(round(score, 4)) for score in scores]))
-#     return scores
+    return scores, pad_list(fprs), pad_list(tprs)
 

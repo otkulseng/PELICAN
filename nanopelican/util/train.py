@@ -8,20 +8,16 @@ from keras import callbacks, losses, optimizers
 from tqdm.keras import TqdmCallback
 import argparse
 
-
+from .util import *
 
 
 def train(model, conf):
-
-
     # For reproducibility
     tf.keras.utils.set_random_seed(conf['seed'])
 
     # Logging and save directory
     save_dir = create_directory(conf['save_dir'])
     save_config_file(save_dir / 'config.yml', conf)
-
-    return
 
 
     # Model and dataset
