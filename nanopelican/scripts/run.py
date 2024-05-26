@@ -10,7 +10,7 @@ def ArgumentParser():
 
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("--gpu", type=str, default="0")
-    parser.add_argument("--test", action=argparse.BooleanOptionalAction)
+    parser.add_argument("--test", type=bool, default=False)
     parser.add_argument("--name", default='', type=str)
     parser = add_arguments_from_dict(parser, config)
     args = parser.parse_args()

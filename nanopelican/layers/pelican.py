@@ -1,4 +1,3 @@
-from sympy import N
 from keras import layers, Model
 from nanopelican.layers import *
 import tensorflow as tf
