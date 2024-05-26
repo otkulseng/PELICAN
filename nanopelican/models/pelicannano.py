@@ -1,6 +1,3 @@
-from os import name
-
-from sympy import N
 from nanopelican.layers import *
 from keras import layers, Model
 
