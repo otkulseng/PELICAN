@@ -8,7 +8,10 @@ def CreateModel(shape, conf):
 
     x = InnerProduct(conf['inner_product'])(x)
     x = Lineq2v2(symmetric=True, hollow=True, num_avg=conf['num_avg'])(x)
-    x = layers.Dense(conf['n_hidden'])(x)
+
+    for (units, activ) in zip(conf['hidden_layers']['units'], conf['hidden_layers']['activations']):
+        x = DiagBiasDense(units, activation=activ)(x)
+
     x = layers.Activation(activation=conf['activation'])(x)
     x = Lineq2v0(num_avg=conf['num_avg'])(x)
     x = layers.Dense(conf['n_outputs'])(x)

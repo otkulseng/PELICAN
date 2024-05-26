@@ -6,9 +6,10 @@ import tensorflow as tf
 
 class DiagBiasDense(layers.Dense):
     def build(self, input_shape):
+        super().build(input_shape)
+
         # B x N x N x L
         if self.use_bias:
-            L = input_shape[-1]
             self.diag_bias = self.add_weight(
                 name="diag_bias",
                 shape=(self.units,),
@@ -17,13 +18,17 @@ class DiagBiasDense(layers.Dense):
                 constraint=self.bias_constraint,
                 trainable=True
             )
-        return super().build(input_shape)
 
     def call(self, inputs):
         N = inputs.shape[-2]
         IDENTITY = tf.eye(N, dtype=tf.dtypes.float32)
         diag_bias = tf.einsum("f, ij->ijf", self.diag_bias, IDENTITY)
         return tf.add(super().call(inputs), diag_bias)
+
+    # def save_own_variables(self, store):
+    def save_own_variables(self, store):
+        super().save_own_variables(store)
+        store[str(len(store))] = self.diag_bias
 
 class PelicanNano(layers.Layer):
     def __init__(self, n_hidden, n_outputs, activation=None, num_avg=1.0, *args, **kwargs):

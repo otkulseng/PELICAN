@@ -1,7 +1,7 @@
 dataset:
-  feature_key: Pmu
-  folder: ../../data/nano_data
-  label_key: is_signal
+  feature_key: feats
+  folder: ../../data/zenodo_data/ptetaphi_rel
+  label_key: label
   num_particles: 32
 
 hyperparams:
@@ -12,14 +12,14 @@ hyperparams:
 
 model:
   inner_product:
-    data_format: epxpypz
+    data_format: ptetaphi
     spurions: false
-  n_hidden: 2
+  n_hidden: 10
   activation: relu
-  n_outputs: 1
-  out_activ: linear
-  num_avg: 25
+  n_outputs: 5
+  num_avg: 50
+  out_activation: softmax
 
 save_dir: long
-seed: 234316388
+
 

@@ -1,8 +1,8 @@
 dataset:
   feature_key: feats
-  folder: ../../data/zenodo_data/fourvec
+  folder: ../../data/zenodo_data/ptetaphi
   label_key: label
-  num_particles: 32
+  num_particles: 8
 hyperparams:
   batch_size: 512
   epochs: 100
@@ -10,13 +10,13 @@ hyperparams:
   verbose: 1
 model:
   inner_product:
-    data_format: pxpypze
+    data_format: ptetaphi
     spurions: false
   nano:
     activation: relu
-    n_hidden: 1
+    n_hidden: 2
     n_outputs: 1
     num_avg: 50
   num_channels: 5
 save_dir: long
-seed: 1068579724
+seed: 2030204829

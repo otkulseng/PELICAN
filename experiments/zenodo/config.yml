@@ -1,0 +1,27 @@
+dataset:
+  feature_key: feats
+  folder: ../../data/zenodo_data/ptetaphi_rel
+  label_key: label
+  num_particles: 32
+
+hyperparams:
+  batch_size: 512
+  epochs: 140
+  val_size: -1
+  verbose: 1
+
+model:
+  inner_product:
+    data_format: ptetaphi
+    spurions: False
+  hidden_layers:
+    units: [10]
+    activations: [linear]
+
+  activation: relu
+  n_outputs: 5
+  out_activ: softmax
+  num_avg: 50
+
+save_dir: long
+

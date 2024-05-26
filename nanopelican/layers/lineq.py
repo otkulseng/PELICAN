@@ -123,3 +123,50 @@ class Lineq2v2(layers.Layer):
 
 
         return tf.concat(ops, axis=-1)
+
+
+class Lineq1v2(layers.Layer):
+    """ Aggregates the 2D input tensor into the (max) 15 different permutation
+    equivariant tensors that can be made.
+
+    Set symmetric=True if the input tensor is symmetric
+    Set hollow=True if the input tensor has zero trace
+
+    """
+    def __init__(self, hollow=False, num_avg=1.0,*args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.num_avg = num_avg
+
+        self.hollow = hollow
+        self.use_totsum = True
+        if self.hollow:
+            self.use_totsum = False
+
+    def call(self, inputs, training=False):
+        # B, N, L = inputs.shape
+        N = tf.shape(inputs)[-2]
+
+        ops = []
+        ONES = tf.ones((N, N), dtype=tf.dtypes.float32)
+        IDENTITY = tf.eye(N, dtype=tf.dtypes.float32)
+
+
+        # broadcasted over rows
+        ops.append(tf.einsum("...nl, nj->...njl", inputs, ONES))
+
+        # broadcasted over columns
+        ops.append(tf.einsum("...nl, nj->...jnl", inputs, ONES))
+
+        # broadcast over diagonals
+        ops.append(tf.einsum("...nl, nj->...njl", inputs, IDENTITY))
+
+        if self.use_totsum:
+            totsum = tf.einsum('...il->...l', inputs)
+            # broadcast over diagonals
+            ops.append(tf.einsum("...l, ij->...ijl", totsum, IDENTITY))
+
+            # broadcast over entire output
+            ops.append(tf.einsum("...l, ij->...ijl", totsum, ONES))
+
+
+        return tf.concat(ops, axis=-1)

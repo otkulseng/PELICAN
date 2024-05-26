@@ -3,23 +3,17 @@ dataset:
   folder: ../../data/nano_data
   label_key: is_signal
   num_particles: 32
-
 hyperparams:
   batch_size: 512
   epochs: 140
   val_size: -1
   verbose: 1
-
 model:
+  activations: [relu]
+  dense: [1]
   inner_product:
     data_format: epxpypz
     spurions: false
-  n_hidden: 2
-  activation: relu
-  n_outputs: 1
-  out_activ: linear
   num_avg: 25
-
+  hollow: True
 save_dir: long
-seed: 234316388
-

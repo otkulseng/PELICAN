@@ -7,12 +7,10 @@ def CreateModel(shape, conf):
     x = x_in = layers.Input(shape)
 
     x = InnerProduct(conf['inner_product'])(x)
-    x = Lineq2v2(symmetric=True, hollow=True, num_avg=conf['num_avg'])(x)
-    x = layers.Dense(conf['n_hidden'])(x)
-    x = layers.Activation(activation=conf['activation'])(x)
-    x = Lineq2v0(num_avg=conf['num_avg'])(x)
-    x = layers.Dense(conf['n_outputs'])(x)
-    x = layers.Activation(conf['out_activ'])(x)
+    x = Lineq2v0(num_avg=conf['num_avg'], hollow=conf['hollow'])(x)
+
+    for units, activ in zip(conf['dense'], conf['activations']):
+        x = layers.Dense(units=units, activation=activ)(x)
 
     return Model(inputs=x_in, outputs=x)
 

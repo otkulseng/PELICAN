@@ -15,5 +15,7 @@ model:
     spurions: false
   n_hidden: 1
   num_avg: 25
+  n_outputs: 1
+  out_activ: linear
 save_dir: long
 seed: 234316388
