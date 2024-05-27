@@ -29,6 +29,11 @@ class DiagBiasDense(layers.Dense):
         super().save_own_variables(store)
         store[str(len(store))] = self.diag_bias
 
+    def load_own_variables(self, store):
+        super().load_own_variables(store)
+        self.diag_bias.assign(store[str(len(store)-1)])
+
+
 class PelicanNano(layers.Layer):
     def __init__(self, n_hidden, n_outputs, activation=None, num_avg=1.0, *args, **kwargs):
         super().__init__(*args, **kwargs)
