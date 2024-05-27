@@ -14,6 +14,7 @@ import numpy as np
 from sklearn.metrics import roc_curve, auc
 from collections.abc import Iterable
 from .util import *
+from .flops import calc_flops
 
 
 def test(model, args):
@@ -105,6 +106,10 @@ def generate_data(data_dir, save_dir):
 
         model = models.load_model(file)
         model.summary()
+
+        flops = calc_flops(model)
+        print(flops)
+        assert(False)
 
 
         name_group = save_file.require_group(name)
