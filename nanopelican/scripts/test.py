@@ -24,13 +24,13 @@ def test(model, args):
         if not args.name in elem.name:
             continue
 
-        evaluate_model(model, elem)
+        evaluate_model(elem)
 
-def evaluate_model(model, folder):
+def evaluate_model(folder):
     eval_dir = folder / 'eval'
     os.makedirs(eval_dir, exist_ok=True)
 
-    data_file = generate_data(model, data_dir=folder, save_dir=eval_dir)
+    data_file = generate_data(data_dir=folder, save_dir=eval_dir)
     generate_plots(data_file=data_file, save_dir=eval_dir)
 
 
@@ -78,22 +78,10 @@ def auc_plot(files):
     return fig
 
 
-def generate_data(model, data_dir, save_dir):
+def generate_data(data_dir, save_dir):
     conf = load_yaml(data_dir / 'config.yml')
     dataset = data.load_dataset(conf['dataset'], keys=['test']).test
 
-
-    # Compilation
-    model = model(dataset.x_data.shape[1:], conf['model'])
-    model.summary(expand_nested=True)
-    if model.output_shape[-1] > 1:
-        loss_fn = losses.categorical_crossentropy
-        metric_fn = metrics.categorical_accuracy
-        from_logits=False
-    else:
-        loss_fn = losses.binary_crossentropy
-        metric_fn = metrics.binary_accuracy
-        from_logits = True
 
     save_file = h5py.File(save_dir / 'data.h5', 'a')
 
@@ -112,13 +100,13 @@ def generate_data(model, data_dir, save_dir):
     for file in data_dir.iterdir():
         if '.keras' not in file.name:
             continue
-        print(file)
-
-        model = models.load_model(file)
-        # model.load_weights(file)
-
         name = file.name.split('.')[0]
         print(f'Starting: {name}')
+
+        model = models.load_model(file)
+        model.summary()
+
+
         name_group = save_file.require_group(name)
         if 'preds' not in name_group:
             preds = model.predict(dataset.x_data)
@@ -128,16 +116,30 @@ def generate_data(model, data_dir, save_dir):
 
         y_true = np.reshape(dataset.y_data, preds.shape)
 
-        loss = np.average(loss_fn(
-            y_true=y_true,
-            y_pred=preds,
-            from_logits=from_logits
-        ))
 
-        acc = np.average(metric_fn(
-            y_true=y_true,
-            y_pred=preds,
-        ))
+        result_dict = {
+            'name': [name]
+        }
+
+        for metric in model.metrics:
+            if 'compile_metric' not in metric.name:
+                continue
+            res = metric(y_true=y_true, y_pred=preds)
+            for k, v in res.items():
+                result_dict.update({
+                    k: v.numpy()
+                })
+
+
+        loss = np.average(model.loss(
+                y_true=y_true,
+                y_pred=preds
+            )
+        )
+
+        result_dict.update({
+            'loss': loss
+        })
 
         scores, fpr, tpr = generate_auc(y_true=y_true, y_pred=preds)
         auc_group = name_group.require_group('auc')
@@ -146,15 +148,12 @@ def generate_data(model, data_dir, save_dir):
         if 'tpr' not in auc_group:
             auc_group.create_dataset('tpr', data=tpr)
 
-        # print(name, loss, acc, scores)
 
-
-        df = pd.DataFrame.from_dict({
-            'name': name,
-            'loss': loss,
-            'acc': [acc],
+        result_dict.update({
             'auc': "|".join([str(round(score, 4)) for score in scores])
         })
+
+        df = pd.DataFrame.from_dict(result_dict)
 
         dfs.append(df)
     df = pd.concat(dfs)

@@ -1,6 +1,6 @@
 from nanopelican import data, schedulers
 import tensorflow as tf
-from keras import callbacks, losses, optimizers
+from keras import callbacks, losses, optimizers, metrics
 from tqdm.keras import TqdmCallback
 from .util import *
 
@@ -23,19 +23,18 @@ def train(model, conf):
     train_log_cb = callbacks.CSVLogger(save_dir / 'training.log')
     best_acc_cb  = callbacks.ModelCheckpoint(
         filepath=save_dir / 'best_acc.keras',
-        # save_weights_only=True,
         monitor='val_accuracy',
         mode='max',
         save_best_only=True
     )
     best_loss_cb = callbacks.ModelCheckpoint(
-        filepath=save_dir / 'best_loss.weights.h5',
-        save_weights_only=True,
+        filepath=save_dir / 'best_loss.keras',
         monitor='val_loss',
         mode='min',
         save_best_only=True
     )
     early_stopping = callbacks.EarlyStopping(
+
         monitor='val_loss',
         mode='min',
         patience=10
@@ -76,7 +75,7 @@ def train(model, conf):
     except KeyboardInterrupt:
         print("Keyboard Interrupt! Saving progress")
 
-    model.save_weights(save_dir / 'model.weights.h5')
+    model.save(save_dir / 'model.keras')
 
 
 
