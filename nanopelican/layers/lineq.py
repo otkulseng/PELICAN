@@ -20,6 +20,8 @@ class Lineq2v0(layers.Layer):
 
         return tf.concat(ops, axis=-1)   # B x L x 2
 
+
+
 class Lineq2v2(layers.Layer):
     """ Aggregates the 2D input tensor into the (max) 15 different permutation
     equivariant tensors that can be made.

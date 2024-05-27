@@ -98,6 +98,7 @@ def generate_data(data_dir, save_dir):
     # Data generation
 
     dfs = []
+    flop_calc = False
     for file in data_dir.iterdir():
         if '.keras' not in file.name:
             continue
@@ -107,8 +108,12 @@ def generate_data(data_dir, save_dir):
         model = models.load_model(file)
         model.summary()
 
-        flops = calc_flops(model)
-        print(flops)
+        flop_file = save_dir / 'flops.txt'
+        if not flop_calc:
+            flop_calc = True
+            flops = calc_flops(model, dataset.x_data.shape[1:])
+            with open(flop_file, 'w') as file:
+                pretty_print(flops, file)
         assert(False)
 
 
@@ -206,3 +211,18 @@ def generate_auc(y_true, y_pred):
 
     return scores, pad_list(fprs), pad_list(tprs)
 
+
+def pretty_print(flop_dict, to_file):
+    total = 0
+    for k, v in flop_dict.items():
+        if isinstance(v, dict):
+            header = f'\n{k}\n'
+            to_file.write(header)
+            to_file.write('-'*len(header) + '\n')
+            total += pretty_print(v, to_file)
+            to_file.write('-'*len(header) + '\n')
+        else:
+            to_file.write(f'{k} : {v}\n')
+            total += v
+    to_file.write(f"Total {total}\n")
+    return total
