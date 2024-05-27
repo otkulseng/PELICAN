@@ -4,8 +4,7 @@ from nanopelican.scripts import run
 from keras import layers, Model
 
 def CreatePelican(x, conf):
-    x = Lineq2v2(symmetric=True, hollow=True, num_avg=conf['num_avg'])(x)
-    x = layers.Dense(conf['n_hidden'])(x)
+    x = DiagBiasDense(conf['n_hidden'])(x)
     x = layers.Activation(activation=conf['activation'])(x)
     x = Lineq2v0(num_avg=conf['num_avg'])(x)
     x = layers.Dense(conf['n_outputs'])(x)
@@ -14,6 +13,7 @@ def CreatePelican(x, conf):
 def CreateModel(shape, conf):
     x = x_in = layers.Input(shape)
     x = InnerProduct(conf['inner_product'])(x)
+    x = Lineq2v2(symmetric=True, hollow=True, num_avg=conf['nano']['num_avg'])(x)
 
     ops = []
     for _ in range(conf['num_channels']):
@@ -21,7 +21,7 @@ def CreateModel(shape, conf):
         ops.append(out)
 
     x = layers.Concatenate()(ops)
-    x = layers.Softmax()(x)
+    x = layers.Activation(conf['out_activ'])(x)
     return Model(inputs=x_in, outputs=x)
 
 def main():

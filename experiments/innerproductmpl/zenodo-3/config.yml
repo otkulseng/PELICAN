@@ -1,0 +1,27 @@
+dataset:
+  feature_key: feats
+  folder: ../../data/zenodo_data/fourvec
+  label_key: label
+  num_particles: 32
+hyperparams:
+  batch_size: 512
+  epochs: 140
+  val_size: -1
+  verbose: 1
+model:
+  activations:
+  - relu
+  - relu
+  - relu
+  dense:
+  - 10
+  - 10
+  - 5
+  hollow: true
+  inner_product:
+    data_format: pxpypze
+    spurions: false
+  num_avg: 25
+  out_activ: softmax
+save_dir: zenodo
+seed: 1856468184

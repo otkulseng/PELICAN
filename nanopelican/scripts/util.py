@@ -2,13 +2,18 @@ from pathlib import Path
 import os
 import yaml
 import numpy as np
+from argparse import ArgumentError
 
 def add_arguments_from_dict(parser, dikt):
     for k, v, in dikt.items():
         if isinstance(v, dict):
             parser = add_arguments_from_dict(parser, v)
             continue
-        parser.add_argument(f'--{k}', type=type(v))
+
+        try:
+            parser.add_argument(f'--{k}', type=type(v))
+        except ArgumentError:
+            continue
     return parser
 
 def set_key(dikt, key, val):

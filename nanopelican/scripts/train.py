@@ -22,8 +22,8 @@ def train(model, conf):
     # Callbacks
     train_log_cb = callbacks.CSVLogger(save_dir / 'training.log')
     best_acc_cb  = callbacks.ModelCheckpoint(
-        filepath=save_dir / 'best_acc.weights.h5',
-        save_weights_only=True,
+        filepath=save_dir / 'best_acc.keras',
+        # save_weights_only=True,
         monitor='val_accuracy',
         mode='max',
         save_best_only=True
@@ -38,7 +38,7 @@ def train(model, conf):
     early_stopping = callbacks.EarlyStopping(
         monitor='val_loss',
         mode='min',
-        patience=20
+        patience=10
     )
 
     model_cbs = [TqdmCallback(verbose=conf['hyperparams']['verbose']),

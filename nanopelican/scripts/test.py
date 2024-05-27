@@ -2,7 +2,7 @@
 from pathlib import Path
 from nanopelican import data
 from keras import losses
-from keras import metrics
+from keras import metrics, models
 
 import h5py
 
@@ -110,10 +110,12 @@ def generate_data(model, data_dir, save_dir):
 
     dfs = []
     for file in data_dir.iterdir():
-        if '.weights.h5' not in file.name:
+        if '.keras' not in file.name:
             continue
+        print(file)
 
-        model.load_weights(file)
+        model = models.load_model(file)
+        # model.load_weights(file)
 
         name = file.name.split('.')[0]
         print(f'Starting: {name}')

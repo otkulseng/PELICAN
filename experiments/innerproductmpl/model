@@ -12,6 +12,8 @@ def CreateModel(shape, conf):
     for units, activ in zip(conf['dense'], conf['activations']):
         x = layers.Dense(units=units, activation=activ)(x)
 
+    x = layers.Activation(activation=conf['out_activ'])(x)
+    
     return Model(inputs=x_in, outputs=x)
 
 def main():

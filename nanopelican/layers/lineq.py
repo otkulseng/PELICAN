@@ -119,7 +119,7 @@ class Lineq2v2(layers.Layer):
             ops.append(inputs)
 
         if self.use_transpose:
-            ops.append(tf.transpose(inputs))
+            ops.append(tf.einsum("...ijl->...jil", inputs))
 
 
         return tf.concat(ops, axis=-1)

@@ -1,7 +1,7 @@
 dataset:
-  feature_key: Pmu
-  folder: ../../data/nano_data
-  label_key: is_signal
+  feature_key: feats
+  folder: ../../data/zenodo_data/fourvec
+  label_key: label
   num_particles: 32
 hyperparams:
   batch_size: 512
@@ -9,11 +9,12 @@ hyperparams:
   val_size: -1
   verbose: 1
 model:
-  activations: [relu]
-  dense: [1]
+  activations: [relu, relu, relu]
+  dense: [10, 10, 5]
   inner_product:
-    data_format: epxpypz
+    data_format: pxpypze
     spurions: false
   num_avg: 25
   hollow: True
-save_dir: long
+  out_activ: softmax
+save_dir: zenodo

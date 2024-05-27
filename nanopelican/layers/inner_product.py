@@ -2,8 +2,8 @@ import tensorflow as tf
 from keras import layers
 
 class InnerProduct(layers.Layer):
-    def __init__(self, arg_dict):
-        super().__init__()
+    def __init__(self, arg_dict, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.arg_dict = arg_dict
         self.data_handler = get_handler(arg_dict['data_format'])
         self.use_spurions = arg_dict['spurions']
