@@ -12,13 +12,16 @@ class InnerProduct(layers.Layer):
             self.spurions = get_spurions(arg_dict['data_format'])
             self.spurions = tf.expand_dims(self.spurions, axis=0)
 
-    def get_flops(self, input_shape):
+    def calc_flops(self, input_shape):
         # assumes num_particles x num_features
-        N, F = input_shape
+        N = input_shape[-2]
+        F = input_shape[-1]
         if self.use_spurions:
             N += len(self.spurions)
 
-        return get_flops(self.arg_dict['data_format'])(input_shape)
+        input_shape = (None, N, F)
+
+        return self.compute_output_shape(input_shape), get_flops(self.arg_dict['data_format'])(input_shape)
 
 
     def build(self, input_shape):
@@ -98,7 +101,8 @@ def get_spurions(data_format, dtype=tf.dtypes.float32):
 def fourvec_flops(input_shape):
 
     # Assumes shape N x 4
-    N, F = input_shape
+    N = input_shape[-2]
+    F = input_shape[-1]
     assert(F == 4)
 
     # For each inner product (N**2 in total) between, say, p and q
@@ -110,7 +114,8 @@ def fourvec_flops(input_shape):
 
 def ptetaphi_flops(input_shape):
     # assumes shape N x 3
-    N, F = input_shape
+    N = input_shape[-2]
+    F = input_shape[-1]
     assert(F == 3)
 
     flops = {
