@@ -20,6 +20,7 @@ def train(model, conf):
     model.summary(expand_nested=True)
 
     # Callbacks
+    hps = conf['hyperparams']
     train_log_cb = callbacks.CSVLogger(save_dir / 'training.log')
     best_acc_cb  = callbacks.ModelCheckpoint(
         filepath=save_dir / 'best_acc.keras',
@@ -34,10 +35,9 @@ def train(model, conf):
         save_best_only=True
     )
     early_stopping = callbacks.EarlyStopping(
-
         monitor='val_loss',
         mode='min',
-        patience=10
+        patience=hps['patience']
     )
 
     model_cbs = [TqdmCallback(verbose=conf['hyperparams']['verbose']),
@@ -45,7 +45,6 @@ def train(model, conf):
 
 
     # Compilation
-    hps = conf['hyperparams']
     if model.output_shape[-1] > 1:
         loss = losses.CategoricalCrossentropy()
     else:

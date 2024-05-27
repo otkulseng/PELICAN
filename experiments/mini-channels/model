@@ -1,0 +1,34 @@
+#!/usr/bin/env python
+from nanopelican.layers import *
+from nanopelican.scripts import run
+from keras import layers, Model
+
+def CreateModel(shape, conf):
+    x = x_in = layers.Input(shape)
+
+    x = InnerProduct(conf['inner_product'])(x)
+
+    x = Lineq2v0(hollow=True, num_avg=conf['num_avg'])(x)
+
+
+    ops = [None] * conf['n_channels']
+    for n in range(conf['n_channels']):
+        ch_conf = conf[f'ch{n}']
+
+        xch = x
+        for unit, activ in zip(ch_conf['units'], ch_conf['activations']):
+            xch = layers.Dense(units=unit,activation=activ)(xch)
+        ops[n] = xch
+
+    x = layers.Concatenate()(ops)
+
+    x = layers.Activation(conf['out_activ'])(x)
+
+    return Model(inputs=x_in, outputs=x)
+
+def main():
+    run(CreateModel)
+
+if __name__ == '__main__':
+    main()
+
