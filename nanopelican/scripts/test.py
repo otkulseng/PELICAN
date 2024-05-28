@@ -112,12 +112,12 @@ def generate_data(data_dir, save_dir):
             shown_model = True
             model.summary()
 
-        # flop_file = save_dir / 'flops.txt'
-        # if not flop_calc:
-        #     flop_calc = True
-        #     flops = calc_flops(model, dataset.x_data.shape[1:])
-        #     with open(flop_file, 'w') as file:
-        #         pretty_print(flops, file)
+        flop_file = save_dir / 'flops.txt'
+        if not flop_calc:
+            flop_calc = True
+            flops = calc_flops(model, dataset.x_data[:1].shape)
+            with open(flop_file, 'w') as file:
+                pretty_print(flops, file)
 
 
         name_group = save_file.require_group(name)

@@ -1,5 +1,6 @@
 import tensorflow as tf
 from keras import layers
+from .utils import *
 
 class InnerProduct(layers.Layer):
     def __init__(self, arg_dict, *args, **kwargs):
@@ -19,9 +20,9 @@ class InnerProduct(layers.Layer):
         if self.use_spurions:
             N += len(self.spurions)
 
-        input_shape = (None, N, F)
+        input_shape = (N, F)
 
-        return self.compute_output_shape(input_shape), get_flops(self.arg_dict['data_format'])(input_shape)
+        return get_flops(self.arg_dict['data_format'])(input_shape)
 
 
     def build(self, input_shape):
@@ -55,10 +56,7 @@ class InnerProduct(layers.Layer):
 
         return tf.expand_dims(inner_prods, axis=-1)
 
-def repeat_const(tensor, myconst):
-    # https://stackoverflow.com/questions/68345125/how-to-concatenate-a-tensor-to-a-keras-layer-along-batch-without-specifying-bat
-    shapes = tf.shape(tensor)
-    return tf.repeat(myconst, shapes[0], axis=0)
+
 
 
 def ptetaphi_spurions(dtype=None):
@@ -106,9 +104,10 @@ def fourvec_flops(input_shape):
     assert(F == 4)
 
     # For each inner product (N**2 in total) between, say, p and q
-    # do: + p_0 * q_0 - p_1 * p_1 - p_2 * p_2 - p_3 * p_3
+    # do: 0 + p_0 * q_0 - p_1 * p_1 - p_2 * p_2 - p_3 * p_3
+
     flops = {
-        'inner-products': N**2 * (4 + 4 + 4)
+        'inner-products': N**2 * (4 + 4)
     }
     return flops
 
@@ -118,12 +117,19 @@ def ptetaphi_flops(input_shape):
     F = input_shape[-1]
     assert(F == 3)
 
+    # pt_matr = tf.einsum('...p, ...q->...pq', pt, pt)
+    # eta_matr = tf.expand_dims(eta, axis=-1) - tf.expand_dims(eta, axis=-2)
+    # phi_matr = tf.expand_dims(phi, axis=-1) - tf.expand_dims(phi, axis=-2)
+
+    # # * is elementwise (hadamard)
+    # return pt_matr * (tf.cosh(eta_matr) - tf.cos(phi_matr))
+
     flops = {
         'pt-outer-product': N**2,
         'eta-sum': 2 * N**2,
         'phi-sum': 2 * N**2,
-        'cosh': N**2 * 1, #Lookup table?
-        'cos':  N**2 * 1, # ditto,
+        'cosh': N**2 * 40, # see flops.py. exp use around 20, so would be 20 + 20 = 40
+        'cos':  N**2 * 40, # see https://latkin.org/blog/2014/11/09/a-simple-benchmark-of-various-math-operations/
         'diff': 2 * N**2,
         'prod': N**2
     }
@@ -171,6 +177,8 @@ def inner_prods_from_Epxpypz(data):
     """Assumes data is of shape Batch x num_particles x 4
     where the last axis is (E, px, py, pz)
     """
+
+    # OPTIM: can optimizize this by symmetry and hollowness
     M = tf.linalg.diag(tf.constant([1, -1, -1, -1], dtype=tf.dtypes.float32))
     return tf.einsum("...pi, ij, ...qj->...pq", data, M, data)
 

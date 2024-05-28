@@ -1,5 +1,6 @@
 import tensorflow as tf
 from keras import layers
+from .utils import *
 
 class Lineq2v0(layers.Layer):
     def __init__(self, hollow=False, num_avg=1.0,*args, **kwargs):
@@ -20,7 +21,19 @@ class Lineq2v0(layers.Layer):
 
         return tf.concat(ops, axis=-1)   # B x L x 2
 
+    def calc_flops(self, input_shape):
+        N = input_shape[-2]
+        L = input_shape[-1]
+        flops = {}
 
+        if self.use_totsum:
+            # ops.append(tf.einsum("...ijl->...l", inputs) / self.num_avg**2)    # B x L
+            flops['totsum'] = (N * N + N) * L
+
+        if self.use_trace:
+            # ops.append(tf.einsum("...iil->...l", inputs) / self.num_avg)     # B x L
+            flops['trace'] = N * L
+        return flops
 
 class Lineq2v2(layers.Layer):
     """ Aggregates the 2D input tensor into the (max) 15 different permutation
@@ -28,14 +41,17 @@ class Lineq2v2(layers.Layer):
 
     Set symmetric=True if the input tensor is symmetric
     Set hollow=True if the input tensor has zero trace
+    Set diag_bias=True if you want to add identity matrix at the end
+        (same effect as having a diagonal basis if this layer is followed by dense)
 
     """
-    def __init__(self, symmetric=False, hollow=False, num_avg=1.0, *args, **kwargs):
+    def __init__(self, symmetric=False, hollow=False, num_avg=1.0, diag_bias=False, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.symmetric = symmetric
         self.hollow = hollow
         self.num_avg = num_avg
+        self.diag_bias = diag_bias
 
         self.use_totsum     = True
         self.use_rowsum     = True
@@ -123,8 +139,45 @@ class Lineq2v2(layers.Layer):
         if self.use_transpose:
             ops.append(tf.einsum("...ijl->...jil", inputs))
 
+        out = tf.concat(ops, axis=-1)
 
-        return tf.concat(ops, axis=-1)
+        if self.diag_bias:
+            IDENTITY = tf.expand_dims(IDENTITY, axis=0)
+            IDENTITY = tf.expand_dims(IDENTITY, axis=-1)
+            identities = layers.Lambda(lambda x: repeat_const(x, IDENTITY))(out)
+            out = layers.Concatenate(axis=-1)([out, identities])
+
+
+        return out
+
+    def calc_flops(self, input_shape):
+        N = input_shape[-2]
+        L = input_shape[-1]
+        flops = {}
+
+        if self.use_totsum:
+            # totsum  = tf.einsum('...ijl->...l', inputs) / self.num_avg**2
+            # OPTIM: can calc totsum from rowsum, removing N * N * L
+            flops['totsum'] = (N * N + N) * L
+
+        if self.use_trace:
+            # trace   = tf.einsum('...iil->...l', inputs) / self.num_avg
+            flops['trace'] = N * L
+
+        if self.use_rowsum:
+            # rowsum  = tf.einsum('...ijl->...il', inputs) / self.num_avg
+            flops['rowsum'] = N * N * L
+
+        if self.use_colsum:
+            # colsum  = tf.einsum('...ijl->...jl', inputs) / self.num_avg
+            flops['colsum'] = N * N * L
+
+        # if self.use_diag:
+            # diag    = tf.einsum('...iil->...il', inputs)
+            # flops['diag'] = N * L # Only assignment
+
+
+        return flops
 
 
 class Lineq1v2(layers.Layer):
