@@ -17,6 +17,14 @@ class DiagBiasDense(layers.Dense):
                 constraint=self.bias_constraint,
                 trainable=True
             )
+            self.diag_bias = self.add_weight(
+                name="diag_bias_2",
+                shape=(self.units,),
+                initializer=self.bias_initializer,
+                regularizer=self.bias_regularizer,
+                constraint=self.bias_constraint,
+                trainable=True
+            )
 
     def call(self, inputs):
         N = inputs.shape[-2]
@@ -31,6 +39,7 @@ class DiagBiasDense(layers.Dense):
 
     def load_own_variables(self, store):
         super().load_own_variables(store)
+        print(len(store))
         self.diag_bias.assign(store[str(len(store)-1)])
 
 

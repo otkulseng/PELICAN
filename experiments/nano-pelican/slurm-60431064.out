@@ -1,8 +1,0 @@
-2024-05-27 18:12:26.864047: I tensorflow/core/util/port.cc:113] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
-2024-05-27 18:12:26.865679: I external/local_tsl/tsl/cuda/cudart_stub.cc:32] Could not find cuda drivers on your machine, GPU will not be used.
-2024-05-27 18:12:26.910957: I external/local_tsl/tsl/cuda/cudart_stub.cc:32] Could not find cuda drivers on your machine, GPU will not be used.
-2024-05-27 18:12:27.114235: I tensorflow/core/platform/cpu_feature_guard.cc:210] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
-To enable the following instructions: AVX2 AVX512F AVX512_VNNI AVX512_BF16 FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
-2024-05-27 18:12:28.917266: W tensorflow/compiler/tf2tensorrt/utils/py_utils.cc:38] TF-TRT Warning: Could not find TensorRT
-/var/spool/slurm/slurmd/state/job60431064/slurm_script: line 4: 269466 Killed                  python model
-slurmstepd: error: Detected 1 oom_kill event in StepId=60431064.batch. Some of the step tasks have been OOM Killed.
