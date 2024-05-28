@@ -3,14 +3,12 @@ dataset:
   folder: ../../data/nano_data
   label_key: is_signal
   num_particles: 32
-
 hyperparams:
   batch_size: 512
   epochs: 140
   patience: 140
   val_size: -1
   verbose: 1
-
 model:
   activation: quantized_relu(2)
   inner_product:
@@ -21,3 +19,4 @@ model:
   num_avg: 50
   out_activation: linear
 save_dir: nano
+seed: 1727712094

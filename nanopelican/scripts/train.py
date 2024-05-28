@@ -4,6 +4,10 @@ from keras import callbacks, losses, optimizers, metrics
 from tqdm.keras import TqdmCallback
 from .util import *
 
+class MyCustom(callbacks.Callback):
+    def on_batch_end(self, batch, logs=None):
+        beta = self.model.layers[2].get_weights()
+        print(batch, beta)
 
 def train(model, conf):
     # For reproducibility
@@ -22,6 +26,8 @@ def train(model, conf):
     # Callbacks
     hps = conf['hyperparams']
     train_log_cb = callbacks.CSVLogger(save_dir / 'training.log')
+
+
     best_acc_cb  = callbacks.ModelCheckpoint(
         filepath=save_dir / 'best_acc.keras',
         monitor='val_accuracy',
@@ -29,7 +35,7 @@ def train(model, conf):
         save_best_only=True
     )
     best_loss_cb = callbacks.ModelCheckpoint(
-        filepath=save_dir / 'best_loss.keras',
+        filepath= save_dir / 'best_loss.keras',
         monitor='val_loss',
         mode='min',
         save_best_only=True

@@ -5,9 +5,9 @@ class LogLayer(layers.Layer):
     def build(self, input_shape):
         L = input_shape[-1]
 
-        alpha_init = tf.random_normal_initializer(stddev=1/tf.cast(L, dtype=tf.dtypes.float32))
+        alpha_init = tf.ones_initializer()
 
-        self.alphas = self.add_weight(
+        self.betas = self.add_weight(
                 shape=(L,),
                 initializer=alpha_init,
                 trainable=True,
@@ -17,4 +17,6 @@ class LogLayer(layers.Layer):
         return input_shape
 
     def call(self, x):
-        return tf.math.pow(1+x, self.alphas)/(1e-6 + self.alphas**2)
+        x = layers.Activation('relu')(x)
+        delta =  (self.betas)**2
+        return ((1+x)**delta - 1) / delta

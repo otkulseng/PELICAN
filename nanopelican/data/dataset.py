@@ -7,6 +7,8 @@ from .util import interleave
 from pathlib import Path
 import logging
 
+import keras
+
 def load_dataset(args, keys):
     dataset = Dataset(args['folder'],
                       feature_key=args['feature_key'],
@@ -55,7 +57,7 @@ class Dataset:
             val.load()
 
 
-class JetDataDir(tf.keras.utils.Sequence):
+class JetDataDir(keras.utils.Sequence):
     """Takes in folder of file(s) supporting
 
             file.get(args.feature_key)  (the resulting file must support sorted indexing)
@@ -127,7 +129,7 @@ class JetDataDir(tf.keras.utils.Sequence):
         for dataset in self.datasets:
             dataset.load()
 
-class JetDataset(tf.keras.utils.Sequence):
+class JetDataset(keras.utils.Sequence):
     def __init__(self, x_data, y_data):
         self.x_data = x_data
         self.y_data = y_data

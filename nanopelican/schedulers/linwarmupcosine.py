@@ -1,7 +1,7 @@
 import tensorflow as tf
-
-@tf.keras.utils.register_keras_serializable(name='CosineAnnealingExpDecay')
-class LinearWarmupCosineAnnealing(tf.keras.optimizers.schedules.LearningRateSchedule):
+import keras
+# @tf.keras.utils.register_keras_serializable(name='CosineAnnealingExpDecay')
+class LinearWarmupCosineAnnealing(keras.optimizers.schedules.LearningRateSchedule):
     """Schedule like the one proposed in https://arxiv.org/pdf/2310.16121.pdf
 
     Args:

@@ -1,7 +1,7 @@
 dataset:
   feature_key: Pmu
-  folder: ../../data/nano_data
-  label_key: is_signal
+  folder: ../../data/osf_data
+  label_key: jet_tag
   num_particles: 32
 
 hyperparams:
@@ -12,12 +12,12 @@ hyperparams:
   verbose: 1
 
 model:
-  activation: quantized_relu(2)
+  activation: linear
   inner_product:
     data_format: epxpypz
     spurions: false
   n_hidden: 1
-  n_outputs: 1
+  n_outputs: 5
   num_avg: 50
-  out_activation: linear
+  out_activation: softmax
 save_dir: nano
