@@ -3,24 +3,20 @@ dataset:
   folder: ../../data/zenodo_data/ptetaphi_rel
   label_key: label
   num_particles: 32
-
 hyperparams:
   batch_size: 512
   epochs: 140
-  val_size: -1
-  verbose: 1
   patience: 140
-
+  val_size: -1
+  verbose: 0
 model:
+  activation: relu
   inner_product:
     data_format: ptetaphi
     spurions: false
-
-  n_hidden: 10
-  activation: relu
+  n_hidden: 2
   n_outputs: 5
-  out_activation: softmax
   num_avg: 50
-
+  out_activation: softmax
 save_dir: ptetaphi
-
+seed: 1734756509

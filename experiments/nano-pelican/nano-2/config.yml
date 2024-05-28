@@ -1,0 +1,22 @@
+dataset:
+  feature_key: Pmu
+  folder: ../../data/nano_data
+  label_key: is_signal
+  num_particles: 32
+hyperparams:
+  batch_size: 512
+  epochs: 140
+  patience: 140
+  val_size: -1
+  verbose: 1
+model:
+  activation: relu
+  inner_product:
+    data_format: epxpypz
+    spurions: false
+  n_hidden: 2
+  n_outputs: 1
+  num_avg: 50
+  out_activation: linear
+save_dir: nano
+seed: 1244014790
