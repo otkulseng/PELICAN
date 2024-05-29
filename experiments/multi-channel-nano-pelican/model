@@ -1,0 +1,47 @@
+#!/usr/bin/env python
+from nanopelican.layers import *
+from nanopelican.scripts import run
+from keras import layers, Model
+
+
+def mlp(units, activs, x):
+    for unit, activ in zip(units, activs):
+        x = layers.Dense(
+            units=unit,
+            activation=activ
+        )(x)
+    return x
+
+def CreateModel(shape, conf):
+    x = x_in = layers.Input(shape)
+
+    x = InnerProduct(conf['inner_product'])(x)
+
+    if conf['log_layer']:
+        x = LogLayer()(x)
+
+    x = Lineq2v2(
+        symmetric=True,
+        hollow=True,
+        num_avg=conf['num_avg'],
+        diag_bias=True
+    )(x)
+
+    x = mlp(conf['hidden']['units'], conf['hidden']['activs'], x)
+
+    x = Lineq2v0(num_avg=conf['num_avg'])(x)
+
+    ops = [None] * conf['n_channels']
+    for n in range(conf['n_channels']):
+        ops[n] = mlp(conf['ch_out']['units'], conf['ch_out']['activs'], x)
+
+    x = layers.Concatenate()(ops)
+    x = mlp(conf['out']['units'], conf['out']['activs'], x)
+    return Model(inputs=x_in, outputs=x)
+
+def main():
+    run(CreateModel)
+
+if __name__ == '__main__':
+    main()
+

@@ -3,25 +3,30 @@ dataset:
   folder: ../../data/zenodo_data/fourvec
   label_key: label
   num_particles: 32
-
 hyperparams:
   batch_size: 512
   epochs: 1000
-  verbose: 1
-  val_size: 50000
+  lr_init: 0.01
   patience: 15
-  lr_init: 0.001
-
+  val_size: 50000
+  verbose: 1
 model:
-  num_avg: 50
+  hidden:
+    activs:
+    - relu
+    units:
+    - 4
   inner_product:
     data_format: pxpypze
-    spurions: False
-  log_layer: False
-  hidden:
-    units: [3]
-    activs: [relu]
+    spurions: false
+  log_layer: false
+  num_avg: 50
   out:
-    units : [64, 32, 5]
-    activs: [relu, relu, softmax]
+    activs:
+    - relu
+    - softmax
+    units:
+    - 32
+    - 5
 save_dir: zenodo
+seed: 942075017

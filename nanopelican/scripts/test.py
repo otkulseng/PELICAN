@@ -114,12 +114,15 @@ def generate_data(data_dir, save_dir):
             shown_model = True
             model.summary()
 
-        flop_file = save_dir / 'flops.txt'
-        if not flop_calc:
-            flop_calc = True
-            flops = calc_flops(model, dataset.x_data[:1].shape)
-            with open(flop_file, 'w') as file:
-                pretty_print(flops, file)
+        try:
+            flop_file = save_dir / 'flops.txt'
+            if not flop_calc:
+                flop_calc = True
+                flops = calc_flops(model, dataset.x_data[:1].shape)
+                with open(flop_file, 'w') as file:
+                    pretty_print(flops, file)
+        except Exception as e:
+            print(e)
 
 
         name_group = save_file.require_group(name)
@@ -177,7 +180,7 @@ def generate_data(data_dir, save_dir):
     return save_file
 
 def metrics_plot(file):
-    fig, (axL, axR) = plt.subplots(ncols=2, figsize=(10, 5))
+    fig, (axL, axR, axLR) = plt.subplots(ncols=3, figsize=(10, 5))
     for key in file:
         if 'acc' in key:
             axL.plot(file[key][:], label=key)
@@ -185,10 +188,16 @@ def metrics_plot(file):
         if 'loss' in key:
             axR.plot(file[key][:], label=key)
 
+        if 'lr' in key:
+            axLR.plot(file[key][:], label=key)
+
     axL.set_title('Accuracy')
     axL.legend(loc='lower right')
 
     axR.set_title('Loss')
+    axR.legend()
+
+    axR.set_title('Learning Rate')
     axR.legend()
     fig.supxlabel('Epochs')
     return fig

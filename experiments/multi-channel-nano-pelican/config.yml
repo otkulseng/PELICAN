@@ -18,10 +18,14 @@ model:
     data_format: pxpypze
     spurions: False
   log_layer: False
+  n_channels: 5
   hidden:
-    units: [3]
+    units: [2]
+    activs: [relu]
+  ch_out:
+    units: [2, 1]
     activs: [relu]
   out:
-    units : [64, 32, 5]
-    activs: [relu, relu, softmax]
+    units : [5]
+    activs: [softmax]
 save_dir: zenodo
