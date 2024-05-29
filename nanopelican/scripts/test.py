@@ -197,8 +197,8 @@ def metrics_plot(file):
     axR.set_title('Loss')
     axR.legend()
 
-    axR.set_title('Learning Rate')
-    axR.legend()
+    axLR.set_title('Learning Rate')
+    axLR.legend()
     fig.supxlabel('Epochs')
     return fig
 
