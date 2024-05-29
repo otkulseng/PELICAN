@@ -59,7 +59,8 @@ def diagbiasdense(input_shape, layer):
     })
     return out_shape, dense_flops
 
-
+def log_layer(input_shape, layer):
+    return input_shape, {}
 
 def calc_flops(model, input_shape):
     info_dict = {
@@ -69,7 +70,8 @@ def calc_flops(model, input_shape):
         Lineq2v0 : lineq2v0,
         DiagBiasDense: diagbiasdense,
         layers.Activation: activation,
-        layers.Dense: dense
+        layers.Dense: dense,
+        LogLayer: log_layer
     }
 
     total = {}

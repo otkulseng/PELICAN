@@ -1,0 +1,36 @@
+2024-05-29 10:06:30.639255: I tensorflow/core/util/port.cc:113] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+2024-05-29 10:06:30.646352: I external/local_tsl/tsl/cuda/cudart_stub.cc:32] Could not find cuda drivers on your machine, GPU will not be used.
+2024-05-29 10:06:30.804099: I external/local_tsl/tsl/cuda/cudart_stub.cc:32] Could not find cuda drivers on your machine, GPU will not be used.
+2024-05-29 10:06:31.421729: I tensorflow/core/platform/cpu_feature_guard.cc:210] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 AVX512F AVX512_VNNI AVX512_BF16 FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+2024-05-29 10:06:34.153292: W tensorflow/compiler/tf2tensorrt/utils/py_utils.cc:38] TF-TRT Warning: Could not find TensorRT
+2024-05-29 10:06:52.326991: E external/local_xla/xla/stream_executor/cuda/cuda_driver.cc:282] failed call to cuInit: CUDA_ERROR_NO_DEVICE: no CUDA-capable device is detected
+Running train
+Model: "functional_1"
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━┓
+┃ Layer (type)                    ┃ Output Shape           ┃       Param # ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━┩
+│ input_layer (InputLayer)        │ (None, 32, 4)          │             0 │
+├─────────────────────────────────┼────────────────────────┼───────────────┤
+│ inner_product (InnerProduct)    │ (None, 32, 32, 1)      │             0 │
+├─────────────────────────────────┼────────────────────────┼───────────────┤
+│ log_layer (LogLayer)            │ (None, 32, 32, 1)      │             1 │
+├─────────────────────────────────┼────────────────────────┼───────────────┤
+│ lineq2v2 (Lineq2v2)             │ (None, 32, 32, 7)      │             0 │
+├─────────────────────────────────┼────────────────────────┼───────────────┤
+│ dense (Dense)                   │ (None, 32, 32, 2)      │            16 │
+├─────────────────────────────────┼────────────────────────┼───────────────┤
+│ lineq2v2_1 (Lineq2v2)           │ (None, 32, 32, 31)     │             0 │
+├─────────────────────────────────┼────────────────────────┼───────────────┤
+│ dense_1 (Dense)                 │ (None, 32, 32, 1)      │            32 │
+├─────────────────────────────────┼────────────────────────┼───────────────┤
+│ lineq2v0 (Lineq2v0)             │ (None, 2)              │             0 │
+├─────────────────────────────────┼────────────────────────┼───────────────┤
+│ dense_2 (Dense)                 │ (None, 5)              │            15 │
+└─────────────────────────────────┴────────────────────────┴───────────────┘
+ Total params: 64 (256.00 B)
+ Trainable params: 64 (256.00 B)
+ Non-trainable params: 0 (0.00 B)
+0epoch [00:00, ?epoch/s]  0%|          | 0/140 [00:00<?, ?epoch/s]/cluster/home/okulseng/.local/lib64/python3.11/site-packages/keras/src/trainers/data_adapters/py_dataset_adapter.py:120: UserWarning: Your `PyDataset` class should call `super().__init__(**kwargs)` in its constructor. `**kwargs` can include `workers`, `use_multiprocessing`, `max_queue_size`. Do not pass these arguments to `fit()`, as they will be ignored.
+  self._warn_if_super_not_called()
+  1%|          | 1/140 [06:23<14:48:17, 383.43s/epoch, accuracy=0.2, loss=1.61, val_accuracy=0.202, val_loss=1.61]  1%|▏         | 2/140 [12:44<14:39:20, 382.32s/epoch, accuracy=0.2, loss=1.61, val_accuracy=0.202, val_loss=1.61]  2%|▏         | 3/140 [19:05<14:31:31, 381.69s/epoch, accuracy=0.2, loss=1.61, val_accuracy=0.202, val_loss=1.61]  3%|▎         | 4/140 [25:26<14:24:35, 381.44s/epoch, accuracy=0.2, loss=1.61, val_accuracy=0.201, val_loss=1.61]  4%|▎         | 5/140 [31:48<14:18:19, 381.48s/epoch, accuracy=0.2, loss=1.61, val_accuracy=0.202, val_loss=1.61]  4%|▍         | 6/140 [38:26<14:24:36, 387.14s/epoch, accuracy=0.2, loss=1.61, val_accuracy=0.202, val_loss=1.61]  5%|▌         | 7/140 [44:47<14:13:41, 385.13s/epoch, accuracy=0.2, loss=1.61, val_accuracy=0.202, val_loss=1.61]  6%|▌         | 8/140 [51:09<14:04:53, 384.04s/epoch, accuracy=0.2, loss=1.61, val_accuracy=0.202, val_loss=1.61]  6%|▋         | 9/140 [57:31<13:57:18, 383.50s/epoch, accuracy=0.2, loss=1.61, val_accuracy=0.201, val_loss=1.61]  7%|▋         | 10/140 [1:03:53<13:49:33, 382.88s/epoch, accuracy=0.2, loss=1.61, val_accuracy=0.202, val_loss=1.61]  8%|▊         | 11/140 [1:10:14<13:42:16, 382.45s/epoch, accuracy=0.2, loss=1.61, val_accuracy=0.202, val_loss=1.61]  9%|▊         | 12/140 [1:16:46<13:41:45, 385.20s/epoch, accuracy=0.201, loss=1.61, val_accuracy=0.201, val_loss=1.61]  9%|▉         | 13/140 [1:22:55<13:25:13, 380.42s/epoch, accuracy=0.2, loss=1.61, val_accuracy=0.201, val_loss=1.61]   10%|█         | 14/140 [1:29:06<13:12:43, 377.49s/epoch, accuracy=0.2, loss=1.61, val_accuracy=0.202, val_loss=1.61] 11%|█         | 15/140 [1:35:16<13:01:44, 375.23s/epoch, accuracy=0.2, loss=1.61, val_accuracy=0.202, val_loss=1.61]

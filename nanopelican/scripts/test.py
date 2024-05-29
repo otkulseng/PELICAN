@@ -106,7 +106,9 @@ def generate_data(data_dir, save_dir):
         name = file.name.split('.')[0]
         print(f'Starting: {name}')
 
-        model = models.load_model(file)
+        model = models.load_model(file, custom_objects={
+            'lr': lambda y_true,y_pred : 0
+        })
 
         if not shown_model:
             shown_model = True
@@ -142,6 +144,7 @@ def generate_data(data_dir, save_dir):
                 result_dict.update({
                     k: v.numpy()
                 })
+
 
 
         loss = np.average(model.loss(

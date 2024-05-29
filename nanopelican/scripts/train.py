@@ -4,10 +4,7 @@ from keras import callbacks, losses, optimizers, metrics
 from tqdm.keras import TqdmCallback
 from .util import *
 
-class MyCustom(callbacks.Callback):
-    def on_batch_end(self, batch, logs=None):
-        beta = self.model.layers[2].get_weights()
-        print(batch, beta)
+
 
 def train(model, conf):
     # For reproducibility
@@ -41,13 +38,19 @@ def train(model, conf):
         save_best_only=True
     )
     early_stopping = callbacks.EarlyStopping(
-        monitor='val_loss',
-        mode='min',
+        monitor='val_accuracy',
+        mode='max',
         patience=hps['patience']
     )
 
+    reduce_lr = callbacks.ReduceLROnPlateau(
+        monitor='val_accuracy',
+        mode='max',
+        patience=hps['patience'] // 3
+    )
+
     model_cbs = [TqdmCallback(verbose=conf['hyperparams']['verbose']),
-                 train_log_cb, best_acc_cb, best_loss_cb, early_stopping]
+                 train_log_cb, best_acc_cb, best_loss_cb, early_stopping, reduce_lr]
 
 
     # Compilation
@@ -56,15 +59,12 @@ def train(model, conf):
     else:
         loss = losses.BinaryCrossentropy(from_logits=True)
 
-    optimizer = optimizers.Adam(learning_rate=schedulers.LinearWarmupCosineAnnealing(
-        epochs=hps['epochs'],
-        steps_per_epoch=len(dataset.train),
-    ))
+    optimizer = optimizers.Adam(learning_rate=hps['lr_init'])
 
     model.compile(
         optimizer=optimizer,
         loss=loss,
-        metrics=['accuracy'],
+        metrics=['accuracy', get_lr_metric(optimizer)],
     )
 
     dataset.val.shuffle(keepratio=True)

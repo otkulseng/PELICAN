@@ -3,6 +3,7 @@ import os
 import yaml
 import numpy as np
 from argparse import ArgumentError
+from keras import callbacks
 
 def add_arguments_from_dict(parser, dikt):
     for k, v, in dikt.items():
@@ -31,7 +32,8 @@ def set_key(dikt, key, val):
 def override_conf_from_parser(conf, args):
     for arg in vars(args):
         attr = getattr(args, arg)
-        if attr is None:
+
+        if type(attr) is type(None):
             continue
 
         conf = set_key(conf, arg, attr)
@@ -72,3 +74,13 @@ def load_arguments():
     config = add_default_values(config)
 
     return config
+
+class MyCustom(callbacks.Callback):
+    def on_epoch_end(self, epoch, logs=None):
+        lr = self.model.optimizer.lr
+        print(f'lr: {lr}')
+
+def get_lr_metric(optimizer):
+    def lr(y_true, y_pred):
+        return optimizer.learning_rate
+    return lr
