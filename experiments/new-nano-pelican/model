@@ -4,8 +4,10 @@ from nanopelican.scripts import run
 from keras import layers, Model
 
 
-def mlp(units, activs, x):
+def mlp(units, activs, x, batchnorm=False):
     for unit, activ in zip(units, activs):
+        if batchnorm:
+            x = layers.BatchNormalization()(x)
         x = layers.Dense(
             units=unit,
             activation=activ
@@ -20,6 +22,8 @@ def CreateModel(shape, conf):
     if conf['log_layer']:
         x = LogLayer()(x)
 
+    x = mlp(conf['input']['units'], conf['hidden']['activs'], x)
+
     x = Lineq2v2(
         symmetric=True,
         hollow=True,
@@ -31,7 +35,7 @@ def CreateModel(shape, conf):
 
     x = Lineq2v0(num_avg=conf['num_avg'])(x)
 
-    x = mlp(conf['out']['units'], conf['out']['activs'], x)
+    x = mlp(conf['out']['units'], conf['out']['activs'], x, batchnorm=conf['batchnorm'])
 
     return Model(inputs=x_in, outputs=x)
 
