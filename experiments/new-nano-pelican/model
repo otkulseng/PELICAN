@@ -17,12 +17,14 @@ def mlp(units, activs, x, batchnorm=False):
 def CreateModel(shape, conf):
     x = x_in = layers.Input(shape)
 
-    x = InnerProduct(conf['inner_product'])(x)
+    x, mask = InnerProduct(conf['inner_product'])(x)
 
     if conf['log_layer']:
         x = LogLayer()(x)
 
     x = mlp(conf['input']['units'], conf['hidden']['activs'], x)
+
+    x = layers.Multiply()([x, mask])
 
     x = Lineq2v2(
         symmetric=True,
@@ -31,7 +33,11 @@ def CreateModel(shape, conf):
         diag_bias=True
     )(x)
 
+    # x = ScalingLayer()(x)
+
     x = mlp(conf['hidden']['units'], conf['hidden']['activs'], x)
+
+    x = layers.Multiply()([x, mask])
 
     x = Lineq2v0(num_avg=conf['num_avg'])(x)
 

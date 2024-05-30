@@ -3,24 +3,21 @@ dataset:
   folder: ../../data/osf_data
   label_key: jet_tag
   num_particles: 32
-
 hyperparams:
   batch_size: 512
   epochs: 140
+  lr_init: 0.01
   patience: 10
   val_size: -1
   verbose: 1
-  lr_init: 0.01
-
 model:
   activation: linear
   inner_product:
     data_format: epxpypz
     spurions: false
-    mask: true
   n_hidden: 1
   n_outputs: 5
-  n_obj: 13
   num_avg: 50
   out_activation: softmax
 save_dir: nano
+seed: 482344239
