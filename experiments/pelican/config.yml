@@ -1,0 +1,28 @@
+dataset:
+  feature_key: feats
+  folder: ../../data/zenodo_data/fourvec
+  label_key: label
+  num_particles: 32
+
+hyperparams:
+  batch_size: 512
+  epochs: 1000
+  verbose: 1
+  val_size: -1
+  patience: 15
+  lr_init: 0.001
+
+model:
+  num_avg: 50
+  inner_product:
+    data_format: pxpypze
+    spurions: False
+  log_layer: False
+  batchnorm: False
+  hidden:
+    units: [4]
+    activs: [relu]
+  out:
+    units : [64, 32, 5]
+    activs: [relu, relu, softmax]
+save_dir: zenodo

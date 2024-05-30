@@ -1,0 +1,44 @@
+#!/usr/bin/env python
+from nanopelican.layers import *
+from nanopelican.scripts import run
+from keras import layers, Model
+
+
+def mlp(units, activs, x, batchnorm=False):
+    for unit, activ in zip(units, activs):
+        if batchnorm:
+            x = layers.BatchNormalization()(x)
+        x = layers.Dense(
+            units=unit,
+            activation=activ
+        )(x)
+    return x
+
+def CreateModel(shape, conf):
+    x = x_in = layers.Input(shape)
+
+    x = InnerProduct(conf['inner_product'])(x)
+
+    x = Lineq2v2(
+        symmetric=True,
+        hollow=True,
+        num_avg=conf['num_avg'],
+        diag_bias=True
+    )(x)
+
+    x = ScalingLayer(conf['num_avg'])(x)
+
+    x = mlp(conf['hidden']['units'], conf['hidden']['activs'], x)
+
+    x = Lineq2v0(num_avg=conf['num_avg'])(x)
+
+    x = mlp(conf['out']['units'], conf['out']['activs'], x)
+
+    return Model(inputs=x_in, outputs=x)
+
+def main():
+    run(CreateModel)
+
+if __name__ == '__main__':
+    main()
+

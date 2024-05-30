@@ -8,15 +8,8 @@ from collections.abc import Iterable
 def input_layer(input_shape, layer):
     return input_shape, {}
 
-def inner_product(input_shape, layer):
-    out_shape = layer.call(tf.zeros(input_shape)).shape
-    return out_shape, layer.calc_flops(input_shape)
 
-def lineq2v2(input_shape, layer):
-    out_shape = layer.call(tf.zeros(input_shape)).shape
-    return out_shape, layer.calc_flops(input_shape)
-
-def lineq2v0(input_shape, layer):
+def pelican_layer(input_shape, layer):
     out_shape = layer.call(tf.zeros(input_shape)).shape
     return out_shape, layer.calc_flops(input_shape)
 
@@ -65,13 +58,14 @@ def log_layer(input_shape, layer):
 def calc_flops(model, input_shape):
     info_dict = {
         layers.InputLayer : input_layer,
-        InnerProduct : inner_product,
-        Lineq2v2 : lineq2v2,
-        Lineq2v0 : lineq2v0,
+        InnerProduct : pelican_layer,
+        Lineq2v2 : pelican_layer,
+        Lineq2v0 : pelican_layer,
         DiagBiasDense: diagbiasdense,
         layers.Activation: activation,
         layers.Dense: dense,
-        LogLayer: log_layer
+        LogLayer: pelican_layer,
+        ScalingLayer: pelican_layer
     }
 
     total = {}
