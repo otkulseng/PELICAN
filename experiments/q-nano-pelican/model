@@ -5,33 +5,77 @@ from keras import layers, Model
 from qkeras import *
 
 
-def CreateModel(shape, conf):
-    x = x_in = layers.Input(shape)
-    x = InnerProduct(conf['inner_product'])(x)
-    x = Lineq2v2(symmetric=True, hollow=True, num_avg=conf['num_avg'], diag_bias=True)(x)
 
+def CreateModel(shape, conf):
+
+    QUANT = format_quantiser(
+        n_bits=conf['n_bits']
+    )
+
+    x = x_in = layers.Input(shape)
+    x, mask = InnerProduct(conf['inner_product'])(x)
+    x = Lineq2v2(symmetric=True, hollow=True, num_avg=conf['num_avg'], diag_bias=True)(x)
     x = QDense(
         units=conf['n_hidden'],
-        kernel_quantizer='stochastic_ternary',
-        bias_quantizer='quantized_po2(4)'
+        kernel_quantizer=QUANT,
+        bias_quantizer=QUANT
     )(x)
 
-    x = QActivation(activation=conf['activation'])(x)
+    x = layers.Multiply()([x, mask])
+
+    ACTIV = format_qactivation(
+        activation=conf['activation'],
+        n_bits=conf['n_bits']
+    )
+    x = QActivation(activation=ACTIV)(x)
 
     x = Lineq2v0(num_avg=conf['num_avg'])(x)
 
     x = QDense(
-        units=conf['n_outputs'],
-        kernel_quantizer="quantized_bits(3,0,1)",
-        bias_quantizer="quantized_bits(3)"
+            units=64,
+            kernel_quantizer=QUANT,
+            bias_quantizer=QUANT
+    )(x)
+    x = QActivation(activation=ACTIV)(x)
+
+    x = QDense(
+            units=32,
+            kernel_quantizer=QUANT,
+            bias_quantizer=QUANT
+    )(x)
+    x = QActivation(activation=ACTIV)(x)
+
+    x = QDense(
+            units=5,
+            kernel_quantizer=QUANT,
+            bias_quantizer=QUANT
     )(x)
 
     x = layers.Activation(conf['out_activation'])(x)
     return Model(inputs=x_in, outputs=x)
+
+
+
+# These functions are taken from:
+# https://github.com/bb511/deepsets_synth/blob/main/fast_deepsets/deepsets/deepsets_quantised.py
+# 03.06.2024
+def format_quantiser(n_bits):
+    """Format the quantisation of the ml floats in a QKeras way."""
+    if n_bits == 1:
+        return "binary(alpha=1)"
+    elif n_bits == 2:
+        return "ternary(alpha=1)"
+    else:
+        return f"quantized_bits({n_bits}, 0, alpha=1)"
+
+
+def format_qactivation(activation, n_bits):
+    """Format the activation function strings in a QKeras friendly way."""
+    return f"quantized_{activation}({n_bits}, 0)"
+
 
 def main():
     run(CreateModel)
 
 if __name__ == '__main__':
     main()
-

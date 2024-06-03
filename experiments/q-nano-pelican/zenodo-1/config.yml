@@ -5,18 +5,20 @@ dataset:
   num_particles: 32
 hyperparams:
   batch_size: 512
-  epochs: 140
-  patience: 140
+  epochs: 1000
+  lr_init: 0.001
+  patience: 15
   val_size: -1
   verbose: 1
 model:
-  activation: quantized_relu(2)
+  activation: relu
   inner_product:
     data_format: epxpypz
     spurions: false
-  n_hidden: 1
-  n_outputs: 1
+  n_bits: 8
+  n_hidden: 2
+  n_outputs: 5
   num_avg: 50
-  out_activation: linear
-save_dir: nano
-seed: 1727712094
+  out_activation: softmax
+save_dir: zenodo
+seed: 2089537700

@@ -66,7 +66,6 @@ class Lineq2v2(layers.Layer):
             self.use_transpose = False
 
         if self.hollow:
-            self.use_colsum = False
             self.use_trace  = False
             self.use_diag   = False
 

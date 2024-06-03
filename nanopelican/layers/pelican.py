@@ -1,28 +1,51 @@
 from keras import layers, Model
 from nanopelican.layers import *
 import tensorflow as tf
+from keras import activations
 
 
-class DiagBiasDense(layers.Dense):
+class DiagBiasDense(layers.Layer):
+    def __init__(self, units, activation=None, *args,**kwargs):
+        super().__init__(*args, **kwargs)
+        self.units = units
+        self.activation = activations.get(activation)
+
     def build(self, input_shape):
-        super().build(input_shape)
+        kernel_initializer="glorot_uniform"
+        bias_initializer="zeros"
 
-        # B x N x N x L
-        if self.use_bias:
-            self.diag_bias = self.add_weight(
-                name="diag_bias",
-                shape=(self.units,),
-                initializer=self.bias_initializer,
-                regularizer=self.bias_regularizer,
-                constraint=self.bias_constraint,
-                trainable=True
-            )
+        # input_shape = N x N x L
+        L = input_shape[-1]
+
+        self.kernel = self.add_weight(
+            name='kernel',
+            shape=(L, self.units),
+            initializer=kernel_initializer
+        )
+
+        self.bias = self.add_weight(
+            name="bias",
+            shape=(self.units,),
+            initializer=bias_initializer,
+            trainable=True
+        )
+
+        self.diag_bias = self.add_weight(
+            name="diag_bias",
+            shape=(self.units,),
+            initializer=bias_initializer,
+            trainable=True
+        )
 
     def call(self, inputs):
         N = inputs.shape[-2]
         IDENTITY = tf.eye(N, dtype=tf.dtypes.float32)
         diag_bias = tf.einsum("f, ij->ijf", self.diag_bias, IDENTITY)
-        return tf.add(super().call(inputs), diag_bias)
+
+        return self.activation(
+            tf.einsum('...ijl, lf->...ijf', inputs, self.kernel)
+            + self.bias + diag_bias
+        )
 
 
 class PelicanNano(layers.Layer):

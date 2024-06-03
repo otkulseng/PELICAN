@@ -25,18 +25,18 @@ def train(model, conf):
     train_log_cb = callbacks.CSVLogger(save_dir / 'training.log')
 
 
-    best_acc_cb  = callbacks.ModelCheckpoint(
-        filepath=save_dir / 'best_acc.keras',
-        monitor='val_accuracy',
-        mode='max',
-        save_best_only=True
-    )
-    best_loss_cb = callbacks.ModelCheckpoint(
-        filepath= save_dir / 'best_loss.keras',
-        monitor='val_loss',
-        mode='min',
-        save_best_only=True
-    )
+    # best_acc_cb  = callbacks.ModelCheckpoint(
+    #     filepath= os.path.join('ckpt', 'best_acc.tf'),
+    #     monitor='val_accuracy',
+    #     mode='max',
+    #     save_best_only=True
+    # )
+    # best_loss_cb = callbacks.ModelCheckpoint(
+    #     filepath= os.path.join('ckpt', 'best_loss.tf'),
+    #     monitor='val_loss',
+    #     mode='min',
+    #     save_best_only=True
+    # )
     early_stopping = callbacks.EarlyStopping(
         monitor='val_accuracy',
         mode='max',
@@ -50,8 +50,9 @@ def train(model, conf):
     )
 
     model_cbs = [TqdmCallback(verbose=conf['hyperparams']['verbose']),
-                 train_log_cb, best_acc_cb, best_loss_cb, early_stopping, reduce_lr]
-
+                 train_log_cb,
+                #  best_acc_cb, best_loss_cb,
+                   early_stopping, reduce_lr]
 
     # Compilation
     if model.output_shape[-1] > 1:
@@ -80,7 +81,7 @@ def train(model, conf):
     except KeyboardInterrupt:
         print("Keyboard Interrupt! Saving progress")
 
-    model.save(save_dir / 'model.keras')
+    model.save((save_dir / 'model').name, save_format='tf')
 
 
 

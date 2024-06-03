@@ -57,9 +57,10 @@ class InnerProduct(layers.Layer):
 
         particle_sum = tf.reduce_sum(tf.abs(inputs), axis=-1)
         mask = tf.cast(particle_sum > 1.0e-6, tf.int32)
+        mask = tf.cast(mask, tf.float32)
         mask = tf.einsum('...i, ...j->...ij', mask, mask)
         mask = tf.expand_dims(mask, axis=-1)
-        
+
         return inner_prods, mask
 
         # inner_prods = tf.math.log(1 + inner_prods)

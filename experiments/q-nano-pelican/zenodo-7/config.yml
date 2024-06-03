@@ -3,23 +3,22 @@ dataset:
   folder: ../../data/zenodo_data/fourvec
   label_key: label
   num_particles: 32
-
 hyperparams:
   batch_size: 512
   epochs: 1000
-  verbose: 1
-  val_size: -1
-  patience: 15
   lr_init: 0.001
-
+  patience: 15
+  val_size: 1000
+  verbose: 1
 model:
+  activation: relu
   inner_product:
     data_format: pxpypze
     spurions: false
-  n_hidden: 2
   n_bits: 8
+  n_hidden: 2
   n_outputs: 5
   num_avg: 50
-  activation: relu
   out_activation: softmax
 save_dir: zenodo
+seed: 2087118724
