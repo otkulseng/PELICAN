@@ -9,7 +9,7 @@ hyperparams:
   epochs: 1000
   verbose: 1
   val_size: -1
-  patience: 30
+  patience: 15
   lr_init: 0.001
 
 model:
@@ -18,10 +18,14 @@ model:
     data_format: pxpypze
     spurions: False
   log_layer: False
+  batchnorm: False
+  input:
+    units: [2]
+    activs: [linear]
   hidden:
-    units: [5]
+    units: [3]
     activs: [relu]
   out:
-    units : [64, 64, 32, 5]
-    activs: [relu, relu, relu, softmax]
+    units : [64, 32, 5]
+    activs: [relu, relu, softmax]
 save_dir: zenodo

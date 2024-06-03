@@ -28,12 +28,9 @@ def CreateModel(shape, conf):
 
     x = Lineq2v2(
         symmetric=True,
-        hollow=True,
         num_avg=conf['num_avg'],
         diag_bias=True
     )(x)
-
-    # x = ScalingLayer()(x)
 
     x = mlp(conf['hidden']['units'], conf['hidden']['activs'], x)
 

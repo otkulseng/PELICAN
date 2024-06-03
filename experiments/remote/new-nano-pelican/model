@@ -4,7 +4,7 @@ from nanopelican.scripts import run
 from keras import layers, Model
 
 
-def mlp(units, activs, x):
+def mlp(units, activs, x, batchnorm=False):
     for unit, activ in zip(units, activs):
         x = layers.Dense(
             units=unit,
@@ -15,19 +15,26 @@ def mlp(units, activs, x):
 def CreateModel(shape, conf):
     x = x_in = layers.Input(shape)
 
-    x = InnerProduct(conf['inner_product'])(x)
+    x, mask = InnerProduct(conf['inner_product'])(x)
 
     if conf['log_layer']:
         x = LogLayer()(x)
 
+    x = mlp(conf['input']['units'], conf['hidden']['activs'], x)
+
+    x = layers.Multiply()([x, mask])
+
     x = Lineq2v2(
         symmetric=True,
-        hollow=True,
         num_avg=conf['num_avg'],
         diag_bias=True
     )(x)
 
+    # x = ScalingLayer()(x)
+
     x = mlp(conf['hidden']['units'], conf['hidden']['activs'], x)
+
+    x = layers.Multiply()([x, mask])
 
     x = Lineq2v0(num_avg=conf['num_avg'])(x)
 
