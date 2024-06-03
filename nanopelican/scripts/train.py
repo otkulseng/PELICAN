@@ -25,17 +25,29 @@ def train(model, conf):
     train_log_cb = callbacks.CSVLogger(save_dir / 'training.log')
 
 
-    best_acc_cb  = callbacks.ModelCheckpoint(
-        filepath= Path(save_dir) / 'best_acc.keras',
+    # best_acc_cb  = callbacks.ModelCheckpoint(
+    #     filepath= str(Path(save_dir) / 'best_acc.keras'),
+    #     monitor='val_accuracy',
+    #     mode='max',
+    #     save_best_only=True,
+    #     options=None,
+    # )
+    # best_loss_cb = callbacks.ModelCheckpoint(
+    #     filepath= str(Path(save_dir) / 'best_loss.keras'),
+    #     monitor='val_loss',
+    #     mode='min',
+    #     save_best_only=True,
+    #     options=None,
+    # )
+    best_acc_cb  = CustomModelCheckpoint(
+        filepath= str(Path(save_dir) / 'best_acc.keras'),
         monitor='val_accuracy',
         mode='max',
-        save_best_only=True
     )
     best_loss_cb = callbacks.ModelCheckpoint(
-        filepath= Path(save_dir) / 'best_loss.keras',
+        filepath= str(Path(save_dir) / 'best_loss.keras'),
         monitor='val_loss',
         mode='min',
-        save_best_only=True
     )
     early_stopping = callbacks.EarlyStopping(
         monitor='val_accuracy',

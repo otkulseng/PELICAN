@@ -46,8 +46,8 @@ def create_directory(name):
         if not folder.exists():
             break
         counter += 1
-
-    os.mkdir(folder)
+    os.makedirs(str(folder), exist_ok=True)
+    # os.mkdir()
     return folder
 
 def save_config_file(filename, data):
@@ -79,6 +79,32 @@ class MyCustom(callbacks.Callback):
     def on_epoch_end(self, epoch, logs=None):
         lr = self.model.optimizer.lr
         print(f'lr: {lr}')
+
+class CustomModelCheckpoint(callbacks.Callback):
+    def __init__(self, monitor, mode, filepath):
+        self.monitor = monitor
+        self.mode = mode
+        self.file = filepath
+
+        if self.mode == 'min':
+            self.cur_best = float('inf')
+        elif self.mode == 'max':
+            self.cur_best = -float('inf')
+        else:
+            raise TypeError(f'Cannot interpret mode {mode}')
+
+    def on_epoch_end(self, epoch, logs=None):
+        newval = logs[self.monitor]
+        save = False
+        if self.mode == 'min':
+            if newval < self.cur_best:
+                save = True
+        elif self.mode == 'max':
+            if newval > self.cur_best:
+                save = True
+        if save:
+            self.cur_best = newval
+            self.model.save(self.file)
 
 def get_lr_metric(optimizer):
     def lr(y_true, y_pred):
