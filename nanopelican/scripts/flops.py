@@ -9,6 +9,9 @@ def input_layer(input_shape, layer):
     return input_shape, {}
 
 
+def inner_product_layer(input_shape, layer):
+    out_shape = layer.call(tf.zeros(input_shape))[0].shape
+    return out_shape, layer.calc_flops(input_shape)
 def pelican_layer(input_shape, layer):
     out_shape = layer.call(tf.zeros(input_shape)).shape
     return out_shape, layer.calc_flops(input_shape)
@@ -58,14 +61,15 @@ def log_layer(input_shape, layer):
 def calc_flops(model, input_shape):
     info_dict = {
         layers.InputLayer : input_layer,
-        InnerProduct : pelican_layer,
+        InnerProduct : inner_product_layer,
         Lineq2v2 : pelican_layer,
         Lineq2v0 : pelican_layer,
         DiagBiasDense: diagbiasdense,
         layers.Activation: activation,
         layers.Dense: dense,
         LogLayer: pelican_layer,
-        ScalingLayer: pelican_layer
+        ScalingLayer: pelican_layer,
+        layers.Multiply: input_layer
     }
 
     total = {}
@@ -101,3 +105,18 @@ def get_flops_activ(input_shape, activation):
         raise RuntimeError(f"Number of flops calc. not implemented for {activation}.")
 
     return activation_flops
+
+def pretty_print(flop_dict, to_file):
+    total = 0
+    for k, v in flop_dict.items():
+        if isinstance(v, dict):
+            header = f'\n{k}\n'
+            to_file.write(header)
+            to_file.write('-'*len(header) + '\n')
+            total += pretty_print(v, to_file)
+            to_file.write('-'*len(header) + '\n')
+        else:
+            to_file.write(f'{k} : {v}\n')
+            total += v
+    to_file.write(f"Total {total}\n")
+    return total

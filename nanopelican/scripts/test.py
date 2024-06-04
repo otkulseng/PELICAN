@@ -227,17 +227,3 @@ def generate_auc(y_true, y_pred):
     return scores, pad_list(fprs), pad_list(tprs)
 
 
-def pretty_print(flop_dict, to_file):
-    total = 0
-    for k, v in flop_dict.items():
-        if isinstance(v, dict):
-            header = f'\n{k}\n'
-            to_file.write(header)
-            to_file.write('-'*len(header) + '\n')
-            total += pretty_print(v, to_file)
-            to_file.write('-'*len(header) + '\n')
-        else:
-            to_file.write(f'{k} : {v}\n')
-            total += v
-    to_file.write(f"Total {total}\n")
-    return total

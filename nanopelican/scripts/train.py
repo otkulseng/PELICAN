@@ -3,12 +3,14 @@ import tensorflow as tf
 from keras import callbacks, losses, optimizers, metrics
 from tqdm.keras import TqdmCallback
 from .util import *
+from .flops import *
 
 
 
 def train(model, conf):
     # For reproducibility
     tf.keras.utils.set_random_seed(conf['seed'])
+    tf.keras.backend.set_floatx("float64")
 
     # Logging and save directory
     save_dir = create_directory(conf['save_dir'])
@@ -19,6 +21,14 @@ def train(model, conf):
     dataset = data.load_dataset(conf['dataset'], keys=['train', 'val'])
     model = model(dataset.train.x_data.shape[1:], conf['model'])
     model.summary(expand_nested=True)
+
+    try:
+        flop_file = save_dir / 'flops.txt'
+        flops = calc_flops(model, dataset.train.x_data[:1].shape)
+        with open(flop_file, 'w') as file:
+            pretty_print(flops, file)
+    except Exception as e:
+        print(e)
 
     # Callbacks
     hps = conf['hyperparams']
