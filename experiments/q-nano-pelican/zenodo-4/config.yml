@@ -36,4 +36,4 @@ model:
     - 5
   out_activation: softmax
 save_dir: zenodo
-seed: 1219992515
+seed: 1748534774

@@ -3,8 +3,11 @@ import tensorflow as tf
 from keras import callbacks, losses, optimizers, metrics
 from tqdm.keras import TqdmCallback
 from .util import *
+import matplotlib.pyplot as plt
 
+from qkeras.utils import model_save_quantized_weights
 
+from .test import evaluate_model
 
 def train(model, conf):
     # For reproducibility
@@ -40,23 +43,26 @@ def train(model, conf):
     #     options=None,
     # )
     best_acc_cb  = CustomModelCheckpoint(
-        filepath= str(Path(save_dir) / 'best_acc.keras'),
-        monitor='val_accuracy',
+        filepath= str(Path(save_dir) / 'best_acc.weights.h5'),
+        monitor='val_categorical_accuracy',
         mode='max',
+        weights_only=True
     )
-    best_loss_cb = callbacks.ModelCheckpoint(
-        filepath= str(Path(save_dir) / 'best_loss.keras'),
+    best_loss_cb = CustomModelCheckpoint(
+        filepath= str(Path(save_dir) / 'best_loss.weights.h5'),
         monitor='val_loss',
         mode='min',
+        weights_only=True
     )
+
     early_stopping = callbacks.EarlyStopping(
-        monitor='val_accuracy',
+        monitor='val_categorical_accuracy',
         mode='max',
         patience=hps['patience']
     )
 
     reduce_lr = callbacks.ReduceLROnPlateau(
-        monitor='val_accuracy',
+        monitor='val_categorical_accuracy',
         mode='max',
         patience=hps['patience'] // 3
     )
@@ -69,15 +75,23 @@ def train(model, conf):
     # Compilation
     if model.output_shape[-1] > 1:
         loss = losses.CategoricalCrossentropy()
+        metric = metrics.CategoricalAccuracy()
     else:
         loss = losses.BinaryCrossentropy(from_logits=True)
+        metric = metrics.BinaryAccuracy()
 
-    optimizer = optimizers.Adam(learning_rate=hps['lr_init'])
+    # optimizer = optimizers.Adam(learning_rate=hps['lr_init'])
+    learning_rate = schedulers.LinearWarmupCosineAnnealing(
+        epochs=hps['epochs'],
+        steps_per_epoch=len(dataset.train),
+    )
+    optimizer = optimizers.Adam(learning_rate=learning_rate)
+
 
     model.compile(
         optimizer=optimizer,
         loss=loss,
-        metrics=['accuracy', get_lr_metric(optimizer)],
+        metrics=[metric, get_lr_metric(optimizer)],
     )
 
     dataset.val.shuffle(keepratio=True)
@@ -93,7 +107,13 @@ def train(model, conf):
     except KeyboardInterrupt:
         print("Keyboard Interrupt! Saving progress")
 
+
+    model.save_weights(Path(save_dir) / 'model.weights.h5')
     model.save(Path(save_dir) / 'model.keras')
+
+    evaluate_model(save_dir, model)
+
+
 
 
 

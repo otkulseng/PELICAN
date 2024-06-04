@@ -16,6 +16,8 @@ from collections.abc import Iterable
 from .util import *
 from .flops import calc_flops
 
+from qkeras.utils import load_qmodel
+
 
 def test(model, args):
     for elem in Path.cwd().iterdir():
@@ -25,13 +27,13 @@ def test(model, args):
         if not args.name in elem.name:
             continue
 
-        evaluate_model(elem)
+        evaluate_model(elem, model=model)
 
-def evaluate_model(folder):
+def evaluate_model(folder, model=None):
     eval_dir = folder / 'eval'
     os.makedirs(eval_dir, exist_ok=True)
 
-    data_file = generate_data(data_dir=folder, save_dir=eval_dir)
+    data_file = generate_data(data_dir=folder, save_dir=eval_dir, model=model)
     generate_plots(data_file=data_file, save_dir=eval_dir)
 
 
@@ -60,6 +62,7 @@ def generate_plots(data_file, save_dir):
     fig.savefig(save_dir / 'auc.pdf')
 
 def auc_plot(files):
+    metrics
     fig, axes = plt.subplots(ncols=len(files), figsize=(5 * len(files), 5))
 
     if not isinstance(axes, Iterable):
@@ -79,7 +82,7 @@ def auc_plot(files):
     return fig
 
 
-def generate_data(data_dir, save_dir):
+def generate_data(data_dir, save_dir, model=None):
     conf = load_yaml(data_dir / 'config.yml')
     dataset = data.load_dataset(conf['dataset'], keys=['test']).test
 
@@ -101,14 +104,12 @@ def generate_data(data_dir, save_dir):
     flop_calc = False
     shown_model = False
     for file in data_dir.iterdir():
-        if '.keras' not in file.name:
+        if 'weights.h5' not in file.name:
             continue
         name = file.name.split('.')[0]
         print(f'Starting: {name}')
 
-        model = models.load_model(file, custom_objects={
-            'lr': lambda y_true,y_pred : 0
-        })
+        model.load_weights(file)
 
         if not shown_model:
             shown_model = True
@@ -140,15 +141,37 @@ def generate_data(data_dir, save_dir):
         }
 
         for metric in model.metrics:
-            if 'compile_metric' not in metric.name:
+            try:
+                res = metric(y_true, preds)
+                for k, v in res.items():
+                    result_dict.update({
+                        k: v.numpy()
+                    })
+            except Exception as e:
                 continue
-            res = metric(y_true=y_true, y_pred=preds)
-            for k, v in res.items():
-                result_dict.update({
-                    k: v.numpy()
-                })
 
 
+        try:
+            bin_acc = np.average(metrics.binary_accuracy(
+                y_true=y_true,
+                y_pred=preds
+            ))
+            result_dict.update({
+                'bin_acc': bin_acc,
+            })
+        except Exception as e:
+            print(e)
+
+        try:
+            cat_acc = np.average(metrics.categorical_accuracy(
+                y_true=y_true,
+                y_pred=preds
+            ))
+            result_dict.update({
+                'cat_acc': cat_acc,
+            })
+        except Exception as e:
+            print(e)
 
         loss = np.average(model.loss(
                 y_true=y_true,
@@ -157,7 +180,9 @@ def generate_data(data_dir, save_dir):
         )
 
         result_dict.update({
-            'loss': loss
+            'loss': loss,
+            'bin_acc': bin_acc,
+            'cat_acc': cat_acc
         })
 
         scores, fpr, tpr = generate_auc(y_true=y_true, y_pred=preds)
@@ -171,6 +196,8 @@ def generate_data(data_dir, save_dir):
         result_dict.update({
             'auc': "|".join([str(round(score, 4)) for score in scores])
         })
+
+
 
         df = pd.DataFrame.from_dict(result_dict)
 

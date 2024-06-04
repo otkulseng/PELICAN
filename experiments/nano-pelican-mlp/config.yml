@@ -10,23 +10,18 @@ hyperparams:
   verbose: 1
   val_size: -1
   patience: 15
-  lr_init: 0.01
+  lr_init: 0.001
 
 model:
+  num_avg: 50
   inner_product:
     data_format: pxpypze
-    spurions: false
-  batchnorm: true
-  n_bits: 8
+    spurions: False
+  batchnorm: True
   hidden:
     units: [3]
     activs: [relu]
-    batchnorm: False
   out:
-    units: [64, 32, 5]
-    activs: [relu, relu, linear]
-    batchnorm: False
-  num_avg: 25
-  activation: relu
-  out_activation: softmax
+    units : [64, 32, 5]
+    activs: [relu, relu, softmax]
 save_dir: zenodo

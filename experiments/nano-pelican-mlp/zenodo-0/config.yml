@@ -5,35 +5,30 @@ dataset:
   num_particles: 16
 hyperparams:
   batch_size: 512
-  epochs: 140
-  lr_init: 0.01
-  patience: 140
+  epochs: 1000
+  lr_init: 0.001
+  patience: 15
   val_size: -1
   verbose: 1
 model:
-  activation: relu
   batchnorm: true
   hidden:
     activs:
     - relu
-    batchnorm: false
     units:
     - 3
   inner_product:
     data_format: pxpypze
     spurions: false
-  n_bits: 8
-  num_avg: 25
+  num_avg: 50
   out:
     activs:
     - relu
     - relu
-    - linear
-    batchnorm: true
+    - softmax
     units:
     - 64
     - 32
     - 5
-  out_activation: softmax
 save_dir: zenodo
-seed: 1219992515
+seed: 2035903073

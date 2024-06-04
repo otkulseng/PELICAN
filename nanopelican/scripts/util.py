@@ -4,6 +4,7 @@ import yaml
 import numpy as np
 from argparse import ArgumentError
 from keras import callbacks
+from qkeras.utils import model_save_quantized_weights
 
 def add_arguments_from_dict(parser, dikt):
     for k, v, in dikt.items():
@@ -81,10 +82,11 @@ class MyCustom(callbacks.Callback):
         print(f'lr: {lr}')
 
 class CustomModelCheckpoint(callbacks.Callback):
-    def __init__(self, monitor, mode, filepath):
+    def __init__(self, monitor, mode, filepath, weights_only=False):
         self.monitor = monitor
         self.mode = mode
         self.file = filepath
+        self.weights_only = weights_only
 
         if self.mode == 'min':
             self.cur_best = float('inf')
@@ -104,7 +106,10 @@ class CustomModelCheckpoint(callbacks.Callback):
                 save = True
         if save:
             self.cur_best = newval
-            self.model.save(self.file)
+            if self.weights_only:
+                self.model.save_weights(self.file)
+            else:
+                self.model.save(self.file)
 
 def get_lr_metric(optimizer):
     def lr(y_true, y_pred):
