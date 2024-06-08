@@ -21,7 +21,7 @@ model:
   log_layer: True
   2v2:
     in: 1
-    out: 2
+    out: 4
   2v0:
     in: 1
     out: 1

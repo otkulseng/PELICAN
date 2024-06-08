@@ -9,7 +9,7 @@ hyperparams:
   lr_init: 0.002
   patience: 20
   val_size: -1
-  verbose: 1
+  verbose: 0
 model:
   batchnorm: true
   hidden:
@@ -31,5 +31,5 @@ model:
     - softmax
     units:
     - 5
-save_dir: nano-pelican
+save_dir: smallest
 seed: 1721855860

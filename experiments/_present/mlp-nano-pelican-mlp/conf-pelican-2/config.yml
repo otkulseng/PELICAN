@@ -9,7 +9,7 @@ hyperparams:
   lr_init: 0.002
   patience: 20
   val_size: -1
-  verbose: 1
+  verbose: 0
 model:
   batchnorm: true
   hidden:
@@ -35,5 +35,5 @@ model:
     - 64
     - 32
     - 5
-save_dir: nano-pelican
+save_dir: big
 seed: 1878328116
