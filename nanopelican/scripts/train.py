@@ -10,7 +10,6 @@ from .flops import *
 def train(model, conf):
     # For reproducibility
     tf.keras.utils.set_random_seed(conf['seed'])
-    tf.keras.backend.set_floatx("float64")
 
     # Logging and save directory
     save_dir = create_directory(conf['save_dir'])
@@ -56,7 +55,7 @@ def train(model, conf):
     reduce_lr = callbacks.ReduceLROnPlateau(
         monitor='val_accuracy',
         mode='max',
-        patience=hps['patience'] // 3
+        patience=hps['patience'] // 2
     )
 
     model_cbs = [TqdmCallback(verbose=conf['hyperparams']['verbose']),
@@ -69,7 +68,7 @@ def train(model, conf):
     else:
         loss = losses.BinaryCrossentropy(from_logits=True)
 
-    optimizer = optimizers.Adam(learning_rate=hps['lr_init'])
+    optimizer = optimizers.AdamW(learning_rate=hps['lr_init'])
 
     model.compile(
         optimizer=optimizer,

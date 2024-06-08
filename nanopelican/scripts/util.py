@@ -69,8 +69,8 @@ def load_yaml(filename):
     return config
 
 
-def load_arguments():
-    config = load_yaml('config.yml')
+def load_arguments(filename):
+    config = load_yaml(filename)
     config = add_default_values(config)
 
     return config

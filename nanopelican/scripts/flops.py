@@ -69,7 +69,8 @@ def calc_flops(model, input_shape):
         layers.Dense: dense,
         LogLayer: pelican_layer,
         ScalingLayer: pelican_layer,
-        layers.Multiply: input_layer
+        layers.Multiply: input_layer,
+        layers.BatchNormalization: input_layer
     }
 
     total = {}

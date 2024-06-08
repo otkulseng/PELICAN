@@ -3,14 +3,19 @@ from keras import layers
 from .utils import *
 
 class Lineq2v0(layers.Layer):
-    def __init__(self, hollow=False, num_avg=1.0,*args, **kwargs):
+    def __init__(self, hollow=False, num_avg=1.0, in_order=1, out_order=1, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.use_totsum = True
         self.use_trace = not hollow
         self.num_avg = num_avg
 
+        self.in_order = in_order
+        self.out_order = out_order
+
     def call(self, inputs, training=False):
+        if self.in_order > 1:
+            inputs = tf.concat([inputs**(n+1) for n in range(self.in_order)], axis=-1)
         ops = []
 
         if self.use_totsum:
@@ -19,8 +24,10 @@ class Lineq2v0(layers.Layer):
         if self.use_trace:
             ops.append(tf.einsum("...iil->...l", inputs) / self.num_avg)     # B x L
 
-        return tf.concat(ops, axis=-1)   # B x L x 2
-
+        out = tf.concat(ops, axis=-1)   # B x L x 2
+        if self.out_order > 1:
+            out = tf.concat([out**(n+1) for n in range(self.out_order)], axis=-1)
+        return out
     def calc_flops(self, input_shape):
         N = input_shape[-2]
         L = input_shape[-1]
@@ -45,13 +52,16 @@ class Lineq2v2(layers.Layer):
         (same effect as having a diagonal basis if this layer is followed by dense)
 
     """
-    def __init__(self, symmetric=False, hollow=False, num_avg=1.0, diag_bias=False, *args, **kwargs):
+    def __init__(self, symmetric=False, hollow=False, num_avg=1.0, diag_bias=False, in_order=1, out_order=1, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.symmetric = symmetric
         self.hollow = hollow
         self.num_avg = num_avg
         self.diag_bias = diag_bias
+
+        self.in_order = in_order
+        self.out_order = out_order
 
         self.use_totsum     = True
         self.use_rowsum     = True
@@ -74,6 +84,9 @@ class Lineq2v2(layers.Layer):
 
     def call(self, inputs, training=False):
         # B, N, N, L = inputs.shape
+        if self.in_order > 1:
+            inputs = tf.concat([inputs**(n+1) for n in range(self.in_order)], axis=-1)
+
         N = tf.shape(inputs)[-2]
 
         ops = []
@@ -140,6 +153,9 @@ class Lineq2v2(layers.Layer):
             ops.append(tf.einsum("...ijl->...jil", inputs))
 
         out = tf.concat(ops, axis=-1)
+
+        if self.out_order > 1:
+            out = tf.concat([out**(n+1) for n in range(self.out_order)], axis=-1)
 
         if self.diag_bias:
             IDENTITY = tf.expand_dims(IDENTITY, axis=0)

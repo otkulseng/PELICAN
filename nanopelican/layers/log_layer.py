@@ -5,7 +5,7 @@ class LogLayer(layers.Layer):
     def build(self, input_shape):
         L = input_shape[-1]
 
-        alpha_init = tf.ones_initializer()
+        alpha_init = tf.random_uniform_initializer()
 
         self.betas = self.add_weight(
                 shape=(L,),
