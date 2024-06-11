@@ -2,11 +2,11 @@ dataset:
   feature_key: feats
   folder: ../../data/zenodo_data/fourvec
   label_key: label
-  num_particles: 16
+  num_particles: 32
 
 hyperparams:
   batch_size: 512
-  epochs: 1000
+  epochs: 140
   verbose: 1
   val_size: -1
   patience: 15
@@ -17,16 +17,15 @@ model:
     data_format: pxpypze
     spurions: false
   batchnorm: true
-  n_bits: 8
+  quantize: true
+  n_bits: 16
+  n_int: 0
   hidden:
-    units: [3]
+    units: [2]
     activs: [relu]
-    batchnorm: False
   out:
-    units: [64, 32, 5]
-    activs: [relu, relu, linear]
-    batchnorm: False
-  num_avg: 25
-  activation: relu
+    units: [5]
+    activs: [linear]
+  num_avg: 50
   out_activation: softmax
-save_dir: zenodo
+save_dir: nint0-nbits16-zenodo

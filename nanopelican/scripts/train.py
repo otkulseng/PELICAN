@@ -61,16 +61,18 @@ def train(model, conf):
         patience=hps['patience']
     )
 
-    reduce_lr = callbacks.ReduceLROnPlateau(
-        monitor='val_categorical_accuracy',
-        mode='max',
-        patience=hps['patience'] // 3
-    )
+    # reduce_lr = callbacks.ReduceLROnPlateau(
+    #     monitor='val_categorical_accuracy',
+    #     mode='max',
+    #     patience=hps['patience'] // 3
+    # )
 
     model_cbs = [TqdmCallback(verbose=conf['hyperparams']['verbose']),
                  train_log_cb,
                  best_acc_cb, best_loss_cb,
-                   early_stopping, reduce_lr]
+                   early_stopping,
+                    #  reduce_lr
+                     ]
 
     # Compilation
     if model.output_shape[-1] > 1:
