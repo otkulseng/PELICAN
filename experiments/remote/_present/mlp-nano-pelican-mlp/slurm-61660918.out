@@ -1,0 +1,101 @@
+2024-06-08 17:28:33.680616: I external/local_tsl/tsl/cuda/cudart_stub.cc:32] Could not find cuda drivers on your machine, GPU will not be used.
+2024-06-08 17:28:33.771979: I external/local_tsl/tsl/cuda/cudart_stub.cc:32] Could not find cuda drivers on your machine, GPU will not be used.
+2024-06-08 17:28:34.080857: I tensorflow/core/platform/cpu_feature_guard.cc:210] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+2024-06-08 17:28:36.603959: W tensorflow/compiler/tf2tensorrt/utils/py_utils.cc:38] TF-TRT Warning: Could not find TensorRT
+2024-06-08 17:28:46.746243: E external/local_xla/xla/stream_executor/cuda/cuda_driver.cc:282] failed call to cuInit: CUDA_ERROR_NO_DEVICE: no CUDA-capable device is detected
+
+
+Running train for /cluster/home/okulseng/PELICAN/experiments/_present/mlp-nano-pelican-mlp/conf-pelican-2/config.yml
+
+
+Model: "functional_1"
+┏━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━┓
+┃ Layer (type)        ┃ Output Shape      ┃    Param # ┃ Connected to      ┃
+┡━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━┩
+│ input_layer         │ (None, 32, 4)     │          0 │ -                 │
+│ (InputLayer)        │                   │            │                   │
+├─────────────────────┼───────────────────┼────────────┼───────────────────┤
+│ inner_product       │ [(None, 32, 32,   │          0 │ input_layer[0][0] │
+│ (InnerProduct)      │ 1), (None, 32,    │            │                   │
+│                     │ 32, 1)]           │            │                   │
+├─────────────────────┼───────────────────┼────────────┼───────────────────┤
+│ diag_bias_dense     │ (None, 32, 32, 2) │          6 │ inner_product[0]… │
+│ (DiagBiasDense)     │                   │            │                   │
+├─────────────────────┼───────────────────┼────────────┼───────────────────┤
+│ batch_normalization │ (None, 32, 32, 2) │          8 │ diag_bias_dense[… │
+│ (BatchNormalizatio… │                   │            │                   │
+├─────────────────────┼───────────────────┼────────────┼───────────────────┤
+│ lineq2v2 (Lineq2v2) │ (None, 32, 32,    │          0 │ batch_normalizat… │
+│                     │ 22)               │            │                   │
+├─────────────────────┼───────────────────┼────────────┼───────────────────┤
+│ diag_bias_dense_1   │ (None, 32, 32, 2) │         48 │ lineq2v2[0][0]    │
+│ (DiagBiasDense)     │                   │            │                   │
+├─────────────────────┼───────────────────┼────────────┼───────────────────┤
+│ multiply (Multiply) │ (None, 32, 32, 2) │          0 │ diag_bias_dense_… │
+│                     │                   │            │ inner_product[0]… │
+├─────────────────────┼───────────────────┼────────────┼───────────────────┤
+│ batch_normalizatio… │ (None, 32, 32, 2) │          8 │ multiply[0][0]    │
+│ (BatchNormalizatio… │                   │            │                   │
+├─────────────────────┼───────────────────┼────────────┼───────────────────┤
+│ lineq2v0 (Lineq2v0) │ (None, 4)         │          0 │ batch_normalizat… │
+├─────────────────────┼───────────────────┼────────────┼───────────────────┤
+│ dense (Dense)       │ (None, 64)        │        320 │ lineq2v0[0][0]    │
+├─────────────────────┼───────────────────┼────────────┼───────────────────┤
+│ dense_1 (Dense)     │ (None, 32)        │      2,080 │ dense[0][0]       │
+├─────────────────────┼───────────────────┼────────────┼───────────────────┤
+│ dense_2 (Dense)     │ (None, 5)         │        165 │ dense_1[0][0]     │
+└─────────────────────┴───────────────────┴────────────┴───────────────────┘
+ Total params: 2,635 (10.29 KB)
+ Trainable params: 2,627 (10.26 KB)
+ Non-trainable params: 8 (32.00 B)
+0epoch [00:00, ?epoch/s]  0%|          | 0/1000 [00:00<?, ?epoch/s]/cluster/home/okulseng/.local/lib64/python3.11/site-packages/keras/src/trainers/data_adapters/py_dataset_adapter.py:120: UserWarning: Your `PyDataset` class should call `super().__init__(**kwargs)` in its constructor. `**kwargs` can include `workers`, `use_multiprocessing`, `max_queue_size`. Do not pass these arguments to `fit()`, as they will be ignored.
+  self._warn_if_super_not_called()
+  0%|          | 1/1000 [07:22<122:45:47, 442.39s/epoch, accuracy=0.629, loss=1, lr=0.002, val_accuracy=0.661, val_loss=0.931, val_lr=0.002]  0%|          | 2/1000 [14:41<122:09:45, 440.67s/epoch, accuracy=0.667, loss=0.895, lr=0.002, val_accuracy=0.601, val_loss=1.03, val_lr=0.002]  0%|          | 3/1000 [22:02<122:04:25, 440.79s/epoch, accuracy=0.673, loss=0.884, lr=0.002, val_accuracy=0.66, val_loss=0.912, val_lr=0.002]  0%|          | 4/1000 [29:24<122:03:14, 441.16s/epoch, accuracy=0.677, loss=0.874, lr=0.002, val_accuracy=0.681, val_loss=0.865, val_lr=0.002]  0%|          | 5/1000 [36:43<121:40:43, 440.25s/epoch, accuracy=0.679, loss=0.871, lr=0.002, val_accuracy=0.664, val_loss=0.905, val_lr=0.002]  1%|          | 6/1000 [44:08<122:01:56, 441.97s/epoch, accuracy=0.681, loss=0.866, lr=0.002, val_accuracy=0.684, val_loss=0.862, val_lr=0.002]  1%|          | 7/1000 [52:01<124:41:39, 452.06s/epoch, accuracy=0.682, loss=0.862, lr=0.002, val_accuracy=0.654, val_loss=0.926, val_lr=0.002]  1%|          | 8/1000 [59:46<125:45:09, 456.36s/epoch, accuracy=0.684, loss=0.857, lr=0.002, val_accuracy=0.685, val_loss=0.856, val_lr=0.002]  1%|          | 9/1000 [1:07:24<125:44:24, 456.78s/epoch, accuracy=0.685, loss=0.855, lr=0.002, val_accuracy=0.681, val_loss=0.862, val_lr=0.002]  1%|          | 10/1000 [1:15:00<125:32:34, 456.52s/epoch, accuracy=0.686, loss=0.853, lr=0.002, val_accuracy=0.688, val_loss=0.85, val_lr=0.002]  1%|          | 11/1000 [1:22:35<125:15:53, 455.97s/epoch, accuracy=0.686, loss=0.852, lr=0.002, val_accuracy=0.687, val_loss=0.853, val_lr=0.002]  1%|          | 12/1000 [1:30:14<125:22:39, 456.84s/epoch, accuracy=0.686, loss=0.851, lr=0.002, val_accuracy=0.67, val_loss=0.869, val_lr=0.002]   1%|▏         | 13/1000 [1:38:09<126:46:01, 462.37s/epoch, accuracy=0.688, loss=0.85, lr=0.002, val_accuracy=0.673, val_loss=0.882, val_lr=0.002]  1%|▏         | 14/1000 [1:46:07<127:59:33, 467.32s/epoch, accuracy=0.688, loss=0.848, lr=0.002, val_accuracy=0.69, val_loss=0.846, val_lr=0.002]  2%|▏         | 15/1000 [1:54:05<128:44:17, 470.51s/epoch, accuracy=0.688, loss=0.848, lr=0.002, val_accuracy=0.691, val_loss=0.845, val_lr=0.002]  2%|▏         | 16/1000 [2:02:02<129:07:23, 472.40s/epoch, accuracy=0.689, loss=0.847, lr=0.002, val_accuracy=0.687, val_loss=0.849, val_lr=0.002]  2%|▏         | 17/1000 [2:09:37<127:35:09, 467.25s/epoch, accuracy=0.69, loss=0.846, lr=0.002, val_accuracy=0.675, val_loss=0.863, val_lr=0.002]   2%|▏         | 18/1000 [2:17:04<125:46:30, 461.09s/epoch, accuracy=0.69, loss=0.845, lr=0.002, val_accuracy=0.689, val_loss=0.846, val_lr=0.002]  2%|▏         | 19/1000 [2:24:30<124:24:52, 456.57s/epoch, accuracy=0.69, loss=0.845, lr=0.002, val_accuracy=0.683, val_loss=0.857, val_lr=0.002]  2%|▏         | 20/1000 [2:31:48<122:43:55, 450.85s/epoch, accuracy=0.69, loss=0.844, lr=0.002, val_accuracy=0.691, val_loss=0.844, val_lr=0.002]  2%|▏         | 21/1000 [2:39:03<121:22:39, 446.33s/epoch, accuracy=0.691, loss=0.844, lr=0.002, val_accuracy=0.671, val_loss=0.882, val_lr=0.002]  2%|▏         | 22/1000 [2:46:24<120:45:33, 444.51s/epoch, accuracy=0.691, loss=0.844, lr=0.002, val_accuracy=0.681, val_loss=0.863, val_lr=0.002]  2%|▏         | 23/1000 [2:53:37<119:43:31, 441.16s/epoch, accuracy=0.691, loss=0.843, lr=0.002, val_accuracy=0.683, val_loss=0.857, val_lr=0.002]  2%|▏         | 24/1000 [3:00:47<118:42:29, 437.86s/epoch, accuracy=0.691, loss=0.843, lr=0.002, val_accuracy=0.693, val_loss=0.839, val_lr=0.002]  2%|▎         | 25/1000 [3:07:59<118:04:07, 435.95s/epoch, accuracy=0.691, loss=0.843, lr=0.002, val_accuracy=0.69, val_loss=0.843, val_lr=0.002]   3%|▎         | 26/1000 [3:15:09<117:30:26, 434.32s/epoch, accuracy=0.691, loss=0.842, lr=0.002, val_accuracy=0.647, val_loss=0.945, val_lr=0.002]  3%|▎         | 27/1000 [3:22:19<117:02:13, 433.02s/epoch, accuracy=0.691, loss=0.842, lr=0.002, val_accuracy=0.687, val_loss=0.848, val_lr=0.002]  3%|▎         | 28/1000 [3:29:32<116:54:07, 432.97s/epoch, accuracy=0.691, loss=0.842, lr=0.002, val_accuracy=0.677, val_loss=0.865, val_lr=0.002]  3%|▎         | 29/1000 [3:36:43<116:37:40, 432.40s/epoch, accuracy=0.691, loss=0.842, lr=0.002, val_accuracy=0.644, val_loss=0.933, val_lr=0.002]  3%|▎         | 30/1000 [3:43:57<116:35:45, 432.73s/epoch, accuracy=0.692, loss=0.841, lr=0.002, val_accuracy=0.645, val_loss=0.92, val_lr=0.002]   3%|▎         | 31/1000 [3:51:07<116:19:18, 432.15s/epoch, accuracy=0.692, loss=0.84, lr=0.002, val_accuracy=0.672, val_loss=0.877, val_lr=0.002]  3%|▎         | 32/1000 [3:58:18<116:05:37, 431.75s/epoch, accuracy=0.692, loss=0.84, lr=0.002, val_accuracy=0.684, val_loss=0.859, val_lr=0.002]  3%|▎         | 33/1000 [4:05:30<115:59:38, 431.83s/epoch, accuracy=0.692, loss=0.84, lr=0.002, val_accuracy=0.683, val_loss=0.854, val_lr=0.002]  3%|▎         | 34/1000 [4:12:44<116:00:07, 432.31s/epoch, accuracy=0.692, loss=0.84, lr=0.002, val_accuracy=0.669, val_loss=0.879, val_lr=0.002]  4%|▎         | 35/1000 [4:19:57<115:58:25, 432.65s/epoch, accuracy=0.693, loss=0.837, lr=0.0002, val_accuracy=0.692, val_loss=0.839, val_lr=0.0002]  4%|▎         | 36/1000 [4:27:11<115:55:59, 432.95s/epoch, accuracy=0.694, loss=0.836, lr=0.0002, val_accuracy=0.694, val_loss=0.836, val_lr=0.0002]  4%|▎         | 37/1000 [4:34:23<115:46:15, 432.79s/epoch, accuracy=0.693, loss=0.836, lr=0.0002, val_accuracy=0.694, val_loss=0.835, val_lr=0.0002]  4%|▍         | 38/1000 [4:41:33<115:26:54, 432.03s/epoch, accuracy=0.694, loss=0.836, lr=0.0002, val_accuracy=0.693, val_loss=0.836, val_lr=0.0002]  4%|▍         | 39/1000 [4:48:45<115:16:04, 431.81s/epoch, accuracy=0.694, loss=0.836, lr=0.0002, val_accuracy=0.691, val_loss=0.841, val_lr=0.0002]  4%|▍         | 40/1000 [4:55:57<115:09:35, 431.85s/epoch, accuracy=0.694, loss=0.836, lr=0.0002, val_accuracy=0.692, val_loss=0.838, val_lr=0.0002]  4%|▍         | 41/1000 [5:03:10<115:07:09, 432.15s/epoch, accuracy=0.694, loss=0.835, lr=0.0002, val_accuracy=0.688, val_loss=0.846, val_lr=0.0002]  4%|▍         | 42/1000 [5:10:23<115:05:07, 432.47s/epoch, accuracy=0.694, loss=0.835, lr=0.0002, val_accuracy=0.694, val_loss=0.836, val_lr=0.0002]  4%|▍         | 43/1000 [5:17:36<114:59:24, 432.56s/epoch, accuracy=0.694, loss=0.835, lr=0.0002, val_accuracy=0.69, val_loss=0.843, val_lr=0.0002]   4%|▍         | 44/1000 [5:24:48<114:53:40, 432.66s/epoch, accuracy=0.694, loss=0.835, lr=0.0002, val_accuracy=0.695, val_loss=0.835, val_lr=0.0002]  4%|▍         | 45/1000 [5:32:01<114:46:26, 432.66s/epoch, accuracy=0.694, loss=0.835, lr=0.0002, val_accuracy=0.695, val_loss=0.834, val_lr=0.0002]  5%|▍         | 46/1000 [5:39:13<114:34:04, 432.33s/epoch, accuracy=0.694, loss=0.835, lr=0.0002, val_accuracy=0.692, val_loss=0.838, val_lr=0.0002]  5%|▍         | 47/1000 [5:46:25<114:26:57, 432.34s/epoch, accuracy=0.694, loss=0.835, lr=0.0002, val_accuracy=0.695, val_loss=0.835, val_lr=0.0002]  5%|▍         | 48/1000 [5:53:38<114:20:31, 432.39s/epoch, accuracy=0.694, loss=0.835, lr=0.0002, val_accuracy=0.689, val_loss=0.845, val_lr=0.0002]  5%|▍         | 49/1000 [6:00:50<114:13:33, 432.40s/epoch, accuracy=0.694, loss=0.835, lr=0.0002, val_accuracy=0.69, val_loss=0.842, val_lr=0.0002]   5%|▌         | 50/1000 [6:08:02<114:05:00, 432.32s/epoch, accuracy=0.694, loss=0.835, lr=0.0002, val_accuracy=0.693, val_loss=0.837, val_lr=0.0002]  5%|▌         | 51/1000 [6:15:14<113:56:26, 432.23s/epoch, accuracy=0.694, loss=0.835, lr=0.0002, val_accuracy=0.694, val_loss=0.835, val_lr=0.0002]  5%|▌         | 52/1000 [6:22:26<113:49:55, 432.27s/epoch, accuracy=0.694, loss=0.835, lr=0.0002, val_accuracy=0.694, val_loss=0.836, val_lr=0.0002]  5%|▌         | 53/1000 [6:29:38<113:38:10, 431.99s/epoch, accuracy=0.694, loss=0.835, lr=0.0002, val_accuracy=0.693, val_loss=0.836, val_lr=0.0002]  5%|▌         | 54/1000 [6:36:49<113:28:45, 431.84s/epoch, accuracy=0.694, loss=0.835, lr=0.0002, val_accuracy=0.693, val_loss=0.836, val_lr=0.0002]  6%|▌         | 55/1000 [6:44:01<113:21:38, 431.85s/epoch, accuracy=0.694, loss=0.835, lr=2e-5, val_accuracy=0.694, val_loss=0.835, val_lr=2e-5]      6%|▌         | 56/1000 [6:51:13<113:12:40, 431.74s/epoch, accuracy=0.694, loss=0.835, lr=2e-5, val_accuracy=0.694, val_loss=0.835, val_lr=2e-5]  6%|▌         | 57/1000 [6:58:24<113:05:54, 431.77s/epoch, accuracy=0.694, loss=0.835, lr=2e-5, val_accuracy=0.694, val_loss=0.835, val_lr=2e-5]  6%|▌         | 58/1000 [7:05:36<112:57:29, 431.69s/epoch, accuracy=0.694, loss=0.835, lr=2e-5, val_accuracy=0.694, val_loss=0.835, val_lr=2e-5]  6%|▌         | 59/1000 [7:12:48<112:51:10, 431.74s/epoch, accuracy=0.694, loss=0.835, lr=2e-5, val_accuracy=0.694, val_loss=0.834, val_lr=2e-5]  6%|▌         | 60/1000 [7:19:59<112:41:44, 431.60s/epoch, accuracy=0.694, loss=0.835, lr=2e-5, val_accuracy=0.694, val_loss=0.835, val_lr=2e-5]  6%|▌         | 61/1000 [7:27:08<112:20:26, 430.70s/epoch, accuracy=0.694, loss=0.835, lr=2e-5, val_accuracy=0.694, val_loss=0.835, val_lr=2e-5]  6%|▌         | 62/1000 [7:34:12<111:43:40, 428.81s/epoch, accuracy=0.694, loss=0.834, lr=2e-5, val_accuracy=0.694, val_loss=0.836, val_lr=2e-5]  6%|▋         | 63/1000 [7:41:15<111:06:50, 426.91s/epoch, accuracy=0.694, loss=0.835, lr=2e-5, val_accuracy=0.695, val_loss=0.834, val_lr=2e-5]  6%|▋         | 64/1000 [7:48:18<110:45:14, 425.98s/epoch, accuracy=0.694, loss=0.834, lr=2e-5, val_accuracy=0.692, val_loss=0.84, val_lr=2e-5]   6%|▋         | 64/1000 [7:48:18<114:09:06, 439.05s/epoch, accuracy=0.694, loss=0.834, lr=2e-5, val_accuracy=0.692, val_loss=0.84, val_lr=2e-5]
+
+
+Running train for /cluster/home/okulseng/PELICAN/experiments/_present/mlp-nano-pelican-mlp/conf-pelican-2/config.yml
+
+
+Model: "functional_3"
+┏━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━┓
+┃ Layer (type)        ┃ Output Shape      ┃    Param # ┃ Connected to      ┃
+┡━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━┩
+│ input_layer_1       │ (None, 32, 4)     │          0 │ -                 │
+│ (InputLayer)        │                   │            │                   │
+├─────────────────────┼───────────────────┼────────────┼───────────────────┤
+│ inner_product_1     │ [(None, 32, 32,   │          0 │ input_layer_1[0]… │
+│ (InnerProduct)      │ 1), (None, 32,    │            │                   │
+│                     │ 32, 1)]           │            │                   │
+├─────────────────────┼───────────────────┼────────────┼───────────────────┤
+│ diag_bias_dense_2   │ (None, 32, 32, 2) │          6 │ inner_product_1[… │
+│ (DiagBiasDense)     │                   │            │                   │
+├─────────────────────┼───────────────────┼────────────┼───────────────────┤
+│ batch_normalizatio… │ (None, 32, 32, 2) │          8 │ diag_bias_dense_… │
+│ (BatchNormalizatio… │                   │            │                   │
+├─────────────────────┼───────────────────┼────────────┼───────────────────┤
+│ lineq2v2_1          │ (None, 32, 32,    │          0 │ batch_normalizat… │
+│ (Lineq2v2)          │ 22)               │            │                   │
+├─────────────────────┼───────────────────┼────────────┼───────────────────┤
+│ diag_bias_dense_3   │ (None, 32, 32, 2) │         48 │ lineq2v2_1[0][0]  │
+│ (DiagBiasDense)     │                   │            │                   │
+├─────────────────────┼───────────────────┼────────────┼───────────────────┤
+│ multiply_1          │ (None, 32, 32, 2) │          0 │ diag_bias_dense_… │
+│ (Multiply)          │                   │            │ inner_product_1[… │
+├─────────────────────┼───────────────────┼────────────┼───────────────────┤
+│ batch_normalizatio… │ (None, 32, 32, 2) │          8 │ multiply_1[0][0]  │
+│ (BatchNormalizatio… │                   │            │                   │
+├─────────────────────┼───────────────────┼────────────┼───────────────────┤
+│ lineq2v0_1          │ (None, 4)         │          0 │ batch_normalizat… │
+│ (Lineq2v0)          │                   │            │                   │
+├─────────────────────┼───────────────────┼────────────┼───────────────────┤
+│ dense_3 (Dense)     │ (None, 64)        │        320 │ lineq2v0_1[0][0]  │
+├─────────────────────┼───────────────────┼────────────┼───────────────────┤
+│ dense_4 (Dense)     │ (None, 32)        │      2,080 │ dense_3[0][0]     │
+├─────────────────────┼───────────────────┼────────────┼───────────────────┤
+│ dense_5 (Dense)     │ (None, 5)         │        165 │ dense_4[0][0]     │
+└─────────────────────┴───────────────────┴────────────┴───────────────────┘
+ Total params: 2,635 (10.29 KB)
+ Trainable params: 2,627 (10.26 KB)
+ Non-trainable params: 8 (32.00 B)
+0epoch [00:00, ?epoch/s]  0%|          | 0/1000 [00:00<?, ?epoch/s]  0%|          | 1/1000 [07:05<118:07:47, 425.69s/epoch, accuracy=0.629, loss=1, lr=0.002, val_accuracy=0.661, val_loss=0.931, val_lr=0.002]  0%|          | 2/1000 [14:07<117:19:24, 423.21s/epoch, accuracy=0.667, loss=0.895, lr=0.002, val_accuracy=0.601, val_loss=1.03, val_lr=0.002]  0%|          | 3/1000 [21:06<116:45:25, 421.59s/epoch, accuracy=0.673, loss=0.884, lr=0.002, val_accuracy=0.66, val_loss=0.912, val_lr=0.002]  0%|          | 4/1000 [28:06<116:27:46, 420.95s/epoch, accuracy=0.677, loss=0.874, lr=0.002, val_accuracy=0.681, val_loss=0.865, val_lr=0.002]  0%|          | 5/1000 [35:13<116:53:18, 422.91s/epoch, accuracy=0.679, loss=0.871, lr=0.002, val_accuracy=0.664, val_loss=0.905, val_lr=0.002]  1%|          | 6/1000 [42:13<116:29:33, 421.91s/epoch, accuracy=0.681, loss=0.866, lr=0.002, val_accuracy=0.684, val_loss=0.862, val_lr=0.002]  1%|          | 7/1000 [49:19<116:44:49, 423.25s/epoch, accuracy=0.682, loss=0.862, lr=0.002, val_accuracy=0.654, val_loss=0.926, val_lr=0.002]  1%|          | 8/1000 [56:25<116:55:41, 424.34s/epoch, accuracy=0.684, loss=0.857, lr=0.002, val_accuracy=0.685, val_loss=0.856, val_lr=0.002]  1%|          | 9/1000 [1:03:12<115:19:19, 418.93s/epoch, accuracy=0.685, loss=0.855, lr=0.002, val_accuracy=0.681, val_loss=0.862, val_lr=0.002]  1%|          | 10/1000 [1:09:57<113:57:24, 414.39s/epoch, accuracy=0.686, loss=0.853, lr=0.002, val_accuracy=0.688, val_loss=0.85, val_lr=0.002]  1%|          | 11/1000 [1:16:40<112:57:26, 411.17s/epoch, accuracy=0.686, loss=0.852, lr=0.002, val_accuracy=0.687, val_loss=0.853, val_lr=0.002]  1%|          | 12/1000 [1:23:23<112:07:02, 408.52s/epoch, accuracy=0.686, loss=0.851, lr=0.002, val_accuracy=0.67, val_loss=0.869, val_lr=0.002]   1%|▏         | 13/1000 [1:30:04<111:22:39, 406.24s/epoch, accuracy=0.688, loss=0.85, lr=0.002, val_accuracy=0.673, val_loss=0.882, val_lr=0.002]  1%|▏         | 14/1000 [1:36:45<110:48:24, 404.57s/epoch, accuracy=0.688, loss=0.848, lr=0.002, val_accuracy=0.69, val_loss=0.846, val_lr=0.002]  2%|▏         | 15/1000 [1:43:24<110:16:10, 403.02s/epoch, accuracy=0.688, loss=0.848, lr=0.002, val_accuracy=0.691, val_loss=0.845, val_lr=0.002]  2%|▏         | 16/1000 [1:50:06<110:04:37, 402.72s/epoch, accuracy=0.689, loss=0.847, lr=0.002, val_accuracy=0.687, val_loss=0.849, val_lr=0.002]  2%|▏         | 17/1000 [1:56:59<110:50:22, 405.92s/epoch, accuracy=0.69, loss=0.846, lr=0.002, val_accuracy=0.675, val_loss=0.863, val_lr=0.002]   2%|▏         | 18/1000 [2:04:04<112:17:02, 411.63s/epoch, accuracy=0.69, loss=0.845, lr=0.002, val_accuracy=0.689, val_loss=0.846, val_lr=0.002]  2%|▏         | 19/1000 [2:11:11<113:22:57, 416.08s/epoch, accuracy=0.69, loss=0.845, lr=0.002, val_accuracy=0.683, val_loss=0.857, val_lr=0.002]slurmstepd: error: *** JOB 61660918 ON eu-g5-035-1 CANCELLED AT 2024-06-09T03:28:36 DUE TO TIME LIMIT ***

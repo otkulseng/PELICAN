@@ -1,0 +1,94 @@
+2024-06-08 17:31:04.792311: I external/local_tsl/tsl/cuda/cudart_stub.cc:32] Could not find cuda drivers on your machine, GPU will not be used.
+2024-06-08 17:31:04.878766: I external/local_tsl/tsl/cuda/cudart_stub.cc:32] Could not find cuda drivers on your machine, GPU will not be used.
+2024-06-08 17:31:05.169438: I tensorflow/core/platform/cpu_feature_guard.cc:210] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+2024-06-08 17:31:07.555772: W tensorflow/compiler/tf2tensorrt/utils/py_utils.cc:38] TF-TRT Warning: Could not find TensorRT
+2024-06-08 17:31:16.443289: E external/local_xla/xla/stream_executor/cuda/cuda_driver.cc:282] failed call to cuInit: CUDA_ERROR_NO_DEVICE: no CUDA-capable device is detected
+
+
+Running train for /cluster/home/okulseng/PELICAN/experiments/_present/log-nano-pelican-mlp/conf-pelican-0/config.yml
+
+
+Model: "functional_1"
+┏━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━┓
+┃ Layer (type)        ┃ Output Shape      ┃    Param # ┃ Connected to      ┃
+┡━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━┩
+│ input_layer         │ (None, 32, 4)     │          0 │ -                 │
+│ (InputLayer)        │                   │            │                   │
+├─────────────────────┼───────────────────┼────────────┼───────────────────┤
+│ inner_product       │ [(None, 32, 32,   │          0 │ input_layer[0][0] │
+│ (InnerProduct)      │ 1), (None, 32,    │            │                   │
+│                     │ 32, 1)]           │            │                   │
+├─────────────────────┼───────────────────┼────────────┼───────────────────┤
+│ log_layer           │ (None, 32, 32, 1) │          1 │ inner_product[0]… │
+│ (LogLayer)          │                   │            │                   │
+├─────────────────────┼───────────────────┼────────────┼───────────────────┤
+│ batch_normalization │ (None, 32, 32, 1) │          4 │ log_layer[0][0]   │
+│ (BatchNormalizatio… │                   │            │                   │
+├─────────────────────┼───────────────────┼────────────┼───────────────────┤
+│ lineq2v2 (Lineq2v2) │ (None, 32, 32, 6) │          0 │ batch_normalizat… │
+├─────────────────────┼───────────────────┼────────────┼───────────────────┤
+│ diag_bias_dense     │ (None, 32, 32, 2) │         16 │ lineq2v2[0][0]    │
+│ (DiagBiasDense)     │                   │            │                   │
+├─────────────────────┼───────────────────┼────────────┼───────────────────┤
+│ multiply (Multiply) │ (None, 32, 32, 2) │          0 │ diag_bias_dense[… │
+│                     │                   │            │ inner_product[0]… │
+├─────────────────────┼───────────────────┼────────────┼───────────────────┤
+│ batch_normalizatio… │ (None, 32, 32, 2) │          8 │ multiply[0][0]    │
+│ (BatchNormalizatio… │                   │            │                   │
+├─────────────────────┼───────────────────┼────────────┼───────────────────┤
+│ lineq2v0 (Lineq2v0) │ (None, 4)         │          0 │ batch_normalizat… │
+├─────────────────────┼───────────────────┼────────────┼───────────────────┤
+│ dense (Dense)       │ (None, 5)         │         25 │ lineq2v0[0][0]    │
+└─────────────────────┴───────────────────┴────────────┴───────────────────┘
+ Total params: 54 (216.00 B)
+ Trainable params: 48 (192.00 B)
+ Non-trainable params: 6 (24.00 B)
+'LogLayer' object has no attribute 'calc_flops'
+0epoch [00:00, ?epoch/s]  0%|          | 0/1000 [00:00<?, ?epoch/s]/cluster/home/okulseng/.local/lib64/python3.11/site-packages/keras/src/trainers/data_adapters/py_dataset_adapter.py:120: UserWarning: Your `PyDataset` class should call `super().__init__(**kwargs)` in its constructor. `**kwargs` can include `workers`, `use_multiprocessing`, `max_queue_size`. Do not pass these arguments to `fit()`, as they will be ignored.
+  self._warn_if_super_not_called()
+  0%|          | 1/1000 [03:41<61:25:48, 221.37s/epoch, accuracy=0.393, loss=1.37, lr=0.002, val_accuracy=0.386, val_loss=1.33, val_lr=0.002]  0%|          | 2/1000 [07:21<61:07:40, 220.50s/epoch, accuracy=0.473, loss=1.28, lr=0.002, val_accuracy=0.542, val_loss=1.25, val_lr=0.002]  0%|          | 3/1000 [11:00<60:50:37, 219.70s/epoch, accuracy=0.523, loss=1.24, lr=0.002, val_accuracy=0.552, val_loss=1.24, val_lr=0.002]  0%|          | 4/1000 [14:37<60:34:28, 218.94s/epoch, accuracy=0.531, loss=1.23, lr=0.002, val_accuracy=0.536, val_loss=1.23, val_lr=0.002]  0%|          | 5/1000 [18:15<60:24:19, 218.55s/epoch, accuracy=0.533, loss=1.22, lr=0.002, val_accuracy=0.522, val_loss=1.23, val_lr=0.002]  1%|          | 6/1000 [21:54<60:20:17, 218.53s/epoch, accuracy=0.612, loss=1.09, lr=0.002, val_accuracy=0.655, val_loss=1.02, val_lr=0.002]  1%|          | 7/1000 [25:31<60:07:59, 218.01s/epoch, accuracy=0.652, loss=1.01, lr=0.002, val_accuracy=0.66, val_loss=1.01, val_lr=0.002]   1%|          | 8/1000 [29:06<59:52:31, 217.29s/epoch, accuracy=0.653, loss=1.01, lr=0.002, val_accuracy=0.66, val_loss=1, val_lr=0.002]     1%|          | 9/1000 [32:43<59:44:26, 217.02s/epoch, accuracy=0.653, loss=1, lr=0.002, val_accuracy=0.661, val_loss=0.992, val_lr=0.002]  1%|          | 10/1000 [36:18<59:33:34, 216.58s/epoch, accuracy=0.653, loss=0.997, lr=0.002, val_accuracy=0.662, val_loss=0.989, val_lr=0.002]  1%|          | 11/1000 [39:54<59:23:50, 216.21s/epoch, accuracy=0.653, loss=0.993, lr=0.002, val_accuracy=0.661, val_loss=0.985, val_lr=0.002]  1%|          | 12/1000 [43:29<59:17:29, 216.04s/epoch, accuracy=0.653, loss=0.99, lr=0.002, val_accuracy=0.659, val_loss=0.987, val_lr=0.002]   1%|▏         | 13/1000 [47:07<59:21:23, 216.50s/epoch, accuracy=0.652, loss=0.988, lr=0.002, val_accuracy=0.663, val_loss=0.981, val_lr=0.002]  1%|▏         | 14/1000 [50:44<59:23:10, 216.83s/epoch, accuracy=0.652, loss=0.986, lr=0.002, val_accuracy=0.658, val_loss=0.978, val_lr=0.002]  2%|▏         | 15/1000 [54:22<59:22:09, 216.98s/epoch, accuracy=0.652, loss=0.984, lr=0.002, val_accuracy=0.656, val_loss=0.98, val_lr=0.002]   2%|▏         | 16/1000 [57:59<59:19:52, 217.07s/epoch, accuracy=0.652, loss=0.983, lr=0.002, val_accuracy=0.658, val_loss=0.976, val_lr=0.002]  2%|▏         | 17/1000 [1:01:37<59:18:38, 217.21s/epoch, accuracy=0.651, loss=0.982, lr=0.002, val_accuracy=0.663, val_loss=0.977, val_lr=0.002]  2%|▏         | 18/1000 [1:05:13<59:12:15, 217.04s/epoch, accuracy=0.651, loss=0.98, lr=0.002, val_accuracy=0.661, val_loss=0.974, val_lr=0.002]   2%|▏         | 19/1000 [1:08:51<59:09:34, 217.10s/epoch, accuracy=0.651, loss=0.979, lr=0.002, val_accuracy=0.647, val_loss=0.973, val_lr=0.002]  2%|▏         | 20/1000 [1:12:29<59:13:55, 217.59s/epoch, accuracy=0.651, loss=0.978, lr=0.002, val_accuracy=0.661, val_loss=0.969, val_lr=0.002]  2%|▏         | 21/1000 [1:16:08<59:17:27, 218.03s/epoch, accuracy=0.651, loss=0.977, lr=0.002, val_accuracy=0.661, val_loss=0.967, val_lr=0.002]  2%|▏         | 22/1000 [1:19:46<59:13:25, 218.00s/epoch, accuracy=0.651, loss=0.976, lr=0.002, val_accuracy=0.659, val_loss=0.968, val_lr=0.002]  2%|▏         | 23/1000 [1:23:24<59:09:33, 217.99s/epoch, accuracy=0.651, loss=0.975, lr=0.002, val_accuracy=0.658, val_loss=0.968, val_lr=0.002]  2%|▏         | 24/1000 [1:27:03<59:08:49, 218.17s/epoch, accuracy=0.652, loss=0.972, lr=0.0002, val_accuracy=0.66, val_loss=0.965, val_lr=0.0002]  2%|▎         | 25/1000 [1:30:40<59:00:56, 217.90s/epoch, accuracy=0.652, loss=0.972, lr=0.0002, val_accuracy=0.659, val_loss=0.966, val_lr=0.0002]  3%|▎         | 26/1000 [1:34:17<58:50:35, 217.49s/epoch, accuracy=0.652, loss=0.972, lr=0.0002, val_accuracy=0.661, val_loss=0.965, val_lr=0.0002]  3%|▎         | 27/1000 [1:37:51<58:32:39, 216.61s/epoch, accuracy=0.652, loss=0.972, lr=0.0002, val_accuracy=0.661, val_loss=0.964, val_lr=0.0002]  3%|▎         | 28/1000 [1:41:27<58:25:23, 216.38s/epoch, accuracy=0.652, loss=0.972, lr=0.0002, val_accuracy=0.661, val_loss=0.965, val_lr=0.0002]  3%|▎         | 29/1000 [1:45:03<58:21:57, 216.39s/epoch, accuracy=0.652, loss=0.972, lr=0.0002, val_accuracy=0.661, val_loss=0.964, val_lr=0.0002]  3%|▎         | 30/1000 [1:48:40<58:16:57, 216.31s/epoch, accuracy=0.652, loss=0.972, lr=0.0002, val_accuracy=0.661, val_loss=0.964, val_lr=0.0002]  3%|▎         | 31/1000 [1:52:15<58:11:12, 216.17s/epoch, accuracy=0.652, loss=0.972, lr=0.0002, val_accuracy=0.659, val_loss=0.965, val_lr=0.0002]  3%|▎         | 32/1000 [1:55:52<58:09:30, 216.29s/epoch, accuracy=0.652, loss=0.971, lr=0.0002, val_accuracy=0.66, val_loss=0.964, val_lr=0.0002]   3%|▎         | 33/1000 [1:59:28<58:04:25, 216.20s/epoch, accuracy=0.652, loss=0.971, lr=0.0002, val_accuracy=0.66, val_loss=0.964, val_lr=0.0002]  3%|▎         | 33/1000 [1:59:28<58:20:58, 217.23s/epoch, accuracy=0.652, loss=0.971, lr=0.0002, val_accuracy=0.66, val_loss=0.964, val_lr=0.0002]
+
+
+Running train for /cluster/home/okulseng/PELICAN/experiments/_present/log-nano-pelican-mlp/conf-pelican-0/config.yml
+
+
+Model: "functional_3"
+┏━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━┓
+┃ Layer (type)        ┃ Output Shape      ┃    Param # ┃ Connected to      ┃
+┡━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━┩
+│ input_layer_1       │ (None, 32, 4)     │          0 │ -                 │
+│ (InputLayer)        │                   │            │                   │
+├─────────────────────┼───────────────────┼────────────┼───────────────────┤
+│ inner_product_1     │ [(None, 32, 32,   │          0 │ input_layer_1[0]… │
+│ (InnerProduct)      │ 1), (None, 32,    │            │                   │
+│                     │ 32, 1)]           │            │                   │
+├─────────────────────┼───────────────────┼────────────┼───────────────────┤
+│ log_layer_1         │ (None, 32, 32, 1) │          1 │ inner_product_1[… │
+│ (LogLayer)          │                   │            │                   │
+├─────────────────────┼───────────────────┼────────────┼───────────────────┤
+│ batch_normalizatio… │ (None, 32, 32, 1) │          4 │ log_layer_1[0][0] │
+│ (BatchNormalizatio… │                   │            │                   │
+├─────────────────────┼───────────────────┼────────────┼───────────────────┤
+│ lineq2v2_1          │ (None, 32, 32, 6) │          0 │ batch_normalizat… │
+│ (Lineq2v2)          │                   │            │                   │
+├─────────────────────┼───────────────────┼────────────┼───────────────────┤
+│ diag_bias_dense_1   │ (None, 32, 32, 2) │         16 │ lineq2v2_1[0][0]  │
+│ (DiagBiasDense)     │                   │            │                   │
+├─────────────────────┼───────────────────┼────────────┼───────────────────┤
+│ multiply_1          │ (None, 32, 32, 2) │          0 │ diag_bias_dense_… │
+│ (Multiply)          │                   │            │ inner_product_1[… │
+├─────────────────────┼───────────────────┼────────────┼───────────────────┤
+│ batch_normalizatio… │ (None, 32, 32, 2) │          8 │ multiply_1[0][0]  │
+│ (BatchNormalizatio… │                   │            │                   │
+├─────────────────────┼───────────────────┼────────────┼───────────────────┤
+│ lineq2v0_1          │ (None, 4)         │          0 │ batch_normalizat… │
+│ (Lineq2v0)          │                   │            │                   │
+├─────────────────────┼───────────────────┼────────────┼───────────────────┤
+│ dense_1 (Dense)     │ (None, 5)         │         25 │ lineq2v0_1[0][0]  │
+└─────────────────────┴───────────────────┴────────────┴───────────────────┘
+ Total params: 54 (216.00 B)
+ Trainable params: 48 (192.00 B)
+ Non-trainable params: 6 (24.00 B)
+'LogLayer' object has no attribute 'calc_flops'
+0epoch [00:00, ?epoch/s]  0%|          | 0/1000 [00:00<?, ?epoch/s]  0%|          | 1/1000 [03:36<60:04:40, 216.50s/epoch, accuracy=0.393, loss=1.37, lr=0.002, val_accuracy=0.386, val_loss=1.33, val_lr=0.002]  0%|          | 2/1000 [07:11<59:45:36, 215.57s/epoch, accuracy=0.473, loss=1.28, lr=0.002, val_accuracy=0.542, val_loss=1.25, val_lr=0.002]  0%|          | 3/1000 [10:45<59:34:08, 215.09s/epoch, accuracy=0.523, loss=1.24, lr=0.002, val_accuracy=0.552, val_loss=1.24, val_lr=0.002]  0%|          | 4/1000 [14:20<59:27:42, 214.92s/epoch, accuracy=0.531, loss=1.23, lr=0.002, val_accuracy=0.536, val_loss=1.23, val_lr=0.002]  0%|          | 5/1000 [17:56<59:27:34, 215.13s/epoch, accuracy=0.533, loss=1.22, lr=0.002, val_accuracy=0.522, val_loss=1.23, val_lr=0.002]  1%|          | 6/1000 [21:31<59:26:33, 215.28s/epoch, accuracy=0.612, loss=1.09, lr=0.002, val_accuracy=0.655, val_loss=1.02, val_lr=0.002]  1%|          | 7/1000 [25:06<59:19:27, 215.07s/epoch, accuracy=0.652, loss=1.01, lr=0.002, val_accuracy=0.66, val_loss=1.01, val_lr=0.002]   1%|          | 8/1000 [28:40<59:09:15, 214.67s/epoch, accuracy=0.653, loss=1.01, lr=0.002, val_accuracy=0.66, val_loss=1, val_lr=0.002]     1%|          | 9/1000 [32:13<58:58:53, 214.26s/epoch, accuracy=0.653, loss=1, lr=0.002, val_accuracy=0.661, val_loss=0.992, val_lr=0.002]  1%|          | 10/1000 [35:45<58:43:27, 213.54s/epoch, accuracy=0.653, loss=0.997, lr=0.002, val_accuracy=0.662, val_loss=0.989, val_lr=0.002]  1%|          | 11/1000 [39:16<58:27:03, 212.76s/epoch, accuracy=0.653, loss=0.993, lr=0.002, val_accuracy=0.661, val_loss=0.985, val_lr=0.002]  1%|          | 12/1000 [42:46<58:11:50, 212.05s/epoch, accuracy=0.653, loss=0.99, lr=0.002, val_accuracy=0.659, val_loss=0.987, val_lr=0.002]   1%|▏         | 13/1000 [46:13<57:41:23, 210.42s/epoch, accuracy=0.652, loss=0.988, lr=0.002, val_accuracy=0.663, val_loss=0.981, val_lr=0.002]  1%|▏         | 14/1000 [49:36<56:59:21, 208.07s/epoch, accuracy=0.652, loss=0.986, lr=0.002, val_accuracy=0.658, val_loss=0.978, val_lr=0.002]  2%|▏         | 15/1000 [53:07<57:09:39, 208.91s/epoch, accuracy=0.652, loss=0.984, lr=0.002, val_accuracy=0.656, val_loss=0.98, val_lr=0.002]   2%|▏         | 16/1000 [56:36<57:09:59, 209.15s/epoch, accuracy=0.652, loss=0.983, lr=0.002, val_accuracy=0.658, val_loss=0.976, val_lr=0.002]  2%|▏         | 17/1000 [1:00:05<57:03:19, 208.95s/epoch, accuracy=0.651, loss=0.982, lr=0.002, val_accuracy=0.663, val_loss=0.977, val_lr=0.002]  2%|▏         | 18/1000 [1:03:33<56:56:43, 208.76s/epoch, accuracy=0.651, loss=0.98, lr=0.002, val_accuracy=0.661, val_loss=0.974, val_lr=0.002]   2%|▏         | 19/1000 [1:07:01<56:50:47, 208.61s/epoch, accuracy=0.651, loss=0.979, lr=0.002, val_accuracy=0.647, val_loss=0.973, val_lr=0.002]  2%|▏         | 20/1000 [1:10:30<56:45:51, 208.52s/epoch, accuracy=0.651, loss=0.978, lr=0.002, val_accuracy=0.661, val_loss=0.969, val_lr=0.002]  2%|▏         | 21/1000 [1:13:57<56:37:06, 208.20s/epoch, accuracy=0.651, loss=0.977, lr=0.002, val_accuracy=0.661, val_loss=0.967, val_lr=0.002]  2%|▏         | 22/1000 [1:17:24<56:29:04, 207.92s/epoch, accuracy=0.651, loss=0.976, lr=0.002, val_accuracy=0.659, val_loss=0.968, val_lr=0.002]  2%|▏         | 23/1000 [1:20:52<56:24:28, 207.85s/epoch, accuracy=0.651, loss=0.975, lr=0.002, val_accuracy=0.658, val_loss=0.968, val_lr=0.002]  2%|▏         | 24/1000 [1:24:18<56:09:43, 207.15s/epoch, accuracy=0.652, loss=0.972, lr=0.0002, val_accuracy=0.66, val_loss=0.965, val_lr=0.0002]  2%|▎         | 25/1000 [1:27:42<55:51:38, 206.26s/epoch, accuracy=0.652, loss=0.972, lr=0.0002, val_accuracy=0.659, val_loss=0.966, val_lr=0.0002]  3%|▎         | 26/1000 [1:31:07<55:43:05, 205.94s/epoch, accuracy=0.652, loss=0.972, lr=0.0002, val_accuracy=0.661, val_loss=0.965, val_lr=0.0002]  3%|▎         | 27/1000 [1:34:32<55:37:06, 205.78s/epoch, accuracy=0.652, loss=0.972, lr=0.0002, val_accuracy=0.661, val_loss=0.964, val_lr=0.0002]  3%|▎         | 28/1000 [1:37:56<55:23:08, 205.13s/epoch, accuracy=0.652, loss=0.972, lr=0.0002, val_accuracy=0.661, val_loss=0.965, val_lr=0.0002]  3%|▎         | 29/1000 [1:41:19<55:08:56, 204.47s/epoch, accuracy=0.652, loss=0.972, lr=0.0002, val_accuracy=0.661, val_loss=0.964, val_lr=0.0002]  3%|▎         | 30/1000 [1:44:42<55:00:53, 204.18s/epoch, accuracy=0.652, loss=0.972, lr=0.0002, val_accuracy=0.661, val_loss=0.964, val_lr=0.0002]  3%|▎         | 31/1000 [1:48:05<54:51:29, 203.81s/epoch, accuracy=0.652, loss=0.972, lr=0.0002, val_accuracy=0.659, val_loss=0.965, val_lr=0.0002]  3%|▎         | 32/1000 [1:51:28<54:42:34, 203.47s/epoch, accuracy=0.652, loss=0.971, lr=0.0002, val_accuracy=0.66, val_loss=0.964, val_lr=0.0002]   3%|▎         | 33/1000 [1:54:51<54:38:53, 203.45s/epoch, accuracy=0.652, loss=0.971, lr=0.0002, val_accuracy=0.66, val_loss=0.964, val_lr=0.0002]  3%|▎         | 33/1000 [1:54:51<56:05:53, 208.85s/epoch, accuracy=0.652, loss=0.971, lr=0.0002, val_accuracy=0.66, val_loss=0.964, val_lr=0.0002]
