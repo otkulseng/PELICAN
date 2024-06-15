@@ -93,14 +93,8 @@ def CreateModel(shape, conf):
         name='2v2bnorm'
     )(x)
 
-    numavg = tf.Variable(
-        initial_value=25.0,
-        trainable=True,
-        name='num_avg'
-    )
-    conf['num_avg'] = numavg
 
-    x = Lineq2v2(symmetric=True, hollow=True, num_avg=conf['num_avg'], diag_bias=True, name='2v2')(x)
+    x = Lineq2v2(symmetric=True, hollow=True, diag_bias=True,num_avg=conf['2v2'], name='2v2')(x)
 
     x = qmlp(
         units=conf['hidden']['units'],
@@ -119,7 +113,7 @@ def CreateModel(shape, conf):
         variance_quantizer=QUANT,
         name='2v0bnorm'
     )(x)
-    x = Lineq2v0(num_avg=conf['num_avg'], name='2v0')(x)
+    x = Lineq2v0(num_avg=conf['2v0'], name='2v0')(x)
 
     x = qmlp(
         units=conf['out']['units'],

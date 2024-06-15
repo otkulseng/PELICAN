@@ -22,7 +22,6 @@ model:
     spurions: false
   n_bits: 16
   n_int: 2
-  num_avg: 50
   out:
     activs:
     - linear

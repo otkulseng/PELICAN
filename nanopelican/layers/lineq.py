@@ -3,12 +3,23 @@ from keras import layers
 from .utils import *
 
 class Lineq2v0(layers.Layer):
-    def __init__(self, hollow=False, num_avg=1.0,*args, **kwargs):
+    def __init__(self, hollow=False, num_avg=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.use_totsum = True
         self.use_trace = not hollow
-        self.num_avg = num_avg
+        self.num_avg=num_avg
+
+    def build(self, input_shape):
+        # N x N x L
+        N = input_shape[-2]
+        if self.num_avg is None:
+            self.num_avg = N
+
+        self.num_avg = tf.Variable(
+            initial_value=tf.cast(self.num_avg, tf.float32),
+            trainable=True
+        )
 
     def call(self, inputs, training=False):
         ops = []
@@ -35,6 +46,7 @@ class Lineq2v0(layers.Layer):
             flops['trace'] = N * L
         return flops
 
+
 class Lineq2v2(layers.Layer):
     """ Aggregates the 2D input tensor into the (max) 15 different permutation
     equivariant tensors that can be made.
@@ -45,13 +57,13 @@ class Lineq2v2(layers.Layer):
         (same effect as having a diagonal basis if this layer is followed by dense)
 
     """
-    def __init__(self, symmetric=False, hollow=False, num_avg=1.0, diag_bias=False, *args, **kwargs):
+    def __init__(self, symmetric=False, hollow=False, diag_bias=False, num_avg=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.symmetric = symmetric
         self.hollow = hollow
-        self.num_avg = num_avg
         self.diag_bias = diag_bias
+        self.num_avg = num_avg
 
         self.use_totsum     = True
         self.use_rowsum     = True
@@ -69,6 +81,16 @@ class Lineq2v2(layers.Layer):
             self.use_trace  = False
             self.use_diag   = False
 
+    def build(self, input_shape):
+        # N x N x L
+        N = input_shape[-2]
+        if self.num_avg is None:
+            self.num_avg = N
+
+        self.num_avg = tf.Variable(
+            initial_value=tf.cast(self.num_avg, tf.float32),
+            trainable=True
+        )
 
 
     def call(self, inputs, training=False):
@@ -177,6 +199,7 @@ class Lineq2v2(layers.Layer):
 
 
         return flops
+
 
 
 class Lineq1v2(layers.Layer):

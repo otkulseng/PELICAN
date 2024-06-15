@@ -1,8 +1,8 @@
 dataset:
-  feature_key: feats
-  folder: ../../data/zenodo_data/fourvec
-  label_key: label
-  num_particles: 8
+  folder: ../../data/nano_data
+  feature_key: Pmu
+  label_key: is_signal
+  num_particles: 16
 
 hyperparams:
   batch_size: 512
@@ -10,23 +10,23 @@ hyperparams:
   verbose: 1
   val_size: 50000
   patience: 15
-  lr_init: 0.01
+  lr_init: 0.001
 
 model:
   inner_product:
-    data_format: pxpypze
+    data_format: epxpypz
     spurions: false
   batchnorm: true
   quantize: true
-  n_bits: 16
+  n_bits: 8
   n_int: 2
+  2v2: null
+  2v0: null
   hidden:
     units: [2]
     activs: [relu]
   out:
-    units: [5]
+    units: [1]
     activs: [linear]
-  # num_avg: 20
-  out_activation: softmax
-save_dir: nconst8-nint2-nbits16
-seed: 1724601233
+  out_activation: linear
+save_dir: nano-nh2-nconst16-nint2-nbits8

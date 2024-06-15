@@ -44,7 +44,7 @@ def train(model, conf):
     # )
     best_acc_cb  = CustomModelCheckpoint(
         filepath= str(Path(save_dir) / 'best_acc.weights.h5'),
-        monitor='val_categorical_accuracy',
+        monitor='val_binary_accuracy',
         mode='max',
         weights_only=True
     )
@@ -56,16 +56,16 @@ def train(model, conf):
     )
 
     early_stopping = callbacks.EarlyStopping(
-        monitor='val_categorical_accuracy',
+        monitor='val_binary_accuracy',
         mode='max',
         patience=hps['patience']
     )
 
-    # reduce_lr = callbacks.ReduceLROnPlateau(
-    #     monitor='val_categorical_accuracy',
-    #     mode='max',
-    #     patience=hps['patience'] // 3
-    # )
+    reduce_lr = callbacks.ReduceLROnPlateau(
+        monitor='val_categorical_accuracy',
+        mode='max',
+        patience=hps['patience'] // 2
+    )
 
     model_cbs = [TqdmCallback(verbose=conf['hyperparams']['verbose']),
                  train_log_cb,
@@ -82,7 +82,7 @@ def train(model, conf):
         loss = losses.BinaryCrossentropy(from_logits=True)
         metric = metrics.BinaryAccuracy()
 
-    # optimizer = optimizers.Adam(learning_rate=hps['lr_init'])
+    # learning_rate=hps['lr_init']
     learning_rate = schedulers.LinearWarmupCosineAnnealing(
         epochs=hps['epochs'],
         steps_per_epoch=len(dataset.train),

@@ -1,0 +1,35 @@
+dataset:
+  feature_key: Pmu
+  folder: ../../data/nano_data
+  label_key: is_signal
+  num_particles: 20
+hyperparams:
+  batch_size: 512
+  epochs: 140
+  lr_init: 0.001
+  patience: 15
+  val_size: 50000
+  verbose: 1
+model:
+  2v0: null
+  2v2: null
+  batchnorm: true
+  hidden:
+    activs:
+    - relu
+    units:
+    - 2
+  inner_product:
+    data_format: pxpypze
+    spurions: false
+  n_bits: 16
+  n_int: 16
+  out:
+    activs:
+    - linear
+    units:
+    - 1
+  out_activation: linear
+  quantize: true
+save_dir: nano-nh2-nconst16-nint16-nbits16
+seed: 1197343561

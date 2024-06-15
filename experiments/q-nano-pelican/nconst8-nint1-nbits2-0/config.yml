@@ -8,7 +8,7 @@ hyperparams:
   epochs: 140
   lr_init: 0.01
   patience: 15
-  val_size: -1
+  val_size: 50000
   verbose: 1
 model:
   batchnorm: true
@@ -22,7 +22,6 @@ model:
     spurions: false
   n_bits: 2
   n_int: 1
-  num_avg: 50
   out:
     activs:
     - linear
