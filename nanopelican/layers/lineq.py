@@ -52,11 +52,12 @@ class Lineq2v2(layers.Layer):
         (same effect as having a diagonal basis if this layer is followed by dense)
 
     """
-    def __init__(self, symmetric=False, hollow=False, num_avg=1.0, diag_bias=False, in_order=1, out_order=1, *args, **kwargs):
+    def __init__(self, symmetric=False, hollow=False, const_diag=False, num_avg=1.0, diag_bias=False, in_order=1, out_order=1, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.symmetric = symmetric
         self.hollow = hollow
+        self.const_diag = const_diag
         self.num_avg = num_avg
         self.diag_bias = diag_bias
 
@@ -76,9 +77,12 @@ class Lineq2v2(layers.Layer):
             self.use_transpose = False
 
         if self.hollow:
-            self.use_colsum = False
             self.use_trace  = False
             self.use_diag   = False
+
+        if self.const_diag:
+            self.use_trace = True
+            self.use_diag = False
 
 
 
