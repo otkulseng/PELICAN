@@ -45,6 +45,7 @@ def CreateNano(shape, conf):
     x = x_in = layers.Input(shape, name='input')
     x, mask = InnerProduct(conf['inner_product'], name='inner_product')(x)
     x = layers.BatchNormalization()(x)
+
     x = Lineq2v2(
         symmetric=True,
         hollow=True,
@@ -91,6 +92,14 @@ def CreateModel(shape, conf):
         variance_quantizer=QUANT,
         name='2v2bnorm'
     )(x)
+
+    numavg = tf.Variable(
+        initial_value=25.0,
+        trainable=True,
+        name='num_avg'
+    )
+    conf['num_avg'] = numavg
+
     x = Lineq2v2(symmetric=True, hollow=True, num_avg=conf['num_avg'], diag_bias=True, name='2v2')(x)
 
     x = qmlp(
