@@ -44,7 +44,7 @@ def train(model, conf):
     # )
     best_acc_cb  = CustomModelCheckpoint(
         filepath= str(Path(save_dir) / 'best_acc.weights.h5'),
-        monitor='val_binary_accuracy',
+        monitor='val_categorical_accuracy',
         mode='max',
         weights_only=True
     )
@@ -56,7 +56,7 @@ def train(model, conf):
     )
 
     early_stopping = callbacks.EarlyStopping(
-        monitor='val_binary_accuracy',
+        monitor='val_categorical_accuracy',
         mode='max',
         patience=hps['patience']
     )

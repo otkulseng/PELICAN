@@ -11,6 +11,8 @@ hyperparams:
   val_size: 50000
   verbose: 1
 model:
+  2v0: 11
+  2v2: 35
   batchnorm: true
   hidden:
     activs:
@@ -22,8 +24,6 @@ model:
     spurions: false
   n_bits: 8
   n_int: 1
-  2v2: 35
-  2v0: 11
   out:
     activs:
     - linear
@@ -31,4 +31,5 @@ model:
     - 5
   out_activation: softmax
   quantize: true
-save_dir: nconst32-nint1-nbits8
+save_dir: nconst32-nint0-nbits8
+seed: 1763435594

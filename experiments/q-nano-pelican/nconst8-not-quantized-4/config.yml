@@ -6,13 +6,11 @@ dataset:
 hyperparams:
   batch_size: 512
   epochs: 140
-  lr_init: 0.001
+  lr_init: 0.01
   patience: 15
   val_size: 50000
   verbose: 1
 model:
-  2v0: 2
-  2v2: 8
   batchnorm: true
   hidden:
     activs:
@@ -22,14 +20,12 @@ model:
   inner_product:
     data_format: pxpypze
     spurions: false
-  n_bits: 2
-  n_int: 1
   out:
     activs:
     - linear
     units:
     - 5
   out_activation: softmax
-  quantize: true
-save_dir: nconst8-nint1-nbits2-numavg
-seed: 1724601233
+  quantize: false
+save_dir: nconst8-not-quantized
+seed: 1789216290

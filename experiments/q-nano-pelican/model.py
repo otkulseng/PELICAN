@@ -40,18 +40,15 @@ def mlp(units, activs,x,batchnorm=False, mask=None):
 
     return x
 
+
+
 def CreateNano(shape, conf):
-    print("Running regular nano pelican")
     x = x_in = layers.Input(shape, name='input')
     x, mask = InnerProduct(conf['inner_product'], name='inner_product')(x)
+
     x = layers.BatchNormalization()(x)
 
-    x = Lineq2v2(
-        symmetric=True,
-        hollow=True,
-        num_avg=conf['num_avg'],
-        diag_bias=True
-    )(x)
+    x = Lineq2v2(symmetric=True, hollow=True, diag_bias=True,num_avg=conf['2v2'], name='2v2')(x)
 
     x = mlp(
         units=conf['hidden']['units'],
@@ -60,7 +57,7 @@ def CreateNano(shape, conf):
     )
 
     x = layers.BatchNormalization()(x)
-    x = Lineq2v0(num_avg=conf['num_avg'], name='2v0')(x)
+    x = Lineq2v0(num_avg=conf['2v0'], name='2v0')(x)
 
     x = mlp(
         units=conf['out']['units'],
@@ -70,9 +67,6 @@ def CreateNano(shape, conf):
 
     x = layers.Activation(activation=conf['out_activation'])(x)
     return Model(inputs=x_in, outputs=x)
-
-
-
 def CreateModel(shape, conf):
     if not conf['quantize']:
         return CreateNano(shape, conf)
