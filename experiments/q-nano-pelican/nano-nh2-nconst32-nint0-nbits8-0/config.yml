@@ -32,3 +32,4 @@ model:
   out_activation: linear
   quantize: true
 save_dir: nano-nh2-nconst32-nint0-nbits8
+seed: 1076095789
