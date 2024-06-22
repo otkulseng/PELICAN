@@ -18,7 +18,7 @@ model:
     units:
     - 2
   inner_product:
-    data_format: pxpypze
+    data_format: epxpypz
     spurions: false
   num_avg: 50
   out:
@@ -27,4 +27,4 @@ model:
     units:
     - 5
 save_dir: nano-pelican
-seed: 1044676449
+seed: 287323526
