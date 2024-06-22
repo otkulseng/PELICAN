@@ -1,0 +1,34 @@
+dataset:
+  feature_key: feats
+  folder: ../../../data/zenodo_data/fourvec
+  label_key: label
+  num_particles: 32
+
+hyperparams:
+  batch_size: 512
+  epochs: 1000
+  verbose: 1
+  val_size: -1
+  patience: 20
+  lr_init: 0.002
+
+model:
+  num_avg: 50
+  inner_product:
+    data_format: pxpypze
+    spurions: False
+  batchnorm: True
+  log_layer: True
+  2v2:
+    in: 1
+    out: 4
+  2v0:
+    in: 1
+    out: 1
+  hidden:
+    units: [3]
+    activs: [tanh]
+  out:
+    units : [5]
+    activs: [softmax]
+save_dir: nano-pelican
