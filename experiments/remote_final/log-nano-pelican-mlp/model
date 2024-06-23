@@ -23,8 +23,7 @@ def CreateModel(shape, conf):
 
     x, mask = InnerProduct(conf['inner_product'])(x)
 
-    if conf['log_layer']:
-        x = LogLayer()(x)
+    x = LogLayer()(x)
 
     if conf['batchnorm']:
         x = layers.BatchNormalization()(x)

@@ -8,7 +8,7 @@ hyperparams:
   batch_size: 512
   epochs: 1000
   verbose: 1
-  val_size: 50000
+  val_size: -1
   patience: 20
   lr_init: 0.002
 
@@ -16,13 +16,12 @@ model:
   num_avg: 8
   inner_product:
     data_format: pxpypze
-    spurions: False
-  log_layer: True
+    spurions: True
   batchnorm: True
   hidden:
-    units: [10]
+    units: [2]
     activs: [relu]
   out:
-    units : [64, 32, 5]
-    activs: [relu, relu, softmax]
-save_dir: log-eight-nano-pelican
+    units : [5]
+    activs: [softmax]
+save_dir: eight-log-nano-pelican

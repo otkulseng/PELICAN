@@ -1,0 +1,112 @@
+
+0:<class 'keras.src.layers.core.input_layer.InputLayer'>
+----------------------------------------------------------
+Total 0
+----------------------------------------------------------
+
+1:<class 'nanopelican.layers.inner_product.InnerProduct'>
+-----------------------------------------------------------
+inner-products : 512
+Total 512
+-----------------------------------------------------------
+
+2:<class 'nanopelican.layers.pelican.DiagBiasDense'>
+------------------------------------------------------
+matrix_mult : 384
+bias : 192
+diag_bias : 24
+Total 600
+------------------------------------------------------
+
+3:<class 'keras.src.layers.normalization.batch_normalization.BatchNormalization'>
+-----------------------------------------------------------------------------------
+Total 0
+-----------------------------------------------------------------------------------
+
+4:<class 'nanopelican.layers.lineq.Lineq2v2'>
+-----------------------------------------------
+totsum : 216
+trace : 24
+rowsum : 192
+Total 432
+-----------------------------------------------
+
+5:<class 'nanopelican.layers.pelican.DiagBiasDense'>
+------------------------------------------------------
+matrix_mult : 12672
+bias : 192
+diag_bias : 24
+Total 12888
+------------------------------------------------------
+
+6:<class 'keras.src.layers.normalization.batch_normalization.BatchNormalization'>
+-----------------------------------------------------------------------------------
+Total 0
+-----------------------------------------------------------------------------------
+
+7:<class 'nanopelican.layers.lineq.Lineq2v2'>
+-----------------------------------------------
+totsum : 216
+trace : 24
+rowsum : 192
+colsum : 192
+Total 624
+-----------------------------------------------
+
+8:<class 'nanopelican.layers.pelican.DiagBiasDense'>
+------------------------------------------------------
+matrix_mult : 17280
+bias : 192
+diag_bias : 24
+Total 17496
+------------------------------------------------------
+
+9:<class 'nanopelican.layers.pelican.DiagBiasDense'>
+------------------------------------------------------
+matrix_mult : 1152
+bias : 192
+diag_bias : 24
+Total 1368
+------------------------------------------------------
+
+10:<class 'keras.src.layers.normalization.batch_normalization.BatchNormalization'>
+------------------------------------------------------------------------------------
+Total 0
+------------------------------------------------------------------------------------
+
+11:<class 'nanopelican.layers.lineq.Lineq2v2'>
+------------------------------------------------
+totsum : 216
+trace : 24
+rowsum : 192
+colsum : 192
+Total 624
+------------------------------------------------
+
+12:<class 'nanopelican.layers.pelican.DiagBiasDense'>
+-------------------------------------------------------
+matrix_mult : 17280
+bias : 192
+diag_bias : 24
+Total 17496
+-------------------------------------------------------
+
+13:<class 'keras.src.layers.normalization.batch_normalization.BatchNormalization'>
+------------------------------------------------------------------------------------
+Total 0
+------------------------------------------------------------------------------------
+
+14:<class 'nanopelican.layers.lineq.Lineq2v0'>
+------------------------------------------------
+totsum : 216
+trace : 24
+Total 240
+------------------------------------------------
+
+15:<class 'keras.src.layers.core.dense.Dense'>
+------------------------------------------------
+matrix_mult : 60
+bias : 5
+Total 65
+------------------------------------------------
+Total 52345

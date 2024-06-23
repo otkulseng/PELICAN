@@ -35,9 +35,11 @@ class InnerProduct(layers.Layer):
 
 
         if self.use_spurions:
-            return (input_shape[0], N+self.spurions.shape[-2], N+self.spurions.shape[-2], 1)
+            out_shape = (input_shape[0], N+self.spurions.shape[-2], N+self.spurions.shape[-2], 1)
+        else:
+            out_shape = (input_shape[0],N, N, 1)
 
-        return (input_shape[0],N, N, 1), (input_shape[0],N, N, 1)
+        return out_shape, out_shape
 
     def call(self, inputs):
         # Assumes input_shape is
@@ -51,6 +53,7 @@ class InnerProduct(layers.Layer):
             inputs = layers.Concatenate(axis=-2)([inputs, spurions])
 
 
+
         # TODO: Quantize Bits Here!!
         inner_prods = self.data_handler(inputs)
         inner_prods = tf.expand_dims(inner_prods, axis=-1)
@@ -59,7 +62,7 @@ class InnerProduct(layers.Layer):
         mask = tf.cast(particle_sum > 1.0e-6, tf.int32)
         mask = tf.einsum('...i, ...j->...ij', mask, mask)
         mask = tf.expand_dims(mask, axis=-1)
-        
+
         return inner_prods, mask
 
         # inner_prods = tf.math.log(1 + inner_prods)

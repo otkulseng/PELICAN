@@ -3,26 +3,29 @@ dataset:
   folder: ../../../data/zenodo_data/fourvec
   label_key: label
   num_particles: 8
-
 hyperparams:
   batch_size: 512
   epochs: 1000
+  lr_init: 0.01
+  patience: 6
+  val_size: -1
   verbose: 1
-  val_size: 50000
-  patience: 20
-  lr_init: 0.002
-
 model:
-  num_avg: 8
+  batchnorm: true
+  hidden:
+    activs:
+    - relu
+    units:
+    - 2
   inner_product:
     data_format: pxpypze
-    spurions: False
-  log_layer: True
-  batchnorm: True
-  hidden:
-    units: [10]
-    activs: [relu]
+    spurions: true
+  log_layer: false
+  num_avg: 8
   out:
-    units : [64, 32, 5]
-    activs: [relu, relu, softmax]
+    activs:
+    - softmax
+    units:
+    - 5
 save_dir: log-eight-nano-pelican
+seed: 414205406

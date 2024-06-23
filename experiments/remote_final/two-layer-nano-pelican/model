@@ -23,11 +23,11 @@ def CreateModel(shape, conf):
 
     x, mask = InnerProduct(conf['inner_product'])(x)
 
-    if conf['log_layer']:
-        x = LogLayer()(x)
+
 
     if conf['batchnorm']:
         x = layers.BatchNormalization()(x)
+
 
     x = Lineq2v2(
         symmetric=True,
@@ -36,6 +36,28 @@ def CreateModel(shape, conf):
     )(x)
 
     x = mlp(conf['hidden']['units'], conf['hidden']['activs'], x, diag_bias=True)
+
+    # x = layers.Multiply()([x, mask])
+
+    if conf['batchnorm']:
+        x = layers.BatchNormalization()(x)
+
+    x = Lineq2v2(
+        num_avg=conf['num_avg'],
+    )(x)
+
+    x = mlp(conf['between']['units'], conf['between']['activs'], x, diag_bias=True)
+
+    # x = layers.Multiply()([x, mask])
+
+    if conf['batchnorm']:
+        x = layers.BatchNormalization()(x)
+
+    x = Lineq2v2(
+        num_avg=conf['num_avg'],
+    )(x)
+
+    x = mlp(conf['between']['units'], conf['between']['activs'], x, diag_bias=True)
 
     # x = layers.Multiply()([x, mask])
 
