@@ -71,13 +71,31 @@ def CreateModel(shape, conf):
     if not conf['quantize']:
         return CreateNano(shape, conf)
 
+
+    if 'inp' in conf:
+        inp_quantizer = get_quantizer(format_quantiser(
+            n_bits=conf['inp']['n_bits'],
+            n_int=conf['inp']['n_int']
+        ))
+
+    if 'internal' in conf:
+        internal = get_quantizer(format_quantiser(
+            n_bits=conf['internal']['n_bits'],
+            n_int=conf['internal']['n_int']
+        ))
+
     QUANT = format_quantiser(
         n_bits=conf['n_bits'],
         n_int=conf['n_int']
     )
 
     x = x_in = layers.Input(shape, name='input')
+
+    if 'inp' in conf:
+        x = inp_quantizer(x)
     x, mask = InnerProduct(conf['inner_product'], name='inner_product')(x)
+    # if 'inp' in conf:
+    #     x = inp_quantizer(x)
 
     x = QBatchNormalization(
         beta_quantizer=QUANT,
@@ -87,8 +105,13 @@ def CreateModel(shape, conf):
         name='2v2bnorm'
     )(x)
 
+    if 'internal' in conf:
+        x = internal(x)
 
     x = Lineq2v2(symmetric=True, hollow=True, diag_bias=True,num_avg=conf['2v2'], name='2v2')(x)
+
+    if 'internal' in conf:
+        x = internal(x)
 
     x = qmlp(
         units=conf['hidden']['units'],
@@ -100,6 +123,8 @@ def CreateModel(shape, conf):
         n_int=conf['n_int']
     )
 
+    if 'internal' in conf:
+        x = internal(x)
     x = QBatchNormalization(
         beta_quantizer=QUANT,
         gamma_quantizer=QUANT,
@@ -107,7 +132,12 @@ def CreateModel(shape, conf):
         variance_quantizer=QUANT,
         name='2v0bnorm'
     )(x)
+    if 'internal' in conf:
+        x = internal(x)
     x = Lineq2v0(num_avg=conf['2v0'], name='2v0')(x)
+
+    if 'internal' in conf:
+        x = internal(x)
 
     x = qmlp(
         units=conf['out']['units'],
@@ -127,12 +157,20 @@ def CreateModel(shape, conf):
 # https://github.com/bb511/deepsets_synth/blob/main/fast_deepsets/deepsets/deepsets_quantised.py
 # 03.06.2024
 def format_quantiser(n_bits, n_int=0):
+
+
     """Format the quantisation of the ml floats in a QKeras way."""
     if n_bits == 1:
         return "binary(alpha=1)"
     elif n_bits == 2:
         return "ternary(alpha=1)"
     else:
+        # A number is then represented as
+        # (+-)n_int.(n_bits - n_int - 1)
+        # i.e.
+        # 1 bit for sign
+        # n_int for integer
+        # the rest, n_bits - n_int - 1 for decimal
         return f"quantized_bits({n_bits}, {n_int}, alpha=1)"
 
 

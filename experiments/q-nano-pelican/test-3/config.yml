@@ -11,24 +11,21 @@ hyperparams:
   val_size: 50000
   verbose: 1
 model:
+  2v0: 6
+  2v2: 9
   batchnorm: true
   hidden:
     activs:
     - relu
     units:
-    - 8
-  inp:
-    n_bits: 24
-    n_int: 11
-  internal:
-    n_bits: 10
-    n_int: 6
-  2v2: 9
-  2v0: 6
+    - 2
   inner_product:
     data_format: pxpypze
     spurions: false
-  n_bits: 8
+  internal:
+    n_bits: 10
+    n_int: 8
+  n_bits: 10
   n_int: 2
   out:
     activs:
@@ -37,5 +34,5 @@ model:
     - 5
   out_activation: softmax
   quantize: true
-save_dir: scan-2-6-nh8
-#-inp832-int-212
+save_dir: test
+seed: 530497784
