@@ -16,7 +16,7 @@ model:
     activs:
     - relu
     units:
-    - 8
+    - 2
   inp:
     n_bits: 24
     n_int: 11
@@ -37,5 +37,5 @@ model:
     - 5
   out_activation: softmax
   quantize: true
-save_dir: scan-2-6-nh8
+save_dir: fortest
 #-inp832-int-212

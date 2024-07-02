@@ -3,11 +3,12 @@ from keras import layers
 from .utils import *
 
 class InnerProduct(layers.Layer):
-    def __init__(self, arg_dict, *args, **kwargs):
+    def __init__(self, arg_dict, quantizer=None,*args, **kwargs):
         super().__init__(*args, **kwargs)
         self.arg_dict = arg_dict
         self.data_handler = get_handler(arg_dict['data_format'])
         self.use_spurions = arg_dict['spurions']
+        self.quantizer = quantizer
 
 
         if self.use_spurions:
@@ -52,6 +53,8 @@ class InnerProduct(layers.Layer):
 
 
         # TODO: Quantize Bits Here!!
+        if self.quantizer:
+            inputs = self.quantizer(inputs)
         inner_prods = self.data_handler(inputs)
         inner_prods = tf.expand_dims(inner_prods, axis=-1)
 
@@ -61,6 +64,8 @@ class InnerProduct(layers.Layer):
         mask = tf.einsum('...i, ...j->...ij', mask, mask)
         mask = tf.expand_dims(mask, axis=-1)
 
+        if self.quantizer:
+            inner_prods = self.quantizer(inner_prods)
         return inner_prods, mask
 
         # inner_prods = tf.math.log(1 + inner_prods)

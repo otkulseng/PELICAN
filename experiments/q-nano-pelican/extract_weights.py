@@ -12,7 +12,7 @@ def load_yaml(filename):
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument("--folder", type=str, required=True)
-parser.add_argument("--quantize", type=bool, default=True)
+parser.add_argument("--quantize", type=bool, default=False)
 parser.add_argument("--out_file", type=str, default='weights.h')
 args = parser.parse_args()
 
@@ -23,9 +23,11 @@ filename = folder / 'best_acc.weights.h5'
 config = load_yaml(folder / 'config.yml')['model']
 
 if args.quantize:
+    print("Using quantizer")
     q_func = quantized_bits(bits=config['n_bits'], integer=config['n_int'])
     quantizer = lambda x : np.array([q_func(x)])[0]
 else:
+    print("Not using quantizer")
     quantizer = lambda x : x
 
 weights = h5py.File(filename)
