@@ -1,0 +1,29 @@
+dataset:
+  folder: ../data/nano_data
+  num_particles: 8
+  feature_key: Pmu
+  label_key: is_signal
+hyperparams:
+  batch_size: 512
+  epochs: 10
+  lr_init: 0.001
+  patience: 30
+  val_size: 50000
+  verbose: 1
+model:
+  batchnorm: true
+  inner_product:
+    data_format: epxpypz # Or epxpypz!!
+    spurions: false
+  hidden:
+    units: [2]
+    activs: ['relu']
+  out:
+    units: [1]
+    activs: ['linear']
+  # out_activation: 'linear'
+  n_bits: 8
+  n_int: 2
+evaluate: false
+save_dir: finish
+#-inp832-int-212

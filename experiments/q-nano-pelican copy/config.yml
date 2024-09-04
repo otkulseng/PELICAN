@@ -1,0 +1,21 @@
+dataset:
+  feature_key: Pmu
+  folder: ../../data/sample_data
+  label_key: is_signal
+  num_particles: 32
+hyperparams:
+  batch_size: 512
+  epochs: 1000
+  lr_init: 0.001
+  patience: 30
+  val_size: 50000
+  verbose: 1
+model:
+  inner_product:
+    data_format: epxpypz
+    spurions: False
+  n_hidden: 2
+  activation: relu
+  n_out: 1
+save_dir: nano
+#-inp832-int-212

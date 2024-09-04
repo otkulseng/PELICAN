@@ -28,23 +28,18 @@ def train(model, conf):
     train_log_cb = callbacks.CSVLogger(save_dir / 'training.log')
 
 
-    # best_acc_cb  = callbacks.ModelCheckpoint(
-    #     filepath= str(Path(save_dir) / 'best_acc.keras'),
-    #     monitor='val_accuracy',
-    #     mode='max',
-    #     save_best_only=True,
-    #     options=None,
-    # )
-    # best_loss_cb = callbacks.ModelCheckpoint(
-    #     filepath= str(Path(save_dir) / 'best_loss.keras'),
-    #     monitor='val_loss',
-    #     mode='min',
-    #     save_best_only=True,
-    #     options=None,
-    # )
+    if model.output_shape[-1] > 1:
+        loss = losses.CategoricalCrossentropy()
+        metric = metrics.CategoricalAccuracy()
+        monitor = 'val_categorical_accuracy'
+    else:
+        loss = losses.BinaryCrossentropy(from_logits=True)
+        metric = metrics.BinaryAccuracy()
+        monitor = 'val_binary_accuracy'
+
     best_acc_cb  = CustomModelCheckpoint(
         filepath= str(Path(save_dir) / 'best_acc.weights.h5'),
-        monitor='val_categorical_accuracy',
+        monitor=monitor,
         mode='max',
         weights_only=True
     )
@@ -56,16 +51,16 @@ def train(model, conf):
     )
 
     early_stopping = callbacks.EarlyStopping(
-        monitor='val_categorical_accuracy',
+        monitor=monitor,
         mode='max',
         patience=hps['patience']
     )
 
-    reduce_lr = callbacks.ReduceLROnPlateau(
-        monitor='val_categorical_accuracy',
-        mode='max',
-        patience=hps['patience'] // 2
-    )
+    # reduce_lr = callbacks.ReduceLROnPlateau(
+    #     monitor='val_categorical_accuracy',
+    #     mode='max',
+    #     patience=hps['patience'] // 2
+    # )
 
     model_cbs = [TqdmCallback(verbose=conf['hyperparams']['verbose']),
                  train_log_cb,
@@ -75,12 +70,7 @@ def train(model, conf):
                      ]
 
     # Compilation
-    if model.output_shape[-1] > 1:
-        loss = losses.CategoricalCrossentropy()
-        metric = metrics.CategoricalAccuracy()
-    else:
-        loss = losses.BinaryCrossentropy(from_logits=True)
-        metric = metrics.BinaryAccuracy()
+
 
     # learning_rate=hps['lr_init']
     learning_rate = schedulers.LinearWarmupCosineAnnealing(
@@ -113,7 +103,8 @@ def train(model, conf):
     model.save_weights(Path(save_dir) / 'model.weights.h5')
     model.save(Path(save_dir) / 'model.keras')
 
-    evaluate_model(save_dir, model)
+    if conf['evaluate']:
+        evaluate_model(save_dir, model)
 
 
 
